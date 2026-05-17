@@ -61,10 +61,6 @@ local function Gradient(parent, colors, rotation)
     return g
 end
 
-local function AutoText(text, size, font, width)
-    return TextService:GetTextSize(text, size, font, Vector2.new(width, 9999))
-end
-
 local function Ripple(button)
     local mouse = UserInputService:GetMouseLocation()
     local abs = button.AbsolutePosition
@@ -156,6 +152,30 @@ function Library:CreateWindow(data)
         Parent = gui
     })
 
+    -- Toggle button (outside the window, always visible)
+    local toggleBtn = Create("TextButton",{
+        Text = "PRISM",
+        Font = Enum.Font.GothamBold,
+        TextSize = 10,
+        TextColor3 = Color3.fromRGB(200,180,255),
+        BackgroundColor3 = Color3.fromRGB(12,10,28),
+        BorderSizePixel = 0,
+        Size = UDim2.fromOffset(62,26),
+        Position = UDim2.new(0,12,0,12),
+        AutoButtonColor = false,
+        ZIndex = 10,
+        Parent = root,
+    })
+
+    Corner(toggleBtn,7)
+    local toggleStroke = Stroke(toggleBtn,Theme.Glow,1,.6)
+    local toggleGradient = Gradient(toggleStroke,{
+        ColorSequenceKeypoint.new(0,Theme.Accent1),
+        ColorSequenceKeypoint.new(.5,Theme.Accent2),
+        ColorSequenceKeypoint.new(1,Theme.Accent3),
+    })
+    AnimateGradient(toggleGradient)
+
     local wrap = Create("Frame",{
         Size = Config.WindowSize,
         Position = UDim2.fromScale(.5,.5),
@@ -163,6 +183,16 @@ function Library:CreateWindow(data)
         BackgroundTransparency = 1,
         Parent = root
     })
+
+    -- Animated prism border wrapper
+    local borderWrap = Create("Frame",{
+        Size = UDim2.new(1,4,1,4),
+        Position = UDim2.fromOffset(-2,-2),
+        BackgroundTransparency = 1,
+        Parent = wrap,
+        ZIndex = 0,
+    })
+    Corner(borderWrap,18)
 
     local border = Create("Frame",{
         Size = UDim2.fromScale(1,1),
@@ -208,11 +238,27 @@ function Library:CreateWindow(data)
         Parent = window
     })
 
+    -- Sidebar with rounded left corners only (left side is inside window, right side exposed)
     local sidebar = Create("Frame",{
         Size = UDim2.new(0,Config.SidebarWidth,1,0),
         BackgroundColor3 = Theme.Sidebar,
         BorderSizePixel = 0,
         Parent = window
+    })
+
+    -- Round only top-left and bottom-left corners of sidebar
+    local sidebarCornerTL = Instance.new("UICorner")
+    sidebarCornerTL.CornerRadius = UDim.new(0,16)
+    sidebarCornerTL.Parent = sidebar
+
+    -- Mask to square off right side of sidebar
+    local sidebarMaskRight = Create("Frame",{
+        Size = UDim2.new(0,16,1,0),
+        Position = UDim2.new(1,-16,0,0),
+        BackgroundColor3 = Theme.Sidebar,
+        BorderSizePixel = 0,
+        ZIndex = sidebar.ZIndex,
+        Parent = sidebar,
     })
 
     local sidebarStroke = Stroke(sidebar,Color3.new(1,1,1),1,.94)
@@ -387,6 +433,51 @@ function Library:CreateWindow(data)
     })
 
     Dragify(wrap,topbar)
+
+    -- Toggle visibility logic
+    local menuVisible = true
+    toggleBtn.MouseButton1Click:Connect(function()
+        menuVisible = not menuVisible
+
+        -- Animate window visibility
+        TweenService:Create(wrap,Config.Tween,{
+            Size = menuVisible and Config.WindowSize or UDim2.fromOffset(0,0)
+        }):Play()
+
+        -- Border also retracts
+        TweenService:Create(border,Config.Tween,{
+            Size = menuVisible and UDim2.fromScale(1,1) or UDim2.fromOffset(0,0)
+        }):Play()
+
+        wrap.Visible = menuVisible or true -- keep parent visible for tween
+        task.spawn(function()
+            task.wait(0.01)
+            if not menuVisible then
+                task.wait(Config.Tween.Time)
+                for _,v in pairs(wrap:GetChildren()) do
+                    if v:IsA("Frame") or v:IsA("ImageLabel") then
+                        v.Visible = false
+                    end
+                end
+            else
+                for _,v in pairs(wrap:GetChildren()) do
+                    if v:IsA("Frame") or v:IsA("ImageLabel") then
+                        v.Visible = true
+                    end
+                end
+            end
+        end)
+
+        toggleBtn.Text = menuVisible and "PRISM" or "PRISM"
+        TweenService:Create(toggleBtn,TweenInfo.new(.15,Enum.EasingStyle.Quad),{
+            BackgroundColor3 = menuVisible and Color3.fromRGB(12,10,28) or Color3.fromRGB(20,16,40)
+        }):Play()
+        task.delay(.15,function()
+            TweenService:Create(toggleBtn,TweenInfo.new(.1,Enum.EasingStyle.Quad),{
+                BackgroundColor3 = Color3.fromRGB(12,10,28)
+            }):Play()
+        end)
+    end)
 
     local windowObj = {}
     windowObj.Tabs = {}
@@ -684,7 +775,7 @@ function Library:CreateWindow(data)
                 Parent = el
             })
 
-            local title = Create("TextLabel",{
+            local titleLabel = Create("TextLabel",{
                 Text = data.Name or "Slider",
                 Font = Enum.Font.GothamMedium,
                 TextSize = 12,
@@ -695,7 +786,8 @@ function Library:CreateWindow(data)
                 Parent = top
             })
 
-            local val = Create("TextLabel",{
+            -- Value display as a TextBox so user can click to type a number
+            local valBox = Create("TextBox",{
                 Text = tostring(value),
                 Font = Enum.Font.GothamBold,
                 TextSize = 12,
@@ -703,10 +795,26 @@ function Library:CreateWindow(data)
                 Size = UDim2.fromOffset(50,20),
                 Position = UDim2.new(1,-50,0,0),
                 TextXAlignment = Enum.TextXAlignment.Right,
+                ClearTextOnFocus = true,
+                BorderSizePixel = 0,
+                TextColor3 = Color3.fromRGB(255,96,144), -- visible gradient-matching color
                 Parent = top
             })
 
-            Gradient(val,{
+            -- Gradient on valBox text color simulation via a label overlay
+            local valLabel = Create("TextLabel",{
+                Text = tostring(value),
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                BackgroundTransparency = 1,
+                Size = UDim2.fromScale(1,1),
+                TextXAlignment = Enum.TextXAlignment.Right,
+                TextColor3 = Color3.new(1,1,1),
+                Visible = true,
+                Parent = valBox
+            })
+
+            Gradient(valLabel,{
                 ColorSequenceKeypoint.new(0,Color3.fromRGB(255,96,144)),
                 ColorSequenceKeypoint.new(1,Color3.fromRGB(96,144,255))
             })
@@ -766,12 +874,39 @@ function Library:CreateWindow(data)
                     Position = UDim2.new(pct,0,.5,0)
                 }):Play()
 
-                val.Text = tostring(value)
+                valBox.Text = tostring(value)
+                valLabel.Text = tostring(value)
 
                 if data.Callback then
                     task.spawn(data.Callback,value)
                 end
             end
+
+            -- Allow typing a value directly
+            valBox.FocusLost:Connect(function(enterPressed)
+                local typed = tonumber(valBox.Text)
+                if typed then
+                    Set(typed)
+                else
+                    valBox.Text = tostring(value)
+                    valLabel.Text = tostring(value)
+                end
+            end)
+
+            -- Hide label while editing, show after
+            valBox.Focused:Connect(function()
+                valLabel.Visible = false
+                valBox.TextColor3 = Color3.fromRGB(255,96,144)
+            end)
+
+            valBox.FocusLost:Connect(function()
+                valLabel.Visible = true
+                valBox.TextColor3 = Color3.fromRGB(0,0,0)
+                valBox.TextTransparency = 1
+            end)
+
+            -- Make the box text invisible normally (label shows gradient)
+            valBox.TextTransparency = 1
 
             track.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -788,8 +923,21 @@ function Library:CreateWindow(data)
             UserInputService.InputChanged:Connect(function(input)
                 if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     local pct = math.clamp((input.Position.X - track.AbsolutePosition.X)/track.AbsoluteSize.X,0,1)
-                    local val = min + ((max-min)*pct)
-                    Set(val)
+                    local v = min + ((max-min)*pct)
+                    Set(v)
+                end
+            end)
+
+            -- Also make thumb draggable
+            thumb.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = true
+                end
+            end)
+
+            thumb.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = false
                 end
             end)
 
@@ -834,14 +982,15 @@ function Library:CreateWindow(data)
             btn.MouseButton1Click:Connect(function()
                 Ripple(btn)
 
+                -- Brief color flash instead of size change
                 TweenService:Create(btn,TweenInfo.new(.08),{
-                    Size = btn.Size - UDim2.fromOffset(0,2)
+                    BackgroundTransparency = .65
                 }):Play()
 
                 task.wait(.08)
 
                 TweenService:Create(btn,TweenInfo.new(.12),{
-                    Size = btn.Size + UDim2.fromOffset(0,2)
+                    BackgroundTransparency = .85
                 }):Play()
 
                 if data.Callback then
@@ -1094,12 +1243,31 @@ function Library:CreateWindow(data)
 
         content.Visible = not hidden
 
-        TweenService:Create(window,Config.Tween,{
-            Size = hidden and UDim2.new(0,Config.SidebarWidth,1,-4) or UDim2.new(1,-4,1,-4)
-        }):Play()
+        -- Sidebar corners: when content hidden, round all corners; when visible, only left
+        if hidden then
+            -- Now showing content — restore right-side mask
+            sidebarMaskRight.Visible = true
+            TweenService:Create(window,Config.Tween,{
+                Size = UDim2.new(1,-4,1,-4)
+            }):Play()
+        else
+            -- Hiding content — remove mask so right side rounds too
+            sidebarMaskRight.Visible = false
+            TweenService:Create(window,Config.Tween,{
+                Size = UDim2.new(0,Config.SidebarWidth,1,-4)
+            }):Play()
+        end
+
+        -- Border wraps around whatever size window is
+        task.delay(Config.Tween.Time, function()
+            TweenService:Create(border,Config.Tween,{
+                Size = UDim2.fromScale(1,1)
+            }):Play()
+        end)
     end)
 
     return windowObj
 end
 
 return setmetatable({},Library)
+
