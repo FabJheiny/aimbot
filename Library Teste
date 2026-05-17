@@ -1,7 +1,6 @@
--- Prism UI Library - Fixed Build
-
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local TextService = game:GetService("TextService")
 local HttpService = game:GetService("HttpService")
@@ -10,8 +9,10 @@ local Library = {}
 Library.__index = Library
 
 local Theme = {
+    Background = Color3.fromRGB(6,6,16),
     Window = Color3.fromRGB(9,8,20),
     Sidebar = Color3.fromRGB(8,6,20),
+    Border = Color3.fromRGB(255,255,255),
 
     Text = Color3.fromRGB(240,236,255),
     SubText = Color3.fromRGB(90,86,120),
@@ -26,6 +27,7 @@ local Theme = {
 local Config = {
     WindowSize = UDim2.fromOffset(580,400),
     SidebarWidth = 152,
+    Radius = 16,
     Tween = TweenInfo.new(.22,Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
 }
 
@@ -39,28 +41,28 @@ local function Create(class,props)
     return obj
 end
 
-local function Corner(obj,radius)
+local function Corner(parent,radius)
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0,radius)
-    c.Parent = obj
+    c.Parent = parent
     return c
 end
 
-local function Stroke(obj,color,thickness,transparency)
+local function Stroke(parent,color,thickness,transparency)
     local s = Instance.new("UIStroke")
     s.Color = color
     s.Thickness = thickness or 1
     s.Transparency = transparency or 0
     s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    s.Parent = obj
+    s.Parent = parent
     return s
 end
 
-local function Gradient(obj,colors,rotation)
+local function Gradient(parent,colors,rotation)
     local g = Instance.new("UIGradient")
     g.Color = ColorSequence.new(colors)
     g.Rotation = rotation or 0
-    g.Parent = obj
+    g.Parent = parent
     return g
 end
 
@@ -76,12 +78,12 @@ local function AnimateGradient(g)
     end)
 end
 
-local function Dragify(frame,drag)
+local function Dragify(frame,handle)
     local dragging = false
     local dragStart
     local startPos
 
-    drag.InputBegan:Connect(function(input)
+    handle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
@@ -111,30 +113,31 @@ end
 
 function Library:CreateWindow(data)
     local gui = Create("ScreenGui",{
-        Name = "Prism_"..HttpService:GenerateGUID(false),
-        IgnoreGuiInset = true,
+        Name = "PrismUI_"..HttpService:GenerateGUID(false),
         ResetOnSpawn = false,
+        IgnoreGuiInset = true,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
         Parent = CoreGui
     })
 
-    local holder = Create("Frame",{
-        Size = UDim2.fromScale(1,1),
+    local root = Create("Frame",{
         BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1,1),
         Parent = gui
     })
 
     local wrap = Create("Frame",{
-        AnchorPoint = Vector2.new(.5,.5),
-        Position = UDim2.fromScale(.5,.5),
         Size = Config.WindowSize,
+        Position = UDim2.fromScale(.5,.5),
+        AnchorPoint = Vector2.new(.5,.5),
         BackgroundTransparency = 1,
-        Parent = holder
+        Parent = root
     })
 
     local border = Create("Frame",{
         Size = UDim2.fromScale(1,1),
         BackgroundTransparency = 1,
+        ClipsDescendants = true,
         Parent = wrap
     })
 
@@ -144,11 +147,12 @@ function Library:CreateWindow(data)
 
     local borderGradient = Gradient(borderStroke,{
         ColorSequenceKeypoint.new(0,Theme.Accent1),
-        ColorSequenceKeypoint.new(.2,Color3.fromRGB(255,140,0)),
-        ColorSequenceKeypoint.new(.4,Color3.fromRGB(255,220,0)),
-        ColorSequenceKeypoint.new(.6,Color3.fromRGB(96,255,96)),
-        ColorSequenceKeypoint.new(.8,Theme.Accent3),
-        ColorSequenceKeypoint.new(1,Theme.Accent2)
+        ColorSequenceKeypoint.new(.18,Color3.fromRGB(255,140,0)),
+        ColorSequenceKeypoint.new(.35,Color3.fromRGB(255,220,0)),
+        ColorSequenceKeypoint.new(.5,Color3.fromRGB(96,255,96)),
+        ColorSequenceKeypoint.new(.65,Theme.Accent3),
+        ColorSequenceKeypoint.new(.82,Theme.Accent2),
+        ColorSequenceKeypoint.new(1,Theme.Accent1)
     })
 
     AnimateGradient(borderGradient)
@@ -164,6 +168,19 @@ function Library:CreateWindow(data)
 
     Corner(window,16)
 
+    local glow = Create("ImageLabel",{
+        Image = "rbxassetid://5028857084",
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(24,24,276,276),
+        BackgroundTransparency = 1,
+        ImageColor3 = Theme.Glow,
+        ImageTransparency = .82,
+        Size = UDim2.new(1,80,1,80),
+        Position = UDim2.fromOffset(-40,-40),
+        ZIndex = 0,
+        Parent = window
+    })
+
     local sidebar = Create("Frame",{
         Size = UDim2.new(0,Config.SidebarWidth,1,0),
         BackgroundColor3 = Theme.Sidebar,
@@ -174,15 +191,17 @@ function Library:CreateWindow(data)
 
     Corner(sidebar,16)
 
-    local sidebarFix = Create("Frame",{
-        Size = UDim2.new(0,18,1,0),
-        Position = UDim2.new(1,-18,0,0),
+    local sidebarFill = Create("Frame",{
+        Size = UDim2.new(0,16,1,0),
+        Position = UDim2.new(1,-16,0,0),
         BackgroundColor3 = Theme.Sidebar,
         BorderSizePixel = 0,
         Parent = sidebar
     })
 
-    local sidebarLine = Create("Frame",{
+    local sidebarStroke = Stroke(sidebar,Color3.new(1,1,1),1,.94)
+
+    local shimmer = Create("Frame",{
         AnchorPoint = Vector2.new(1,0),
         Position = UDim2.new(1,0,0,0),
         Size = UDim2.new(0,1,1,0),
@@ -190,18 +209,27 @@ function Library:CreateWindow(data)
         Parent = sidebar
     })
 
-    Gradient(sidebarLine,{
+    Gradient(shimmer,{
         ColorSequenceKeypoint.new(0,Color3.new(1,1,1)),
         ColorSequenceKeypoint.new(.5,Theme.Glow),
         ColorSequenceKeypoint.new(1,Color3.new(1,1,1))
     },90)
 
-    sidebarLine.BackgroundTransparency = .5
+    shimmer.BackgroundTransparency = .5
 
     local brand = Create("Frame",{
-        Size = UDim2.new(1,0,0,84),
+        Size = UDim2.new(1,0,0,82),
         BackgroundTransparency = 1,
         Parent = sidebar
+    })
+
+    local brandLine = Create("Frame",{
+        Size = UDim2.new(1,0,0,1),
+        Position = UDim2.new(0,0,1,-1),
+        BackgroundColor3 = Color3.new(1,1,1),
+        BackgroundTransparency = .95,
+        BorderSizePixel = 0,
+        Parent = brand
     })
 
     local icon = Create("Frame",{
@@ -219,7 +247,7 @@ function Library:CreateWindow(data)
         ColorSequenceKeypoint.new(1,Theme.Accent3)
     },45)
 
-    local iconLabel = Create("TextLabel",{
+    local iconText = Create("TextLabel",{
         Text = "◆",
         Font = Enum.Font.GothamBold,
         TextSize = 16,
@@ -259,16 +287,16 @@ function Library:CreateWindow(data)
         ColorSequenceKeypoint.new(1,Color3.fromRGB(160,96,255))
     })
 
-    local tabHolder = Create("Frame",{
+    local tabList = Create("Frame",{
         BackgroundTransparency = 1,
-        Position = UDim2.fromOffset(0,88),
-        Size = UDim2.new(1,0,1,-88),
+        Position = UDim2.fromOffset(0,84),
+        Size = UDim2.new(1,0,1,-84),
         Parent = sidebar
     })
 
     local tabLayout = Create("UIListLayout",{
         Padding = UDim.new(0,3),
-        Parent = tabHolder
+        Parent = tabList
     })
 
     local content = Create("Frame",{
@@ -284,6 +312,15 @@ function Library:CreateWindow(data)
         Parent = content
     })
 
+    local topLine = Create("Frame",{
+        Size = UDim2.new(1,0,0,1),
+        Position = UDim2.new(0,0,1,-1),
+        BackgroundColor3 = Color3.new(1,1,1),
+        BackgroundTransparency = .95,
+        BorderSizePixel = 0,
+        Parent = topbar
+    })
+
     local currentTab = Create("TextLabel",{
         Text = "Main",
         Font = Enum.Font.GothamBold,
@@ -296,11 +333,24 @@ function Library:CreateWindow(data)
         Parent = topbar
     })
 
-    local pages = {}
+    local badge = Create("TextLabel",{
+        Text = "ACTIVE",
+        Font = Enum.Font.GothamBold,
+        TextSize = 10,
+        TextColor3 = Color3.fromRGB(144,128,216),
+        BackgroundColor3 = Theme.Glow,
+        BackgroundTransparency = .85,
+        Position = UDim2.new(1,-78,0,15),
+        Size = UDim2.fromOffset(60,20),
+        Parent = topbar
+    })
+
+    Corner(badge,10)
+    Stroke(badge,Theme.Glow,1,.8)
 
     local collapsed = false
 
-    local collapseButton = Create("TextButton",{
+    local menuButton = Create("TextButton",{
         Text = "◂",
         Font = Enum.Font.GothamBold,
         TextSize = 14,
@@ -316,8 +366,8 @@ function Library:CreateWindow(data)
         Parent = window
     })
 
-    Corner(collapseButton,999)
-    Stroke(collapseButton,Theme.Glow,1,.75)
+    Corner(menuButton,999)
+    Stroke(menuButton,Theme.Glow,1,.75)
 
     local reopen = Create("TextButton",{
         Text = "◆",
@@ -340,10 +390,11 @@ function Library:CreateWindow(data)
         ColorSequenceKeypoint.new(1,Theme.Accent2)
     })
 
-    collapseButton.MouseButton1Click:Connect(function()
+    menuButton.MouseButton1Click:Connect(function()
         collapsed = true
 
         reopen.Visible = true
+        menuButton.Text = "▸"
 
         TweenService:Create(sidebar,Config.Tween,{
             Size = UDim2.new(0,0,1,0)
@@ -354,17 +405,16 @@ function Library:CreateWindow(data)
             Size = UDim2.new(1,0,1,0)
         }):Play()
 
-        TweenService:Create(collapseButton,Config.Tween,{
+        TweenService:Create(menuButton,Config.Tween,{
             Position = UDim2.new(0,12,0,14)
         }):Play()
-
-        collapseButton.Text = "▸"
     end)
 
     reopen.MouseButton1Click:Connect(function()
         collapsed = false
 
         reopen.Visible = false
+        menuButton.Text = "◂"
 
         TweenService:Create(sidebar,Config.Tween,{
             Size = UDim2.new(0,Config.SidebarWidth,1,0)
@@ -375,36 +425,25 @@ function Library:CreateWindow(data)
             Size = UDim2.new(1,-Config.SidebarWidth,1,0)
         }):Play()
 
-        TweenService:Create(collapseButton,Config.Tween,{
+        TweenService:Create(menuButton,Config.Tween,{
             Position = UDim2.new(0,Config.SidebarWidth - 12,0,14)
         }):Play()
-
-        collapseButton.Text = "◂"
     end)
 
     Dragify(wrap,topbar)
 
-    local Window = {}
+    local windowObj = {}
+    windowObj.Tabs = {}
 
-    function Window:CreateTab(name)
+    function windowObj:CreateTab(name)
         local tabButton = Create("TextButton",{
             Text = "",
             Size = UDim2.new(1,-16,0,38),
             Position = UDim2.fromOffset(8,0),
             BackgroundTransparency = 1,
             AutoButtonColor = false,
-            Parent = tabHolder
+            Parent = tabList
         })
-
-        local bg = Create("Frame",{
-            Size = UDim2.fromScale(1,1),
-            BackgroundColor3 = Theme.Glow,
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Parent = tabButton
-        })
-
-        Corner(bg,9)
 
         local glowBar = Create("Frame",{
             Size = UDim2.fromOffset(3,0),
@@ -432,7 +471,7 @@ function Library:CreateWindow(data)
 
         Corner(dot,999)
 
-        local label = Create("TextLabel",{
+        local tabText = Create("TextLabel",{
             Text = name,
             Font = Enum.Font.GothamMedium,
             TextSize = 13,
@@ -443,6 +482,16 @@ function Library:CreateWindow(data)
             TextXAlignment = Enum.TextXAlignment.Left,
             Parent = tabButton
         })
+
+        local bg = Create("Frame",{
+            Size = UDim2.fromScale(1,1),
+            BackgroundColor3 = Theme.Glow,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Parent = tabButton
+        })
+
+        Corner(bg,9)
 
         local page = Create("ScrollingFrame",{
             Visible = false,
@@ -462,34 +511,32 @@ function Library:CreateWindow(data)
             Parent = page
         })
 
-        pages[#pages + 1] = {
-            Button = tabButton,
-            Page = page,
-            Dot = dot,
-            Glow = glowBar,
-            Label = label,
-            Bg = bg
-        }
+        local padding = Create("UIPadding",{
+            PaddingBottom = UDim.new(0,10),
+            Parent = page
+        })
+
+        local tabObj = {}
 
         local function Select()
             currentTab.Text = name
 
-            for _,v in pairs(pages) do
-                v.Page.Visible = false
+            for _,t in pairs(windowObj.Tabs) do
+                t.Page.Visible = false
 
-                TweenService:Create(v.Dot,Config.Tween,{
+                TweenService:Create(t.Dot,Config.Tween,{
                     BackgroundColor3 = Color3.fromRGB(26,24,56)
                 }):Play()
 
-                TweenService:Create(v.Glow,Config.Tween,{
-                    Size = UDim2.fromOffset(3,0)
-                }):Play()
-
-                TweenService:Create(v.Label,Config.Tween,{
+                TweenService:Create(t.Text,Config.Tween,{
                     TextColor3 = Color3.fromRGB(58,56,88)
                 }):Play()
 
-                TweenService:Create(v.Bg,Config.Tween,{
+                TweenService:Create(t.Glow,Config.Tween,{
+                    Size = UDim2.fromOffset(3,0)
+                }):Play()
+
+                TweenService:Create(t.Bg,Config.Tween,{
                     BackgroundTransparency = 1
                 }):Play()
             end
@@ -500,12 +547,12 @@ function Library:CreateWindow(data)
                 BackgroundColor3 = Theme.Accent1
             }):Play()
 
-            TweenService:Create(glowBar,Config.Tween,{
-                Size = UDim2.fromOffset(3,18)
+            TweenService:Create(tabText,Config.Tween,{
+                TextColor3 = Color3.fromRGB(200,184,255)
             }):Play()
 
-            TweenService:Create(label,Config.Tween,{
-                TextColor3 = Color3.fromRGB(200,184,255)
+            TweenService:Create(glowBar,Config.Tween,{
+                Size = UDim2.fromOffset(3,18)
             }):Play()
 
             TweenService:Create(bg,Config.Tween,{
@@ -515,15 +562,22 @@ function Library:CreateWindow(data)
 
         tabButton.MouseButton1Click:Connect(Select)
 
-        if #pages == 1 then
+        table.insert(windowObj.Tabs,{
+            Page = page,
+            Dot = dot,
+            Text = tabText,
+            Glow = glowBar,
+            Bg = bg
+        })
+
+        if #windowObj.Tabs == 1 then
             Select()
         end
-
-        local Tab = {}
 
         local function CreateElement(height)
             local el = Create("Frame",{
                 Size = UDim2.new(1,0,0,height),
+                AutomaticSize = Enum.AutomaticSize.Y,
                 BackgroundColor3 = Color3.new(1,1,1),
                 BackgroundTransparency = .975,
                 BorderSizePixel = 0,
@@ -536,7 +590,7 @@ function Library:CreateWindow(data)
             return el
         end
 
-        function Tab:CreateButton(data)
+        function tabObj:CreateButton(data)
             local btn = Create("TextButton",{
                 Text = data.Name or "Button",
                 Font = Enum.Font.GothamBold,
@@ -576,7 +630,7 @@ function Library:CreateWindow(data)
             end)
         end
 
-        function Tab:CreateSlider(data)
+        function tabObj:CreateSlider(data)
             local min = data.Min or 0
             local max = data.Max or 100
             local value = data.Default or min
@@ -591,7 +645,7 @@ function Library:CreateWindow(data)
             })
 
             local label = Create("TextLabel",{
-                Text = data.Name,
+                Text = data.Name or "Slider",
                 Font = Enum.Font.GothamMedium,
                 TextSize = 12,
                 TextColor3 = Color3.fromRGB(192,180,232),
@@ -713,10 +767,10 @@ function Library:CreateWindow(data)
             end)
         end
 
-        return Tab
+        return tabObj
     end
 
-    return Window
+    return windowObj
 end
 
 return setmetatable({},Library)
