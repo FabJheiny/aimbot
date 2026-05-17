@@ -349,7 +349,7 @@ function Library:CreateWindow(data)
         ColorSequenceKeypoint.new(1,  Theme.Accent3),
     },45)
     Create("TextLabel",{
-        Text               = "#",
+        Text               = "✦",
         Font               = Enum.Font.GothamBold,
         TextSize           = 16,
         TextColor3         = Color3.new(1,1,1),
@@ -532,6 +532,44 @@ function Library:CreateWindow(data)
     Stroke(badge, Theme.Glow, 1, .8)
 
     Dragify(wrap, topbar)
+
+-- ── Toggle Button ─────────────────────────────────────────
+local toggleBtn = Create("TextButton",{
+    Text             = "✦",
+    Font             = Enum.Font.GothamBold,
+    TextSize         = 16,
+    TextColor3       = Color3.fromRGB(220,200,255),
+    AutoButtonColor  = false,
+    Size             = UDim2.fromOffset(38,38),
+    Position         = UDim2.new(0,12,0,60),   -- abaixo do avatarWidget
+    BackgroundColor3 = Color3.fromRGB(10,8,26),
+    BorderSizePixel  = 0,
+    ZIndex           = 10,
+    Parent           = root,
+})
+Corner(toggleBtn, 999)
+local tbStroke = Stroke(toggleBtn, Theme.Glow, 1.5, .4)
+AnimateGradient(Gradient(tbStroke,{
+    ColorSequenceKeypoint.new(0,  Theme.Accent1),
+    ColorSequenceKeypoint.new(.5, Theme.Accent2),
+    ColorSequenceKeypoint.new(1,  Theme.Accent3),
+}))
+
+local menuVisible = true
+toggleBtn.MouseButton1Click:Connect(function()
+    menuVisible = not menuVisible
+    Ripple(toggleBtn)
+    TweenService:Create(wrap, Config.Tween, {
+        Size = menuVisible and Config.WindowSize or UDim2.fromOffset(0,0),
+        BackgroundTransparency = menuVisible and 0 or 1,
+    }):Play()
+    TweenService:Create(toggleBtn, Config.Tween, {
+        TextColor3 = menuVisible
+            and Color3.fromRGB(220,200,255)
+            or  Theme.Accent1,
+        Rotation = menuVisible and 0 or 135,
+    }):Play()
+end)
 
     -- ── Window object ─────────────────────────────────────────
     local windowObj = { Tabs = {} }
@@ -1256,3 +1294,4 @@ function Library:CreateWindow(data)
 end
 
 return setmetatable({}, Library)
+
