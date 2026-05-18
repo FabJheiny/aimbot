@@ -230,55 +230,16 @@ local function CreateFloatingActionButton(root, opts)
         Text               = "",
         AutoButtonColor    = false,
         BackgroundTransparency = 1,
-        Position           = UDim2.fromOffset(44, 0),   -- começa depois do ícone
-        Size               = UDim2.new(1, -44, 1, 0),   -- ocupa só a área de texto
+        Size               = UDim2.fromScale(1,1),
         ZIndex             = pill.ZIndex + 10,
         ClipsDescendants   = false,
         Parent             = pill,
     })
 
-    -- Ícone vira TextButton para capturar input do drag
-    -- Drag manual pelo ícone usando UserInputService
-    local draggingPill = false
-    local dragStartPos, pillStartPos
+    -- Arraste
+    Dragify(pill, hitBtn)
 
-    UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseButton1
-        and input.UserInputType ~= Enum.UserInputType.Touch then return end
-
-        local mouse = UserInputService:GetMouseLocation()
-        local abs   = iconFrame.AbsolutePosition
-        local size  = iconFrame.AbsoluteSize
-
-        -- verifica se o clique foi dentro do iconFrame
-        if mouse.X >= abs.X and mouse.X <= abs.X + size.X
-        and mouse.Y >= abs.Y and mouse.Y <= abs.Y + size.Y then
-            draggingPill  = true
-            dragStartPos  = mouse
-            pillStartPos  = pill.Position
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if not draggingPill then return end
-        if input.UserInputType ~= Enum.UserInputType.MouseMovement
-        and input.UserInputType ~= Enum.UserInputType.Touch then return end
-
-        local delta = UserInputService:GetMouseLocation() - dragStartPos
-        pill.Position = UDim2.new(
-            pillStartPos.X.Scale, pillStartPos.X.Offset + delta.X,
-            pillStartPos.Y.Scale, pillStartPos.Y.Offset + delta.Y
-        )
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            draggingPill = false
-        end
-    end)
-
-    -- Clique: ripple + callback (área toda exceto ícone)
+    -- Clique: ripple + callback
     hitBtn.MouseButton1Click:Connect(function()
         Ripple(hitBtn)
         TweenService:Create(glowBg, TweenInfo.new(.07), {
@@ -885,6 +846,18 @@ end)
         end
 
         -- ── Toggle (com suporte a FloatingButton) ─────────────
+        --
+        -- NOVO: d.FloatingButton (opcional)
+        --   Se informado, ao ativar o toggle um botão pill flutuante
+        --   aparece na tela. Ao desativar, some com animação.
+        --
+        --   Campos de d.FloatingButton:
+        --     Label       string  — texto exibido no pill
+        --     Icon        string  — emoji/símbolo no ícone (padrão "▶")
+        --     Description string  — subtexto menor (opcional)
+        --     Position    UDim2   — posição inicial (padrão centro-baixo)
+        --     Callback    function — executada ao clicar no pill
+        --
         function tabObj:CreateToggle(d)
             local enabled = d.Default or false
             local el      = CreateElement(58)
@@ -1494,4 +1467,3 @@ end)
 end
 
 return setmetatable({}, Library)
-
