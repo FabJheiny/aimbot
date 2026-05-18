@@ -237,7 +237,7 @@ local function CreateFloatingActionButton(root, opts)
     })
 
     -- Arraste
-    Dragify(pill, hitBtn)
+    Dragify(pill, iconFrame)
 
     -- Clique: ripple + callback
     hitBtn.MouseButton1Click:Connect(function()
