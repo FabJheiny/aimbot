@@ -263,23 +263,26 @@ local function CreateFloatingActionButton(root, opts)
         }):Play()
     end)
 
-    -- Drag pelo ícone via UserInputService (não sofre bloqueio de TextButton)
+-- Drag pelo ícone via botão invisível sobreposto (funciona mesmo após pill ficar visível)
     local locked = false
     local draggingPill = false
     local dragStartPos, pillStartPos
 
- UserInputService.InputBegan:Connect(function(input)
-    if locked then return end
-    if not pill.Visible then return end
-    if input.UserInputType ~= Enum.UserInputType.MouseButton1
-    and input.UserInputType ~= Enum.UserInputType.Touch then return end
-    local mouse = UserInputService:GetMouseLocation()
-    local abs   = iconFrame.AbsolutePosition
-        local size  = iconFrame.AbsoluteSize
-        if mouse.X >= abs.X and mouse.X <= abs.X + size.X
-        and mouse.Y >= abs.Y and mouse.Y <= abs.Y + size.Y then
+    local dragHandle = Create("TextButton", {
+        Text               = "",
+        AutoButtonColor    = false,
+        BackgroundTransparency = 1,
+        Size               = UDim2.fromScale(1, 1),
+        ZIndex             = pill.ZIndex + 15,
+        Parent             = iconFrame,
+    })
+
+    dragHandle.InputBegan:Connect(function(input)
+        if locked then return end
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
             draggingPill = true
-            dragStartPos = mouse
+            dragStartPos = UserInputService:GetMouseLocation()
             pillStartPos = pill.Position
         end
     end)
@@ -986,7 +989,7 @@ end)
                     TextSize         = 14,
                     AutoButtonColor  = false,
                     Size             = UDim2.fromOffset(24,24),
-                    Position         = UDim2.new(1,-80,0,0),  -- à esquerda do track
+                    Position         = UDim2.new(1,-82,0,0),  -- à esquerda do track
                     BackgroundColor3 = Color3.fromRGB(20,16,48),
                     BackgroundTransparency = .4,
                     BorderSizePixel  = 0,
