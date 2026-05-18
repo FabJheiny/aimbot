@@ -257,23 +257,11 @@ local function CreateFloatingActionButton(root, opts)
     hitBtn.MouseEnter:Connect(function()
         TweenService:Create(pill, TweenInfo.new(.14, Enum.EasingStyle.Quint), {
             Size = UDim2.fromOffset(118, 46),
-            Position = UDim2.new(
-                pill.Position.X.Scale,
-                pill.Position.X.Offset - 3,
-                pill.Position.Y.Scale,
-                pill.Position.Y.Offset - 1
-            )
         }):Play()
     end)
     hitBtn.MouseLeave:Connect(function()
         TweenService:Create(pill, TweenInfo.new(.14, Enum.EasingStyle.Quint), {
             Size = UDim2.fromOffset(112, 44),
-            Position = UDim2.new(
-                pill.Position.X.Scale,
-                pill.Position.X.Offset + 3,
-                pill.Position.Y.Scale,
-                pill.Position.Y.Offset + 1
-            )
         }):Play()
     end)
 
