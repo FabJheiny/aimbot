@@ -908,14 +908,14 @@ end)
             -- Cobre as quinas superiores arredondadas com frame
             -- da mesma cor e transparência do elemento
             local topCover = Create("Frame",{
-                Size               = UDim2.new(1,0,0,11),
-                Position           = UDim2.fromOffset(0,0),
-                BackgroundColor3   = Color3.new(1,1,1),
-                BackgroundTransparency = .975,
-                BorderSizePixel    = 0,
-                ZIndex             = el.ZIndex + 1,
-                Parent             = el,
-            })
+    Size               = UDim2.new(1,0,0,12),
+    Position           = UDim2.fromOffset(0,-1),
+    BackgroundColor3   = Color3.fromRGB(9,8,20),
+    BackgroundTransparency = 0,
+    BorderSizePixel    = 0,
+    ZIndex             = el.ZIndex + 1,
+    Parent             = el,
+})
 
             local tg = Create("Frame",{
                 Size             = UDim2.new(1,0,0,1),
