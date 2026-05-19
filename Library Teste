@@ -159,7 +159,7 @@ local function CreateFloatingActionButton(root, opts)
     -- Glow de fundo suave
     local glowBg = Create("Frame",{
         Size             = UDim2.fromScale(1,1),
-        BackgroundColor3 = Theme.Glow,
+        BackgroundColor3 = Color3.fromRGB(30, 26, 72),
         BackgroundTransparency = .88,
         BorderSizePixel  = 0,
         ZIndex           = pill.ZIndex - 1,
@@ -790,9 +790,9 @@ end)
         })
 
         local glowBar = Create("Frame",{
-            Size             = UDim2.fromOffset(3,0),
-            Position         = UDim2.new(0,0,.5,0),
-            AnchorPoint      = Vector2.new(0,.5),
+    Size             = UDim2.fromOffset(3,0),
+    Position         = UDim2.new(0,6,.5,0),
+    AnchorPoint      = Vector2.new(0,.5),
             BackgroundColor3 = Theme.Accent1,
             BorderSizePixel  = 0,
             Parent           = tabBtn,
@@ -804,8 +804,8 @@ end)
         },90)
 
         local dot = Create("Frame",{
-            Size             = UDim2.fromOffset(6,6),
-            Position         = UDim2.fromOffset(14,16),
+            Size             = UDim2.fromOffset(8,8),
+            Position         = UDim2.fromOffset(18,15),
             BackgroundColor3 = Color3.fromRGB(26,24,56),
             BorderSizePixel  = 0,
             Parent           = tabBtn,
@@ -818,7 +818,7 @@ end)
             TextSize           = 13,
             TextColor3         = Color3.fromRGB(58,56,88),
             BackgroundTransparency = 1,
-            Position           = UDim2.fromOffset(30,0),
+            Position = UDim2.fromOffset(34,0),
             Size               = UDim2.new(1,-30,1,0),
             TextXAlignment     = Enum.TextXAlignment.Left,
             Parent             = tabBtn,
@@ -863,7 +863,7 @@ end)
             TweenService:Create(dot,     Config.Tween, { BackgroundColor3 = Theme.Accent1 }):Play()
             TweenService:Create(tabText, Config.Tween, { TextColor3 = Color3.fromRGB(200,184,255) }):Play()
             TweenService:Create(glowBar, Config.Tween, { Size = UDim2.fromOffset(3,18) }):Play()
-            TweenService:Create(bg,      Config.Tween, { BackgroundTransparency = .9 }):Play()
+            TweenService:Create(bg,      Config.Tween, { BackgroundTransparency = .82 }):Play()
         end
 
         tabBtn.MouseButton1Click:Connect(Select)
@@ -1560,4 +1560,3 @@ TweenService:Create(toggleGlow, Config.Tween, {
 end
 
 return setmetatable({}, Library)
-
