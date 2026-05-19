@@ -475,7 +475,7 @@ local toggleBtn = Create("TextButton",{
     TextColor3       = Color3.fromRGB(180,160,255),
     AutoButtonColor  = false,
     Size             = UDim2.fromOffset(30,30),
-      Position         = UDim2.new(1,-35, 0, 5),
+    Position         = UDim2.new(1,-35, 0, 5),
     BackgroundColor3 = Color3.fromRGB(18,14,38),
     BorderSizePixel  = 0,
     ZIndex           = 23,
@@ -778,22 +778,18 @@ Dragify(floatingBar)
 
     Dragify(wrap, topbar)
 
--- Menu começa visível → botão começa BRANCO
-toggleBtn.TextColor3       = Color3.fromRGB(240,236,255)
-toggleBtn.BackgroundColor3 = Color3.fromRGB(18,14,38)
-
 local menuVisible = true
 toggleBtn.MouseButton1Click:Connect(function()
     menuVisible = not menuVisible
     wrap.Visible = menuVisible
+    toggleBtn.Text = "◉"
     TweenService:Create(toggleBtn, Config.Tween, {
-        -- Aberto = branco; Fechado = vermelho
         TextColor3       = menuVisible
-            and Color3.fromRGB(240,236,255)
-            or  Theme.Accent1,
+            and Theme.Accent1
+            or  Color3.fromRGB(240,236,255),
         BackgroundColor3 = menuVisible
-            and Color3.fromRGB(18,14,38)
-            or  Color3.fromRGB(30,10,50),
+            and Color3.fromRGB(30,10,50)
+            or  Color3.fromRGB(18,14,38),
     }):Play()
 end)
 
@@ -904,24 +900,10 @@ end)
             })
             Corner(el, 11)
             Stroke(el, Color3.new(1,1,1), 1, .93)
-
-            -- Cobre as quinas superiores arredondadas com frame
-            -- da mesma cor e transparência do elemento
-            local topCover = Create("Frame",{
-    Size               = UDim2.new(1,0,0,12),
-    Position           = UDim2.fromOffset(0,-1),
-    BackgroundColor3   = Color3.fromRGB(9,8,20),
-    BackgroundTransparency = 0,
-    BorderSizePixel    = 0,
-    ZIndex             = el.ZIndex + 1,
-    Parent             = el,
-})
-
             local tg = Create("Frame",{
                 Size             = UDim2.new(1,0,0,1),
                 BackgroundTransparency = .6,
                 BorderSizePixel  = 0,
-                ZIndex           = el.ZIndex + 2,
                 Parent           = el,
             })
             Gradient(tg,{
@@ -929,7 +911,6 @@ end)
                 ColorSequenceKeypoint.new(.5, Theme.Glow),
                 ColorSequenceKeypoint.new(1,  Color3.new(1,1,1)),
             })
-
             return el
         end
 
@@ -1309,21 +1290,10 @@ end)
             Corner(el, 11)
             Stroke(el, Color3.new(1,1,1), 1, .93)
 
-            local topCover = Create("Frame",{
-                Size               = UDim2.new(1,0,0,11),
-                Position           = UDim2.fromOffset(0,0),
-                BackgroundColor3   = Color3.new(1,1,1),
-                BackgroundTransparency = .975,
-                BorderSizePixel    = 0,
-                ZIndex             = el.ZIndex + 1,
-                Parent             = el,
-            })
-
             local tg = Create("Frame",{
                 Size             = UDim2.new(1,0,0,1),
                 BackgroundTransparency = .6,
                 BorderSizePixel  = 0,
-                ZIndex           = el.ZIndex + 2,
                 Parent           = el,
             })
             Gradient(tg,{
