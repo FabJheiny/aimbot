@@ -504,6 +504,7 @@ Dragify(floatingBar)
         BorderSizePixel  = 0,
         Parent           = wrap,
     })
+    Corner(window, 16)
     
 
     -- ── Sidebar ───────────────────────────────────────────────
@@ -522,21 +523,7 @@ Dragify(floatingBar)
         ZIndex           = sidebar.ZIndex,
         Parent           = sidebar,
     })
-    Stroke(sidebar, Color3.new(1,1,1), 1, .94)
 
-    local shimmer = Create("Frame",{
-        AnchorPoint            = Vector2.new(1,0),
-        Position               = UDim2.new(1,0,0,0),
-        Size                   = UDim2.new(0,1,1,0),
-        BackgroundTransparency = 1,
-        BorderSizePixel        = 0,
-        Parent                 = sidebar,
-    })
-    Gradient(shimmer,{
-        ColorSequenceKeypoint.new(0,  Color3.new(1,1,1)),
-        ColorSequenceKeypoint.new(.5, Theme.Glow),
-        ColorSequenceKeypoint.new(1,  Color3.new(1,1,1)),
-    },90)
 
     -- brand header
     local brand = Create("Frame",{
@@ -1077,7 +1064,7 @@ end)
             end)
 
             local track = Create("Frame",{
-                Size             = UDim2.new(1,-28,0,10),
+                Size             = UDim2.new(1,-28,0,4),
                 Position         = UDim2.fromOffset(14,44),
                 BackgroundColor3 = Color3.fromRGB(30,26,60),
                 BorderSizePixel  = 0,
@@ -1100,7 +1087,7 @@ end)
             local thumb = Create("Frame",{
                 AnchorPoint      = Vector2.new(.5,.5),
                 Position         = UDim2.new((value-min)/(max-min),0,.5,0),
-                Size             = UDim2.fromOffset(22,22),
+                Size             = UDim2.fromOffset(14,14),
                 BackgroundColor3 = Theme.Accent1,
                 BorderSizePixel  = 0,
                 ZIndex           = track.ZIndex + 2,
