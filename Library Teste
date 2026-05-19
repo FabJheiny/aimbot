@@ -1004,7 +1004,7 @@ end)
             local max   = d.Max or 100
             local value = d.Default or min
 
-            local el = CreateElement(76)
+            local el = CreateElement(58)
 
             local top = Create("Frame",{
                 BackgroundTransparency = 1,
@@ -1032,7 +1032,7 @@ end)
                 Size               = UDim2.fromOffset(50,20),
                 Position           = UDim2.new(1,-50,0,0),
                 TextXAlignment     = Enum.TextXAlignment.Right,
-                TextColor3         = Color3.new(1,1,1),
+                TextColor3         = Theme.Accent1,
                 Parent             = top,
             })
             Gradient(valLabel,{
@@ -1065,7 +1065,7 @@ end)
 
             local track = Create("Frame",{
                 Size             = UDim2.new(1,-28,0,4),
-                Position         = UDim2.fromOffset(14,44),
+                Position         = UDim2.fromOffset(14,36),
                 BackgroundColor3 = Color3.fromRGB(30,26,60),
                 BorderSizePixel  = 0,
                 Parent           = el,
@@ -1098,17 +1098,7 @@ end)
                 ColorSequenceKeypoint.new(0, Color3.fromRGB(255,96,144)),
                 ColorSequenceKeypoint.new(1, Theme.Accent2),
             })
-            local thumbDot = Create("Frame",{
-                AnchorPoint      = Vector2.new(.5,.5),
-                Position         = UDim2.fromScale(.5,.5),
-                Size             = UDim2.fromOffset(6,6),
-                BackgroundColor3 = Color3.new(1,1,1),
-                BackgroundTransparency = .35,
-                BorderSizePixel  = 0,
-                Parent           = thumb,
-            })
-            Corner(thumbDot, 999)
-
+ 
             local hitZone = Create("TextButton",{
                 Text               = "",
                 BackgroundTransparency = 1,
