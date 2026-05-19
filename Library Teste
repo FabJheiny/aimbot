@@ -496,23 +496,6 @@ Dragify(floatingBar)
         Parent      = root,
     })
 
-    local border = Create("Frame",{
-        Size               = UDim2.fromScale(1,1),
-        BackgroundTransparency = 1,
-        Parent             = wrap,
-    })
-    Corner(border, 18)
-    local borderStroke = Stroke(border, Color3.new(1,1,1), 2, .5)
-    AnimateGradient(Gradient(borderStroke,{
-        ColorSequenceKeypoint.new(0,   Theme.Accent1),
-        ColorSequenceKeypoint.new(.18, Color3.fromRGB(255,140,0)),
-        ColorSequenceKeypoint.new(.35, Color3.fromRGB(255,220,0)),
-        ColorSequenceKeypoint.new(.5,  Color3.fromRGB(96,255,96)),
-        ColorSequenceKeypoint.new(.65, Theme.Accent3),
-        ColorSequenceKeypoint.new(.82, Theme.Accent2),
-        ColorSequenceKeypoint.new(1,   Theme.Accent1),
-    }))
-
     local window = Create("Frame",{
         Size             = UDim2.new(1,-4,1,-4),
         Position         = UDim2.fromOffset(2,2),
@@ -648,7 +631,15 @@ Dragify(floatingBar)
         Parent           = sidebar,
     })
     Corner(playerCard, 10)
-    Stroke(playerCard, Color3.new(1,1,1), 1, .93)
+local coverCard = Create("Frame", {
+    Size             = UDim2.new(1, 0, 0, 10),
+    Position         = UDim2.new(0, 0, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(8,6,20),
+    BorderSizePixel  = 0,
+    ZIndex           = playerCard.ZIndex + 1,
+    Parent           = playerCard,
+})
+Stroke(playerCard, Color3.new(1,1,1), 1, .93)
 
     local cardTopGlow = Create("Frame",{
         Size               = UDim2.new(1,0,0,1),
@@ -1246,7 +1237,15 @@ end)
                 Parent           = page,
             })
             Corner(btn, 11)
-            Stroke(btn, Theme.Glow, 1, .75)
+local coverBtn = Create("Frame", {
+    Size             = UDim2.new(1, 0, 0, 11),
+    Position         = UDim2.new(0, 0, 0, 0),
+    BackgroundColor3 = Color3.fromRGB(9,8,20),
+    BorderSizePixel  = 0,
+    ZIndex           = btn.ZIndex + 1,
+    Parent           = btn,
+})
+Stroke(btn, Theme.Glow, 1, .75)
             Gradient(btn,{
                 ColorSequenceKeypoint.new(0, Theme.Accent1),
                 ColorSequenceKeypoint.new(1, Theme.Accent2),
