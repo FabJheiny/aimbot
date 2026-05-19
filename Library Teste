@@ -736,7 +736,7 @@ function Library:CreateWindow(data)
         Parent           = topbar,
     })
     Corner(fpsPill, 11)
-    Stroke(fpsPill, Theme.Accent2, 1, .7)
+    Stroke(fpsPill, Theme.SubText, 1, .85)
 
     Create("TextLabel",{
         Text               = "FPS",
@@ -754,7 +754,7 @@ function Library:CreateWindow(data)
         Text               = "...",
         Font               = Enum.Font.GothamBold,
         TextSize           = 10,
-        TextColor3         = Theme.Accent1,
+        TextColor3         = Theme.SubText,
         BackgroundTransparency = 1,
         Position           = UDim2.fromOffset(30, 0),
         Size               = UDim2.fromOffset(38, 22),
@@ -770,7 +770,7 @@ function Library:CreateWindow(data)
         Parent           = topbar,
     })
     Corner(pingPill, 11)
-    Stroke(pingPill, Theme.Accent3, 1, .7)
+    Stroke(pingPill, Theme.SubText, 1, .85)
 
     Create("TextLabel",{
         Text               = "PING",
@@ -788,7 +788,7 @@ function Library:CreateWindow(data)
         Text               = "... ms",
         Font               = Enum.Font.GothamBold,
         TextSize           = 10,
-        TextColor3         = Theme.Accent1,
+        TextColor3         = Theme.SubText,
         BackgroundTransparency = 1,
         Position           = UDim2.fromOffset(34, 0),
         Size               = UDim2.fromOffset(46, 22),
@@ -1588,3 +1588,4 @@ function Library:CreateWindow(data)
 end
 
 return setmetatable({}, Library)
+
