@@ -496,6 +496,24 @@ Dragify(floatingBar)
         Parent      = root,
     })
     Corner(wrap, 16)
+    -- ── Prism Border Animada ──────────────────────────────────
+local prismBorder = Stroke(wrap, Theme.Accent1, 2, 0)
+local prismGrad = Gradient(prismBorder, {
+    ColorSequenceKeypoint.new(0,    Theme.Accent1),
+    ColorSequenceKeypoint.new(.25,  Theme.Accent2),
+    ColorSequenceKeypoint.new(.5,   Theme.Accent3),
+    ColorSequenceKeypoint.new(.75,  Theme.Accent2),
+    ColorSequenceKeypoint.new(1,    Theme.Accent1),
+})
+task.spawn(function()
+    while wrap and wrap.Parent do
+        TweenService:Create(prismGrad, TweenInfo.new(3, Enum.EasingStyle.Linear), {
+            Rotation = prismGrad.Rotation + 360
+        }):Play()
+        task.wait(3)
+    end
+end)
+-- ─────────────────────────────────────────────────────────
 local shadow1 = Create("Frame",{
         Size = UDim2.new(1,40,1,40),
         Position = UDim2.fromOffset(-20,-20),
