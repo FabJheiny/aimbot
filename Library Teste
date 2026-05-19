@@ -1353,10 +1353,15 @@ TweenService:Create(toggleGlow, Config.Tween, {
                 Parent             = row,
             })
 
-            local optList = Create("Frame",{
+            local optList = Create("ScrollingFrame",{
                 BackgroundTransparency = 1,
+                BorderSizePixel        = 0,
+                ScrollBarThickness     = 3,
+                ScrollBarImageColor3   = Theme.Accent2,
                 Position               = UDim2.fromOffset(0,CLOSED_H),
                 Size                   = UDim2.new(1,0,0,#options*30),
+                CanvasSize             = UDim2.new(),
+                AutomaticCanvasSize    = Enum.AutomaticSize.Y,
                 Visible                = false,
                 Parent                 = el,
             })
@@ -1388,8 +1393,16 @@ TweenService:Create(toggleGlow, Config.Tween, {
                 o.MouseButton1Click:Connect(function()
                     current   = opt
                     valL.Text = opt
-                    open      = true
-                    row.MouseButton1Click:Fire()
+                    open      = false
+                    TweenService:Create(el, Config.Tween, {
+                        Size = UDim2.new(1,0,0, CLOSED_H)
+                    }):Play()
+                    TweenService:Create(arrowL, Config.Tween, {
+                        Rotation = 0
+                    }):Play()
+                    task.delay(Config.Tween.Time, function()
+                        optList.Visible = false
+                    end)
                     if d.Callback then task.spawn(d.Callback, opt) end
                 end)
             end
