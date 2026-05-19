@@ -121,12 +121,6 @@ local function AnimateGradient(g)
     end)
 end
 
--- ────────────────────────────────────────────────────────────
--- CreateFloatingActionButton (interno)
--- Cria um botão flutuante arrastável na tela vinculado a um toggle.
--- Retorna o frame raiz para que o toggle possa mostrá-lo/ocultá-lo.
--- ────────────────────────────────────────────────────────────
-
 local function CreateFloatingActionButton(root, opts)
     -- opts: { Label, Icon, Description, Position, Callback }
     local label       = opts.Label       or "Action"
@@ -1583,4 +1577,3 @@ TweenService:Create(toggleGlow, Config.Tween, {
 end
 
 return setmetatable({}, Library)
-
