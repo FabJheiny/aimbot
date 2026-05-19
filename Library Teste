@@ -541,12 +541,12 @@ local shadow1 = Create("Frame",{
         ColorSequenceKeypoint.new(1, Theme.Accent3),
     },45))
     local window = Create("Frame",{
-        Size             = UDim2.new(1,-4,1,-4),
-        Position         = UDim2.fromOffset(2,2),
-        BackgroundColor3 = Theme.Window,
-        BorderSizePixel  = 0,
-        Parent           = wrap,
-    })
+    Size             = UDim2.fromScale(1,1),
+    Position         = UDim2.fromOffset(0,0),
+    BackgroundColor3 = Theme.Window,
+    BorderSizePixel  = 0,
+    Parent           = wrap,
+})
     Corner(window, 16)
     
 
@@ -1583,3 +1583,4 @@ TweenService:Create(toggleGlow, Config.Tween, {
 end
 
 return setmetatable({}, Library)
+
