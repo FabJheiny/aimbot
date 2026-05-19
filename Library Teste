@@ -472,7 +472,8 @@ local toggleBtn = Create("TextButton",{
     Text             = "◉",
     Font             = Enum.Font.GothamBold,
     TextSize         = 20,
-    TextColor3       = Color3.fromRGB(180,160,255),
+TextColor3       = Theme.Accent1, 
+    BackgroundColor3 = Color3.fromRGB(30,10,50), 
     AutoButtonColor  = false,
     Size             = UDim2.fromOffset(30,30),
     Position         = UDim2.new(1,-35, 0, 5),
@@ -1536,3 +1537,4 @@ end)
 end
 
 return setmetatable({}, Library)
+
