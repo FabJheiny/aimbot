@@ -13,7 +13,7 @@ local Theme = {
     Window     = Color3.fromRGB(10,10,22),
     Sidebar    = Color3.fromRGB(8,8,18),
     Border     = Color3.fromRGB(255,255,255),
-    Text       = Color3.fromRGB(235,235,255),
+    Text     = Color3.fromRGB(235,235,255),
     SubText    = Color3.fromRGB(110,110,140),
     Accent1    = Color3.fromRGB(255,80,140),
     Accent2    = Color3.fromRGB(120,120,255),
@@ -120,6 +120,12 @@ local function AnimateGradient(g)
         end
     end)
 end
+
+-- ────────────────────────────────────────────────────────────
+-- CreateFloatingActionButton (interno)
+-- Cria um botão flutuante arrastável na tela vinculado a um toggle.
+-- Retorna o frame raiz para que o toggle possa mostrá-lo/ocultá-lo.
+-- ────────────────────────────────────────────────────────────
 
 local function CreateFloatingActionButton(root, opts)
     -- opts: { Label, Icon, Description, Position, Callback }
@@ -508,32 +514,6 @@ task.spawn(function()
     end
 end)
 -- ─────────────────────────────────────────────────────────
-local shadow1 = Create("Frame",{
-        Size = UDim2.new(1,40,1,40),
-        Position = UDim2.fromOffset(-20,-20),
-        BackgroundColor3 = Color3.fromRGB(0,0,0),
-        BackgroundTransparency = .92,
-        BorderSizePixel = 0,
-        ZIndex = -10,
-        Parent = wrap,
-    })
-    Corner(shadow1,22)
-
-    local shadow2 = Create("Frame",{
-        Size = UDim2.new(1,70,1,70),
-        Position = UDim2.fromOffset(-35,-35),
-        BackgroundColor3 = Theme.Glow,
-        BackgroundTransparency = .96,
-        BorderSizePixel = 0,
-        ZIndex = -11,
-        Parent = wrap,
-    })
-    Corner(shadow2,30)
-    AnimateGradient(Gradient(shadow2,{
-        ColorSequenceKeypoint.new(0, Theme.Accent1),
-        ColorSequenceKeypoint.new(.5, Theme.Accent2),
-        ColorSequenceKeypoint.new(1, Theme.Accent3),
-    },45))
     local window = Create("Frame",{
     Size             = UDim2.fromScale(1,1),
     Position         = UDim2.fromOffset(0,0),
