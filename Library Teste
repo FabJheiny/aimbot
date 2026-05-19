@@ -688,7 +688,7 @@ function Library:CreateWindow(data)
 
     -- Topbar com altura aumentada para comportar a stats bar
     local topbar = Create("Frame",{
-        Size               = UDim2.new(1,0,0,88),
+        Size               = UDim2.new(1,0,0,52),
         BackgroundTransparency = 1,
         Parent             = content,
     })
@@ -727,23 +727,16 @@ function Library:CreateWindow(data)
     Corner(badge, 10)
     Stroke(badge, Theme.Glow, 1, .8)
 
-    -- ── FPS / Ping bar ─────────────────────────────────────────
-    local statsBar = Create("Frame",{
-        Size               = UDim2.new(1,-28,0,22),
-        Position           = UDim2.fromOffset(14, 56),
-        BackgroundTransparency = 1,
-        Parent             = topbar,
-    })
-
-    -- FPS pill
+    -- ── FPS / Ping bar (inline, centro do topbar) ─────────────
     local fpsPill = Create("Frame",{
-        Size             = UDim2.fromOffset(86,22),
+        Size             = UDim2.fromOffset(72, 22),
+        Position         = UDim2.new(0.5, -82, 0, 15),
         BackgroundColor3 = Color3.fromRGB(10,8,26),
         BorderSizePixel  = 0,
-        Parent           = statsBar,
+        Parent           = topbar,
     })
     Corner(fpsPill, 11)
-    Stroke(fpsPill, Theme.Glow, 1, .65)
+    Stroke(fpsPill, Theme.Accent2, 1, .7)
 
     Create("TextLabel",{
         Text               = "FPS",
@@ -751,8 +744,8 @@ function Library:CreateWindow(data)
         TextSize           = 9,
         TextColor3         = Theme.Accent2,
         BackgroundTransparency = 1,
-        Position           = UDim2.fromOffset(8,0),
-        Size               = UDim2.fromOffset(26,22),
+        Position           = UDim2.fromOffset(7, 0),
+        Size               = UDim2.fromOffset(24, 22),
         TextXAlignment     = Enum.TextXAlignment.Left,
         Parent             = fpsPill,
     })
@@ -761,24 +754,23 @@ function Library:CreateWindow(data)
         Text               = "...",
         Font               = Enum.Font.GothamBold,
         TextSize           = 10,
-        TextColor3         = Color3.fromRGB(180,255,180),
+        TextColor3         = Theme.Accent1,
         BackgroundTransparency = 1,
-        Position           = UDim2.fromOffset(34,0),
-        Size               = UDim2.fromOffset(48,22),
+        Position           = UDim2.fromOffset(30, 0),
+        Size               = UDim2.fromOffset(38, 22),
         TextXAlignment     = Enum.TextXAlignment.Right,
         Parent             = fpsPill,
     })
 
-    -- Ping pill
     local pingPill = Create("Frame",{
-        Size             = UDim2.fromOffset(100,22),
-        Position         = UDim2.fromOffset(94,0),
+        Size             = UDim2.fromOffset(84, 22),
+        Position         = UDim2.new(0.5, 2, 0, 15),
         BackgroundColor3 = Color3.fromRGB(10,8,26),
         BorderSizePixel  = 0,
-        Parent           = statsBar,
+        Parent           = topbar,
     })
     Corner(pingPill, 11)
-    Stroke(pingPill, Theme.Glow, 1, .65)
+    Stroke(pingPill, Theme.Accent3, 1, .7)
 
     Create("TextLabel",{
         Text               = "PING",
@@ -786,8 +778,8 @@ function Library:CreateWindow(data)
         TextSize           = 9,
         TextColor3         = Theme.Accent3,
         BackgroundTransparency = 1,
-        Position           = UDim2.fromOffset(8,0),
-        Size               = UDim2.fromOffset(32,22),
+        Position           = UDim2.fromOffset(7, 0),
+        Size               = UDim2.fromOffset(28, 22),
         TextXAlignment     = Enum.TextXAlignment.Left,
         Parent             = pingPill,
     })
@@ -796,10 +788,10 @@ function Library:CreateWindow(data)
         Text               = "... ms",
         Font               = Enum.Font.GothamBold,
         TextSize           = 10,
-        TextColor3         = Color3.fromRGB(180,255,180),
+        TextColor3         = Theme.Accent1,
         BackgroundTransparency = 1,
-        Position           = UDim2.fromOffset(40,0),
-        Size               = UDim2.fromOffset(56,22),
+        Position           = UDim2.fromOffset(34, 0),
+        Size               = UDim2.fromOffset(46, 22),
         TextXAlignment     = Enum.TextXAlignment.Right,
         Parent             = pingPill,
     })
@@ -938,8 +930,8 @@ function Library:CreateWindow(data)
             BorderSizePixel        = 0,
             ScrollBarThickness     = 3,
             ScrollBarImageColor3   = Theme.Accent2,
-            Position               = UDim2.fromOffset(16,92),
-            Size                   = UDim2.new(1,-32,1,-106),
+            Position               = UDim2.fromOffset(16,66),
+            Size                   = UDim2.new(1,-32,1,-80),
             CanvasSize             = UDim2.new(),
             AutomaticCanvasSize    = Enum.AutomaticSize.Y,
             Parent                 = content,
