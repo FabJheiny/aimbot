@@ -9,15 +9,15 @@ local Library = {}
 Library.__index = Library
 
 local Theme = {
-    Background = Color3.fromRGB(6,6,16),
-    Window     = Color3.fromRGB(9,8,20),
-    Sidebar    = Color3.fromRGB(8,6,20),
+    Background = Color3.fromRGB(5,5,12),
+    Window     = Color3.fromRGB(10,10,22),
+    Sidebar    = Color3.fromRGB(8,8,18),
     Border     = Color3.fromRGB(255,255,255),
-    Text       = Color3.fromRGB(240,236,255),
-    SubText    = Color3.fromRGB(90,86,120),
-    Accent1    = Color3.fromRGB(255,60,120),
-    Accent2    = Color3.fromRGB(96,96,255),
-    Accent3    = Color3.fromRGB(0,192,255),
+    Text       = Color3.fromRGB(235,235,255),
+    SubText    = Color3.fromRGB(110,110,140),
+    Accent1    = Color3.fromRGB(255,80,140),
+    Accent2    = Color3.fromRGB(120,120,255),
+    Accent3    = Color3.fromRGB(0,200,255),
     Glow       = Color3.fromRGB(120,80,255),
 }
 
@@ -496,7 +496,32 @@ Dragify(floatingBar)
         Parent      = root,
     })
     Corner(wrap, 16)
+local shadow1 = Create("Frame",{
+        Size = UDim2.new(1,40,1,40),
+        Position = UDim2.fromOffset(-20,-20),
+        BackgroundColor3 = Color3.fromRGB(0,0,0),
+        BackgroundTransparency = .92,
+        BorderSizePixel = 0,
+        ZIndex = -10,
+        Parent = wrap,
+    })
+    Corner(shadow1,22)
 
+    local shadow2 = Create("Frame",{
+        Size = UDim2.new(1,70,1,70),
+        Position = UDim2.fromOffset(-35,-35),
+        BackgroundColor3 = Theme.Glow,
+        BackgroundTransparency = .96,
+        BorderSizePixel = 0,
+        ZIndex = -11,
+        Parent = wrap,
+    })
+    Corner(shadow2,30)
+    AnimateGradient(Gradient(shadow2,{
+        ColorSequenceKeypoint.new(0, Theme.Accent1),
+        ColorSequenceKeypoint.new(.5, Theme.Accent2),
+        ColorSequenceKeypoint.new(1, Theme.Accent3),
+    },45))
     local window = Create("Frame",{
         Size             = UDim2.new(1,-4,1,-4),
         Position         = UDim2.fromOffset(2,2),
@@ -965,7 +990,16 @@ end)
                 Parent           = track,
             })
             Corner(knob, 999)
-
+local toggleGlow = Create("Frame",{
+                Size = UDim2.new(1,8,1,8),
+                Position = UDim2.fromOffset(-4,-4),
+                BackgroundColor3 = Theme.Accent1,
+                BackgroundTransparency = .95,
+                BorderSizePixel = 0,
+                ZIndex = track.ZIndex - 1,
+                Parent = track,
+            })
+            Corner(toggleGlow,999)
             local function Resize()
                 local h = descL.TextBounds.Y + nameL.TextBounds.Y + 36
                 el.Size = UDim2.new(1,0,0,math.max(h,58))
@@ -990,7 +1024,9 @@ end)
                         fab.Hide()
                     end
                 end
-
+TweenService:Create(toggleGlow, Config.Tween, {
+                    BackgroundTransparency = state and .88 or .95
+                }):Play()
                 if d.Callback then task.spawn(d.Callback, state) end
             end
 
@@ -1098,6 +1134,16 @@ end)
                 ColorSequenceKeypoint.new(0, Color3.fromRGB(255,96,144)),
                 ColorSequenceKeypoint.new(1, Theme.Accent2),
             })
+            local thumbGlow = Create("Frame",{
+                Size = UDim2.new(1,10,1,10),
+                Position = UDim2.fromOffset(-5,-5),
+                BackgroundColor3 = Theme.Accent1,
+                BackgroundTransparency = .90,
+                BorderSizePixel = 0,
+                ZIndex = thumb.ZIndex - 1,
+                Parent = thumb,
+            })
+            Corner(thumbGlow,999)
  
             local hitZone = Create("TextButton",{
                 Text               = "",
@@ -1216,6 +1262,16 @@ end)
                     }):Play()
                 end)
                 if d.Callback then task.spawn(d.Callback) end
+            end)
+            btn.MouseEnter:Connect(function()
+                TweenService:Create(btn, TweenInfo.new(.15, Enum.EasingStyle.Quint), {
+                    BackgroundTransparency = .93
+                }):Play()
+            end)
+            btn.MouseLeave:Connect(function()
+                TweenService:Create(btn, TweenInfo.new(.15, Enum.EasingStyle.Quint), {
+                    BackgroundTransparency = .97
+                }):Play()
             end)
         end
 
@@ -1407,8 +1463,15 @@ end)
                 box.Size = UDim2.new(1,-28,0,h)
                 el.Size  = UDim2.new(1,0,0,h + 46)
             end)
+            box.Focused:Connect(function()
+                TweenService:Create(box, TweenInfo.new(.15, Enum.EasingStyle.Quint), {
+                    BackgroundTransparency = .2
+                }):Play()
+            end)
             box.FocusLost:Connect(function()
-                if d.Callback then task.spawn(d.Callback, box.Text) end
+                TweenService:Create(box, TweenInfo.new(.15, Enum.EasingStyle.Quint), {
+                    BackgroundTransparency = .4
+                }):Play()
             end)
         end
 
