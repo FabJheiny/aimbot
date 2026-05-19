@@ -822,23 +822,23 @@ function Library:CreateWindow(data)
         -- Cor FPS
         local fpsColor
         if fps >= 55 then
-            fpsColor = Color3.fromRGB(100,255,140)      -- verde
+            fpsColor = Color3.fromRGB(180,160,255)      -- roxo claro (bom)
         elseif fps >= 30 then
-            fpsColor = Color3.fromRGB(255,210,80)       -- amarelo
+            fpsColor = Color3.fromRGB(160,120,220)      -- roxo médio
         else
-            fpsColor = Color3.fromRGB(255,80,100)       -- vermelho
+            fpsColor = Theme.Accent1                    -- rosa da lib (ruim)
         end
 
         -- Cor Ping
         local pingColor
         if ping < 0 then
-            pingColor = Color3.fromRGB(120,120,120)     -- cinza (indisponível)
+            pingColor = Theme.SubText                   -- cinza da lib (indisponível)
         elseif ping <= 80 then
-            pingColor = Color3.fromRGB(100,255,140)     -- verde
+            pingColor = Theme.Accent3                   -- ciano da lib (bom)
         elseif ping <= 150 then
-            pingColor = Color3.fromRGB(255,210,80)      -- amarelo
+            pingColor = Color3.fromRGB(96,160,220)      -- azul médio
         else
-            pingColor = Color3.fromRGB(255,80,100)      -- vermelho
+            pingColor = Theme.Accent1                   -- rosa da lib (ruim)
         end
 
         fpsVal.Text  = tostring(fps) .. " fps"
@@ -1588,4 +1588,3 @@ function Library:CreateWindow(data)
 end
 
 return setmetatable({}, Library)
-
