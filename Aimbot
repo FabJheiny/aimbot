@@ -206,7 +206,16 @@ local function setupPlayer(player)
             if hum then
                 hum.WalkSpeed = playerSpeed
                 if noClip and noClipConnection == nil then
-                    -- retrigger noClip
+                    if noClip and noClipConnection == nil then
+    noClipConnection = RunService.Stepped:Connect(function()
+        if not noClip then noClipConnection:Disconnect() noClipConnection = nil return end
+        local char = LocalPlayer.Character
+        if not char then return end
+        for _, p in ipairs(char:GetDescendants()) do
+            if p:IsA("BasePart") then p.CanCollide = false end
+        end
+    end)
+end
                 end
             end
         end
