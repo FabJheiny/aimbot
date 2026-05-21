@@ -2071,68 +2071,6 @@ function Library:new(options)
 	-- ══════════════════════════════════════════════════════════════════════
 	task.defer(function()
 		local S = GUI:CreateTab({ name = "Settings", icon = "⚙️" })
-
-		S:Section({ name = "Accent Color" })
-
-		local function applyAccent(c)
-			Library.Theme.Accent = c
-			accentLine.BackgroundColor3 = c
-			GUI:SaveConfig()
-		end
-
-		local rSlider, gSlider, bSlider
-		local _syncing = false
-		local function syncSlidersFromColor(c)
-			if _syncing then return end; _syncing = true
-			if rSlider then rSlider:Set(math.floor(c.R*255+0.5), true) end
-			if gSlider then gSlider:Set(math.floor(c.G*255+0.5), true) end
-			if bSlider then bSlider:Set(math.floor(c.B*255+0.5), true) end
-			_syncing = false
-		end
-
-		local accentCP = S:ColorPicker({
-			name     = "Accent Picker",
-			tooltip  = "HSV picker",
-			default  = Library.Theme.Accent,
-			callback = function(c) applyAccent(c); syncSlidersFromColor(c) end,
-		})
-		GUI._cfgSyncCallbacks.accent = function(c)
-			syncSlidersFromColor(c)
-			pcall(function() accentCP:Set(c, true) end)
-		end
-
-		local function onSliderChange()
-			if _syncing then return end
-			local c = Color3.fromRGB(
-				rSlider and rSlider.Value or 100,
-				gSlider and gSlider.Value or 150,
-				bSlider and bSlider.Value or 255)
-			_syncing = true; accentCP:Set(c); _syncing = false
-			applyAccent(c)
-		end
-
-		rSlider = S:Slider({ name="Red",   min=0, max=255, default=math.floor(Library.Theme.Accent.R*255+0.5), tooltip="Red (0-255)",   callback=onSliderChange })
-		gSlider = S:Slider({ name="Green", min=0, max=255, default=math.floor(Library.Theme.Accent.G*255+0.5), tooltip="Green (0-255)", callback=onSliderChange })
-		bSlider = S:Slider({ name="Blue",  min=0, max=255, default=math.floor(Library.Theme.Accent.B*255+0.5), tooltip="Blue (0-255)",  callback=onSliderChange })
-
-		local function parseRGB(s)
-			local r,g,b = s:match("(%d+)[,%s]+(%d+)[,%s]+(%d+)")
-			if r then return Color3.fromRGB(
-				math.clamp(tonumber(r) or 0, 0, 255),
-				math.clamp(tonumber(g) or 0, 0, 255),
-				math.clamp(tonumber(b) or 0, 0, 255)) end
-		end
-		S:TextInput({
-			name        = "RGB value (e.g. 100,150,255)",
-			placeholder = "R,G,B  — 0 to 255",
-			default     = math.floor(Library.Theme.Accent.R*255+0.5)..","..math.floor(Library.Theme.Accent.G*255+0.5)..","..math.floor(Library.Theme.Accent.B*255+0.5),
-			tooltip     = "Type R,G,B then press Enter",
-			callback    = function(s)
-				local c = parseRGB(s)
-				if c then accentCP:Set(c); syncSlidersFromColor(c); applyAccent(c) end
-			end,
-		})
-
 		S:Section({ name = "Keybinds" })
 		S:Info({ text = "Click a badge, then press any key to rebind." })
 		S:Keybind({ name="Toggle UI",   tooltip="Show / hide the window", default=keys.toggle,   callback=function(k) keys.toggle=k;   GUI:SaveConfig() end })
@@ -2156,7 +2094,6 @@ function Library:new(options)
 		end
 
 		S:Section({ name = "Config" })
-		S:Info({ text = "Auto-saves on every change. File: VenturaUI/" .. options.name:gsub("[^%w%-%_]","_") .. ".json" })
 
 		S:Button({
 			name        = "Save Config",
@@ -2187,20 +2124,6 @@ function Library:new(options)
 			callback    = function()
 				pcall(function() if isfile(_cfgFile) then delfile(_cfgFile) end end)
 				GUI.notify("Config Reset", "Saved config deleted.", 3)
-			end,
-		})
-
-		S:Section({ name = "Info" })
-		S:Label({ text = "VenturaUI v" .. Library.Version .. "  •  codeberg.org/VenomVent/Ventura-UI" })
-		S:Label({ text = "Logged in as: " .. LP.Name .. "  (UserId: " .. LP.UserId .. ")" })
-		S:Label({ text = "Toggle: " .. keys.toggle.Name .. "   |   Minimize: " .. keys.minimize.Name })
-		S:Divider()
-		S:Button({
-			name        = "Copy UserId",
-			description = "Copy your Roblox UserId to clipboard",
-			callback    = function()
-				pcall(function() setclipboard(tostring(LP.UserId)) end)
-				GUI.notify("Copied!", "UserId: " .. LP.UserId, 2, "success")
 			end,
 		})
 	end) -- task.defer (Settings)
