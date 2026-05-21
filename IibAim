@@ -176,7 +176,7 @@ function RobloxUI.new(title)
     local btnIcon = Instance.new("TextLabel")
     btnIcon.Size = UDim2.new(1, 0, 1, 0)
     btnIcon.BackgroundTransparency = 1
-    btnIcon.Text = "☰"
+    btnIcon.Text = "X"
     btnIcon.TextColor3 = Color3.fromRGB(200, 200, 200)
     btnIcon.Font = Enum.Font.GothamBold
     btnIcon.TextSize = 18
@@ -234,7 +234,7 @@ function RobloxUI.new(title)
             if moved then moved = false return end
             visible = not visible
             self.menuFrame.Visible = visible
-            btnIcon.Text = visible and "☰" or "▶"
+            btnIcon.Text = visible and "X" or "▶"
             btnStroke.Color = visible
                 and Color3.fromRGB(80, 80, 80)
                 or  Color3.fromRGB(100, 180, 255)
