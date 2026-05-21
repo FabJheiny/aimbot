@@ -347,16 +347,16 @@ function Library:CreateWindow(data)
         Parent                 = gui,
     })
 
--- ── Floating Bar (arrastrável, topo central) ──────────────
+-- ── Floating Bar (avatar + toggle, arrastrável, topo central) ──
 local floatingBar = Create("Frame",{
-    Size             = UDim2.fromOffset(48, 48),
-    Position         = UDim2.new(0.5, -24, 0, 12),
+    Size             = UDim2.fromOffset(196, 40),
+    Position         = UDim2.new(0.5, -98, 0, 12),
     BackgroundColor3 = Color3.fromRGB(10,8,26),
     BorderSizePixel  = 0,
     ZIndex           = 20,
     Parent           = root,
 })
-Corner(floatingBar, 12)
+Corner(floatingBar, 10)
 local fbStroke = Stroke(floatingBar, Theme.Glow, 1, .45)
 AnimateGradient(Gradient(fbStroke,{
     ColorSequenceKeypoint.new(0,  Theme.Accent1),
@@ -364,40 +364,127 @@ AnimateGradient(Gradient(fbStroke,{
     ColorSequenceKeypoint.new(1,  Theme.Accent3),
 }))
 
-local toggleIconBg = Create("Frame",{
-    Size             = UDim2.fromOffset(32, 32),
-    Position         = UDim2.fromOffset(8, 8),
+-- Pill esquerdo: FPS
+local fpsPill = Create("Frame",{
+    Size             = UDim2.fromOffset(70, 26),
+    Position         = UDim2.fromOffset(7, 7),
+    BackgroundColor3 = Color3.fromRGB(14,11,32),
     BorderSizePixel  = 0,
     ZIndex           = 22,
     Parent           = floatingBar,
 })
-Corner(toggleIconBg, 8)
-Gradient(toggleIconBg,{
-    ColorSequenceKeypoint.new(0,  Theme.Accent1),
-    ColorSequenceKeypoint.new(.5, Theme.Accent2),
-    ColorSequenceKeypoint.new(1,  Theme.Accent3),
-}, 45)
+Corner(fpsPill, 8)
+Stroke(fpsPill, Theme.Accent1, 1, .6)
 
-local toggleIconLabel = Create("TextLabel",{
-    Text               = "◉",
+local fpsTagL = Create("TextLabel",{
+    Text               = "FPS",
     Font               = Enum.Font.GothamBold,
-    TextSize           = 16,
-    TextColor3         = Color3.new(1,1,1),
+    TextSize           = 8,
+    TextColor3         = Theme.Accent1,
     BackgroundTransparency = 1,
-    Size               = UDim2.fromScale(1,1),
+    Position           = UDim2.fromOffset(6, 3),
+    Size               = UDim2.fromOffset(22, 10),
+    TextXAlignment     = Enum.TextXAlignment.Left,
     ZIndex             = 23,
-    Parent             = toggleIconBg,
+    Parent             = fpsPill,
 })
 
-local toggleBtn = Create("TextButton",{
-    Text               = "",
-    AutoButtonColor    = false,
+local fpsValueL = Create("TextLabel",{
+    Text               = "—",
+    Font               = Enum.Font.GothamBold,
+    TextSize           = 11,
+    TextColor3         = Color3.fromRGB(220,210,255),
     BackgroundTransparency = 1,
-    Size               = UDim2.fromScale(1,1),
-    ZIndex             = 25,
-    Parent             = floatingBar,
+    Position           = UDim2.fromOffset(6, 13),
+    Size               = UDim2.fromOffset(58, 12),
+    TextXAlignment     = Enum.TextXAlignment.Left,
+    ZIndex             = 23,
+    Parent             = fpsPill,
 })
 
+-- Pill direito: Ping
+local pingPill = Create("Frame",{
+    Size             = UDim2.fromOffset(70, 26),
+    Position         = UDim2.fromOffset(83, 7),
+    BackgroundColor3 = Color3.fromRGB(14,11,32),
+    BorderSizePixel  = 0,
+    ZIndex           = 22,
+    Parent           = floatingBar,
+})
+Corner(pingPill, 8)
+Stroke(pingPill, Theme.Accent3, 1, .6)
+
+local pingTagL = Create("TextLabel",{
+    Text               = "PING",
+    Font               = Enum.Font.GothamBold,
+    TextSize           = 8,
+    TextColor3         = Theme.Accent3,
+    BackgroundTransparency = 1,
+    Position           = UDim2.fromOffset(6, 3),
+    Size               = UDim2.fromOffset(28, 10),
+    TextXAlignment     = Enum.TextXAlignment.Left,
+    ZIndex             = 23,
+    Parent             = pingPill,
+})
+
+local pingValueL = Create("TextLabel",{
+    Text               = "—",
+    Font               = Enum.Font.GothamBold,
+    TextSize           = 11,
+    TextColor3         = Color3.fromRGB(220,210,255),
+    BackgroundTransparency = 1,
+    Position           = UDim2.fromOffset(6, 13),
+    Size               = UDim2.fromOffset(58, 12),
+    TextXAlignment     = Enum.TextXAlignment.Left,
+    ZIndex             = 23,
+    Parent             = pingPill,
+})
+
+-- Atualiza FPS e Ping a cada segundo
+local frameCount = 0
+local elapsed    = 0
+RunService.RenderStepped:Connect(function(dt)
+    frameCount = frameCount + 1
+    elapsed    = elapsed + dt
+    if elapsed >= 1 then
+        local fps  = math.round(frameCount / elapsed)
+        local ping = math.round(Players.LocalPlayer:GetNetworkPing() * 1000)
+        fpsValueL.Text  = fps .. " fps"
+
+        local pingColor
+        if ping < 80 then
+            pingColor = Color3.fromRGB(96,255,160)
+        elseif ping < 150 then
+            pingColor = Color3.fromRGB(255,210,80)
+        else
+            pingColor = Color3.fromRGB(255,80,100)
+        end
+        pingValueL.Text      = ping .. " ms"
+        pingValueL.TextColor3 = pingColor
+
+        frameCount = 0
+        elapsed    = 0
+    end
+end)
+
+-- Botão toggle (lado direito)
+local toggleBtn = Create("TextButton",{
+    Text             = "◉",
+    Font             = Enum.Font.GothamBold,
+    TextSize         = 20,
+    TextColor3       = Color3.fromRGB(180,160,255),
+    AutoButtonColor  = false,
+    Size             = UDim2.fromOffset(30,30),
+    Position         = UDim2.new(1,-35, 0, 5),
+    BackgroundColor3 = Color3.fromRGB(18,14,38),
+    BorderSizePixel  = 0,
+    ZIndex           = 23,
+    Parent           = floatingBar,
+})
+Corner(toggleBtn, 8)
+Stroke(toggleBtn, Theme.Glow, 1, .55)
+
+-- Toda a barra é arrastável
 Dragify(floatingBar)
 
     -- ── Window wrap & prism border ────────────────────────────
@@ -695,20 +782,14 @@ local menuVisible = true
 toggleBtn.MouseButton1Click:Connect(function()
     menuVisible = not menuVisible
     wrap.Visible = menuVisible
-
-    TweenService:Create(toggleIconBg, TweenInfo.new(.1, Enum.EasingStyle.Back), {
-        Size     = UDim2.fromOffset(36, 36),
-        Position = UDim2.fromOffset(6, 6),
-    }):Play()
-    task.delay(.1, function()
-        TweenService:Create(toggleIconBg, TweenInfo.new(.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size     = UDim2.fromOffset(32, 32),
-            Position = UDim2.fromOffset(8, 8),
-        }):Play()
-    end)
-
-    TweenService:Create(toggleIconLabel, Config.Tween, {
-        TextTransparency = menuVisible and 0 or .45,
+    toggleBtn.Text = "◉"
+    TweenService:Create(toggleBtn, Config.Tween, {
+        TextColor3       = menuVisible
+            and Theme.Accent1
+            or  Color3.fromRGB(240,236,255),
+        BackgroundColor3 = menuVisible
+            and Color3.fromRGB(30,10,50)
+            or  Color3.fromRGB(18,14,38),
     }):Play()
 end)
 
