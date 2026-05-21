@@ -10,24 +10,17 @@
 
 -- ── Load Library ──────────────────────────────────────────────────────────────
 local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/library%20TESTE"
+    "https://codeberg.org/VenomVent/Ventura-UI/raw/branch/main/VenturaLibrary.lua"
 ))()
 
 -- ── Window ────────────────────────────────────────────────────────────────────
 local GUI = Library:new({
-    name        = "My Script",          -- title shown in the top bar
+    name        = "Jheiny",          -- title shown in the top bar
     subtitle    = "Loading...",         -- or a table of strings to cycle through
     accent      = Color3.fromRGB(110, 160, 255), -- theme accent colour
     toggleKey   = Enum.KeyCode.Insert,  -- show / hide the window
     minimizeKey = Enum.KeyCode.K,       -- collapse the window
     loadingTime = 1.5,                  -- seconds before tabs appear
-
-    -- Key system (remove or set keyEnabled = false to skip the gate)
-    keyEnabled   = false,
-    key          = "MY-KEY-HERE",       -- string or table of valid keys
-    onKeySuccess = function() print("Key accepted!") end,
-    onKeyFail    = function() print("Key rejected.") end,
-})
 
 -- ── Services ──────────────────────────────────────────────────────────────────
 local Players    = game:GetService("Players")
@@ -165,15 +158,6 @@ GUI:NavSection("MISC")
 local MiscTab = GUI:CreateTab({ name = "Misc", icon = "🔧" })
 
 MiscTab:Section({ name = "Utilities" })
-
-MiscTab:Button({
-    name     = "Copy UserId",
-    callback = function()
-        pcall(function() setclipboard(tostring(LP.UserId)) end)
-        GUI.notify("Copied", "UserId: " .. LP.UserId, 3)
-    end,
-})
-
 -- Anti-AFK
 local afkConn
 MiscTab:Toggle({
@@ -197,25 +181,10 @@ MiscTab:Separator()
 MiscTab:Label({ text = "VenturaUI v3.3  •  by xyvenom" })
 MiscTab:Label({ text = "Place: " .. tostring(game.Name) })
 
--- New in v3.3 — Chip, ControlHint, ButtonGrid demo
-MiscTab:Section({ name = "v3.3 New Components" })
-MiscTab:Chip({ text = "STABLE", color = Color3.fromRGB(60, 200, 100), icon = "✅" })
 MiscTab:ControlHint({ name = "Toggle UI",   key = "Insert", description = "Show / hide the window" })
 MiscTab:ControlHint({ name = "Minimize UI", key = "K",      description = "Collapse to titlebar" })
-MiscTab:ButtonGrid({
-    columns = 2,
-    buttons = {
-        { name = "Copy UserId", icon = "📋", callback = function()
-            pcall(function() setclipboard(tostring(LP.UserId)) end)
-            GUI.notify("Copied!", "UserId: " .. LP.UserId, 2, "success")
-        end },
-        { name = "Rejoin",     icon = "🔄", callback = function()
-            pcall(function() game:GetService("TeleportService"):Teleport(game.PlaceId) end)
-        end },
-    }
-})
 
 -- ── Done ──────────────────────────────────────────────────────────────────────
 task.delay(2, function()
-    GUI.notify("My Script", "Loaded! Press Insert to toggle.", 4)
+    GUI.notify("Cronos", "Loaded! Press Insert to toggle.", 4)
 end)
