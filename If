@@ -1,6 +1,3 @@
--- Infinite Yield GUI | v2 — Toolbar 2 linhas (busca + tabs)
--- Fonte: Enum.Font.Code | Client-side only | Luau puro
-
 local Players          = game:GetService("Players")
 local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
