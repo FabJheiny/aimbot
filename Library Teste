@@ -491,32 +491,13 @@ function Library:CreateWindow(data)
     })
     Corner(wrap, 16)
 
-    local shadow1 = Create("Frame",{
-        Size             = UDim2.new(1,40,1,40),
-        Position         = UDim2.fromOffset(-20,-20),
-        BackgroundColor3 = Color3.fromRGB(0,0,0),
-        BackgroundTransparency = .92,
-        BorderSizePixel  = 0,
-        ZIndex           = -10,
-        Parent           = wrap,
-    })
-    Corner(shadow1, 22)
-
-    local shadow2 = Create("Frame",{
-        Size             = UDim2.new(1,70,1,70),
-        Position         = UDim2.fromOffset(-35,-35),
-        BackgroundColor3 = Theme.Glow,
-        BackgroundTransparency = .96,
-        BorderSizePixel  = 0,
-        ZIndex           = -11,
-        Parent           = wrap,
-    })
-    Corner(shadow2, 30)
-    AnimateGradient(Gradient(shadow2,{
-        ColorSequenceKeypoint.new(0,  Theme.Accent1),
-        ColorSequenceKeypoint.new(.5, Theme.Accent2),
-        ColorSequenceKeypoint.new(1,  Theme.Accent3),
-    },45))
+    local wrapStroke = Stroke(wrap, Theme.Accent1, 1.5, .3)
+AnimateGradient(Gradient(wrapStroke, {
+    ColorSequenceKeypoint.new(0,   Theme.Accent1),
+    ColorSequenceKeypoint.new(.33, Theme.Accent2),
+    ColorSequenceKeypoint.new(.66, Theme.Accent3),
+    ColorSequenceKeypoint.new(1,   Theme.Accent1),
+}))
 
     local window = Create("Frame",{
         Size             = UDim2.new(1,-4,1,-4),
