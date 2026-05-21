@@ -123,26 +123,31 @@ end
 
 -- ────────────────────────────────────────────────────────────
 -- CreateFloatingActionButton (interno)
+-- Cria um botão flutuante arrastável na tela vinculado a um toggle.
+-- Retorna o frame raiz para que o toggle possa mostrá-lo/ocultá-lo.
 -- ────────────────────────────────────────────────────────────
 
 local function CreateFloatingActionButton(root, opts)
+    -- opts: { Label, Icon, Description, Position, Callback }
     local label       = opts.Label       or "Action"
     local icon        = opts.Icon        or "▶"
     local description = opts.Description or ""
     local startPos    = opts.Position    or UDim2.new(0.5, -56, 0.85, 0)
     local callback    = opts.Callback
 
+    -- Wrapper pill
     local pill = Create("Frame",{
         Size             = UDim2.fromOffset(112, 44),
         Position         = startPos,
         BackgroundColor3 = Color3.fromRGB(10,8,28),
         BorderSizePixel  = 0,
         ZIndex           = 50,
-        Visible          = false,
+        Visible          = false,   -- começa oculto; o toggle controla
         Parent           = root,
     })
     Corner(pill, 22)
 
+    -- Borda animada igual ao estilo Prism
     local pillStroke = Stroke(pill, Theme.Accent1, 1.5, .3)
     AnimateGradient(Gradient(pillStroke,{
         ColorSequenceKeypoint.new(0,   Theme.Accent1),
@@ -151,6 +156,7 @@ local function CreateFloatingActionButton(root, opts)
         ColorSequenceKeypoint.new(1,   Theme.Accent1),
     }))
 
+    -- Glow de fundo suave
     local glowBg = Create("Frame",{
         Size             = UDim2.fromScale(1,1),
         BackgroundColor3 = Theme.Glow,
@@ -161,6 +167,7 @@ local function CreateFloatingActionButton(root, opts)
     })
     Corner(glowBg, 22)
 
+    -- Ícone (lado esquerdo)
     local iconFrame = Create("Frame",{
         Size             = UDim2.fromOffset(32,32),
         Position         = UDim2.fromOffset(6,6),
@@ -176,7 +183,7 @@ local function CreateFloatingActionButton(root, opts)
         ColorSequenceKeypoint.new(1, Theme.Accent2),
     },45)
 
-    Create("TextLabel",{
+    local iconLabel = Create("TextLabel",{
         Text               = icon,
         Font               = Enum.Font.GothamBold,
         TextSize           = 15,
@@ -187,7 +194,8 @@ local function CreateFloatingActionButton(root, opts)
         Parent             = iconFrame,
     })
 
-    Create("TextLabel",{
+    -- Texto (lado direito)
+    local textLabel = Create("TextLabel",{
         Text               = label,
         Font               = Enum.Font.GothamBold,
         TextSize           = 11,
@@ -217,6 +225,7 @@ local function CreateFloatingActionButton(root, opts)
         })
     end
 
+    -- Botão invisível cobrindo apenas a área de texto (clique)
     local hitBtn = Create("TextButton",{
         Text               = "",
         AutoButtonColor    = false,
@@ -228,6 +237,7 @@ local function CreateFloatingActionButton(root, opts)
         Parent             = pill,
     })
 
+    -- Clique: ripple + callback
     hitBtn.MouseButton1Click:Connect(function()
         Ripple(hitBtn)
         TweenService:Create(glowBg, TweenInfo.new(.07), {
@@ -241,6 +251,7 @@ local function CreateFloatingActionButton(root, opts)
         if callback then task.spawn(callback) end
     end)
 
+    -- Hover: só tamanho, sem mexer em Position
     hitBtn.MouseEnter:Connect(function()
         TweenService:Create(pill, TweenInfo.new(.14, Enum.EasingStyle.Quint), {
             Size = UDim2.fromOffset(118, 46),
@@ -252,6 +263,7 @@ local function CreateFloatingActionButton(root, opts)
         }):Play()
     end)
 
+-- Drag pelo ícone via botão invisível sobreposto (funciona mesmo após pill ficar visível)
     local draggingPill = false
     local dragStartPos, pillStartPos
 
@@ -291,6 +303,7 @@ local function CreateFloatingActionButton(root, opts)
         end
     end)
 
+    -- Funções de show/hide com animação
     local function Show()
         pill.Visible = true
         pill.BackgroundTransparency = 1
@@ -334,62 +347,58 @@ function Library:CreateWindow(data)
         Parent                 = gui,
     })
 
-    -- ── Floating Bar (arrastrável, topo central) ──────────────
-    -- Agora compacta: apenas o ícone-brand como toggle
-    local floatingBar = Create("Frame",{
-        Size             = UDim2.fromOffset(48, 48),
-        Position         = UDim2.new(0.5, -24, 0, 12),
-        BackgroundColor3 = Color3.fromRGB(10,8,26),
-        BorderSizePixel  = 0,
-        ZIndex           = 20,
-        Parent           = root,
-    })
-    Corner(floatingBar, 12)
-    local fbStroke = Stroke(floatingBar, Theme.Glow, 1, .45)
-    AnimateGradient(Gradient(fbStroke,{
-        ColorSequenceKeypoint.new(0,  Theme.Accent1),
-        ColorSequenceKeypoint.new(.5, Theme.Accent2),
-        ColorSequenceKeypoint.new(1,  Theme.Accent3),
-    }))
+-- ── Floating Bar (arrastrável, topo central) ──────────────
+local floatingBar = Create("Frame",{
+    Size             = UDim2.fromOffset(48, 48),
+    Position         = UDim2.new(0.5, -24, 0, 12),
+    BackgroundColor3 = Color3.fromRGB(10,8,26),
+    BorderSizePixel  = 0,
+    ZIndex           = 20,
+    Parent           = root,
+})
+Corner(floatingBar, 12)
+local fbStroke = Stroke(floatingBar, Theme.Glow, 1, .45)
+AnimateGradient(Gradient(fbStroke,{
+    ColorSequenceKeypoint.new(0,  Theme.Accent1),
+    ColorSequenceKeypoint.new(.5, Theme.Accent2),
+    ColorSequenceKeypoint.new(1,  Theme.Accent3),
+}))
 
-    -- Ícone idêntico ao brand do sidebar (gradiente rosa→azul→roxo, símbolo ◉)
-    local toggleIconBg = Create("Frame",{
-        Size             = UDim2.fromOffset(32, 32),
-        Position         = UDim2.fromOffset(8, 8),
-        BorderSizePixel  = 0,
-        ZIndex           = 22,
-        Parent           = floatingBar,
-    })
-    Corner(toggleIconBg, 8)
-    Gradient(toggleIconBg,{
-        ColorSequenceKeypoint.new(0,  Theme.Accent1),
-        ColorSequenceKeypoint.new(.5, Theme.Accent2),
-        ColorSequenceKeypoint.new(1,  Theme.Accent3),
-    }, 45)
+local toggleIconBg = Create("Frame",{
+    Size             = UDim2.fromOffset(32, 32),
+    Position         = UDim2.fromOffset(8, 8),
+    BorderSizePixel  = 0,
+    ZIndex           = 22,
+    Parent           = floatingBar,
+})
+Corner(toggleIconBg, 8)
+Gradient(toggleIconBg,{
+    ColorSequenceKeypoint.new(0,  Theme.Accent1),
+    ColorSequenceKeypoint.new(.5, Theme.Accent2),
+    ColorSequenceKeypoint.new(1,  Theme.Accent3),
+}, 45)
 
-    local toggleIconLabel = Create("TextLabel",{
-        Text               = "◉",
-        Font               = Enum.Font.GothamBold,
-        TextSize           = 16,
-        TextColor3         = Color3.new(1,1,1),
-        BackgroundTransparency = 1,
-        Size               = UDim2.fromScale(1,1),
-        ZIndex             = 23,
-        Parent             = toggleIconBg,
-    })
+local toggleIconLabel = Create("TextLabel",{
+    Text               = "◉",
+    Font               = Enum.Font.GothamBold,
+    TextSize           = 16,
+    TextColor3         = Color3.new(1,1,1),
+    BackgroundTransparency = 1,
+    Size               = UDim2.fromScale(1,1),
+    ZIndex             = 23,
+    Parent             = toggleIconBg,
+})
 
-    -- Botão invisível cobrindo toda a barra (clique para toggle)
-    local toggleBtn = Create("TextButton",{
-        Text               = "",
-        AutoButtonColor    = false,
-        BackgroundTransparency = 1,
-        Size               = UDim2.fromScale(1,1),
-        ZIndex             = 25,
-        Parent             = floatingBar,
-    })
+local toggleBtn = Create("TextButton",{
+    Text               = "",
+    AutoButtonColor    = false,
+    BackgroundTransparency = 1,
+    Size               = UDim2.fromScale(1,1),
+    ZIndex             = 25,
+    Parent             = floatingBar,
+})
 
-    -- Toda a barra é arrastável
-    Dragify(floatingBar)
+Dragify(floatingBar)
 
     -- ── Window wrap & prism border ────────────────────────────
     local wrap = Create("Frame",{
@@ -682,30 +691,26 @@ function Library:CreateWindow(data)
 
     Dragify(wrap, topbar)
 
-    -- Toggle: mostra/oculta o menu principal
-    -- O ícone pulsa levemente ao fechar para dar feedback
-    local menuVisible = true
-    toggleBtn.MouseButton1Click:Connect(function()
-        menuVisible = not menuVisible
-        wrap.Visible = menuVisible
+local menuVisible = true
+toggleBtn.MouseButton1Click:Connect(function()
+    menuVisible = not menuVisible
+    wrap.Visible = menuVisible
 
-        -- Pulso de escala no ícone para feedback visual
-        TweenService:Create(toggleIconBg, TweenInfo.new(.1, Enum.EasingStyle.Back), {
-            Size = UDim2.fromOffset(36, 36),
-            Position = UDim2.fromOffset(6, 6),
-        }):Play()
-        task.delay(.1, function()
-            TweenService:Create(toggleIconBg, TweenInfo.new(.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                Size = UDim2.fromOffset(32, 32),
-                Position = UDim2.fromOffset(8, 8),
-            }):Play()
-        end)
-
-        -- Opacidade do símbolo ◉ indica estado aberto/fechado
-        TweenService:Create(toggleIconLabel, Config.Tween, {
-            TextTransparency = menuVisible and 0 or .45,
+    TweenService:Create(toggleIconBg, TweenInfo.new(.1, Enum.EasingStyle.Back), {
+        Size     = UDim2.fromOffset(36, 36),
+        Position = UDim2.fromOffset(6, 6),
+    }):Play()
+    task.delay(.1, function()
+        TweenService:Create(toggleIconBg, TweenInfo.new(.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size     = UDim2.fromOffset(32, 32),
+            Position = UDim2.fromOffset(8, 8),
         }):Play()
     end)
+
+    TweenService:Create(toggleIconLabel, Config.Tween, {
+        TextTransparency = menuVisible and 0 or .45,
+    }):Play()
+end)
 
     -- ── Window object ─────────────────────────────────────────
     local windowObj = { Tabs = {} }
@@ -803,6 +808,7 @@ function Library:CreateWindow(data)
         table.insert(windowObj.Tabs, tabObj)
         if #windowObj.Tabs == 1 then Select() end
 
+        -- Element base frame
         local function CreateElement(h)
             local el = Create("Frame",{
                 Size               = UDim2.new(1,0,0,h),
@@ -827,11 +833,24 @@ function Library:CreateWindow(data)
             return el
         end
 
-        -- ── Toggle ────────────────────────────────────────────
+        -- ── Toggle (com suporte a FloatingButton) ─────────────
+        --
+        -- NOVO: d.FloatingButton (opcional)
+        --   Se informado, ao ativar o toggle um botão pill flutuante
+        --   aparece na tela. Ao desativar, some com animação.
+        --
+        --   Campos de d.FloatingButton:
+        --     Label       string  — texto exibido no pill
+        --     Icon        string  — emoji/símbolo no ícone (padrão "▶")
+        --     Description string  — subtexto menor (opcional)
+        --     Position    UDim2   — posição inicial (padrão centro-baixo)
+        --     Callback    function — executada ao clicar no pill
+        --
         function tabObj:CreateToggle(d)
             local enabled = d.Default or false
             local el      = CreateElement(58)
 
+            -- Cria o botão flutuante agora (oculto) se configurado
             local fab = nil
             if d.FloatingButton then
                 fab = CreateFloatingActionButton(root, {
@@ -841,6 +860,7 @@ function Library:CreateWindow(data)
                     Position    = d.FloatingButton.Position,
                     Callback    = d.FloatingButton.Callback,
                 })
+                -- Se o toggle já começa ativado, mostra de imediato
                 if enabled then
                     fab.Frame.Visible = true
                 end
@@ -923,8 +943,13 @@ function Library:CreateWindow(data)
                     BackgroundColor3 = state and Color3.new(1,1,1) or Color3.fromRGB(24,22,58),
                 }):Play()
 
+                -- ── Controla visibilidade do FAB ──────────────
                 if fab then
-                    if state then fab.Show() else fab.Hide() end
+                    if state then
+                        fab.Show()
+                    else
+                        fab.Hide()
+                    end
                 end
 
                 if d.Callback then task.spawn(d.Callback, state) end
