@@ -1,4 +1,4 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Aimbot%20Library"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/IibAim"))()
 local RobloxUI = _G.RobloxUI
 
 local Players = game:GetService("Players")
