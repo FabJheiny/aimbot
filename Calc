@@ -1,0 +1,234 @@
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "PremiumCalc"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 176, 0, 326)
+frame.Position = UDim2.new(0.5, -88, 0.5, -163)
+frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+frame.Active = true
+frame.Draggable = true
+frame.ClipsDescendants = true
+
+local frameCorner = Instance.new("UICorner", frame)
+frameCorner.CornerRadius = UDim.new(0, 12)
+
+local frameStroke = Instance.new("UIStroke", frame)
+frameStroke.Thickness = 1
+frameStroke.Color = Color3.fromRGB(40,40,40)
+
+-- Topbar
+local topBar = Instance.new("Frame", frame)
+topBar.Size = UDim2.new(1, 0, 0, 24)
+topBar.Position = UDim2.new(0, 0, 0, 0)
+topBar.BackgroundTransparency = 1
+
+local titulo = Instance.new("TextLabel", topBar)
+titulo.Size = UDim2.new(1, -110, 1, 0)
+titulo.Position = UDim2.new(0, 8, 0, 0)
+titulo.BackgroundTransparency = 1
+titulo.TextColor3 = Color3.fromRGB(90,90,90)
+titulo.TextSize = 9
+titulo.TextXAlignment = Enum.TextXAlignment.Left
+titulo.Text = "calc"
+titulo.Font = Enum.Font.Gotham
+
+-- Botão RECOLHER
+local recolherBtn = Instance.new("TextButton", topBar)
+recolherBtn.Size = UDim2.new(0, 52, 0, 15)
+recolherBtn.Position = UDim2.new(1, -100, 0.5, -7)
+recolherBtn.Text = "recolher"
+recolherBtn.TextSize = 8
+recolherBtn.Font = Enum.Font.Gotham
+recolherBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+recolherBtn.TextColor3 = Color3.fromRGB(140,140,140)
+
+local recolherCorner = Instance.new("UICorner", recolherBtn)
+recolherCorner.CornerRadius = UDim.new(0, 4)
+
+-- Botão FECHAR
+local closeBtn = Instance.new("TextButton", topBar)
+closeBtn.Size = UDim2.new(0, 38, 0, 15)
+closeBtn.Position = UDim2.new(1, -44, 0.5, -7)
+closeBtn.Text = "fechar"
+closeBtn.TextSize = 8
+closeBtn.Font = Enum.Font.Gotham
+closeBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+closeBtn.TextColor3 = Color3.fromRGB(140,140,140)
+
+local closeCorner = Instance.new("UICorner", closeBtn)
+closeCorner.CornerRadius = UDim.new(0, 4)
+
+closeBtn.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+-- Display
+local display = Instance.new("TextLabel", frame)
+display.Size = UDim2.new(1, -12, 0, 40)
+display.Position = UDim2.new(0, 6, 0, 26)
+display.BackgroundColor3 = Color3.fromRGB(22,22,22)
+display.TextColor3 = Color3.fromRGB(240,240,240)
+display.TextSize = 20
+display.TextXAlignment = Enum.TextXAlignment.Right
+display.Text = "0"
+display.Font = Enum.Font.Gotham
+
+local cornerDisplay = Instance.new("UICorner", display)
+cornerDisplay.CornerRadius = UDim.new(0, 7)
+
+local displayPadding = Instance.new("UIPadding", display)
+displayPadding.PaddingRight = UDim.new(0, 8)
+
+-- Container dos botões (facilita recolher/expandir)
+local btnContainer = Instance.new("Frame", frame)
+btnContainer.Size = UDim2.new(1, 0, 1, -70)
+btnContainer.Position = UDim2.new(0, 0, 0, 70)
+btnContainer.BackgroundTransparency = 1
+btnContainer.ClipsDescendants = true
+
+-- Recolher logic
+local recolhido = false
+local fullHeight = 326
+local miniHeight = 70 -- topbar + display apenas
+
+recolherBtn.MouseButton1Click:Connect(function()
+    recolhido = not recolhido
+    if recolhido then
+        frame.Size = UDim2.new(0, 176, 0, miniHeight)
+        btnContainer.Visible = false
+        recolherBtn.Text = "expandir"
+    else
+        frame.Size = UDim2.new(0, 176, 0, fullHeight)
+        btnContainer.Visible = true
+        recolherBtn.Text = "recolher"
+    end
+end)
+
+-- Variáveis
+local current = "0"
+
+local function atualizar(valor)
+    display.Text = valor
+end
+
+local function adicionar(valor)
+    if current == "0" then
+        current = valor
+    else
+        current = current .. valor
+    end
+    atualizar(current)
+end
+
+local function calcular()
+    local expr = current
+    expr = expr:gsub("×", "*"):gsub("÷", "/")
+
+    local success, result = pcall(function()
+        return loadstring("return " .. expr)()
+    end)
+
+    if success then
+        current = tostring(result)
+    else
+        current = "Erro"
+    end
+
+    atualizar(current)
+end
+
+local function deletarUltimo()
+    if #current <= 1 or current == "Erro" then
+        current = "0"
+    else
+        current = current:sub(1, -2)
+    end
+    atualizar(current)
+end
+
+local BTN   = 40
+local STEP  = 42
+local STARTX = 5
+local STARTY = 2
+
+local function criarBotao(texto, x, y, cor, textoCor, fontSize)
+    local btn = Instance.new("TextButton", btnContainer)
+    btn.Size = UDim2.new(0, BTN, 0, BTN)
+    btn.Position = UDim2.new(0, STARTX + (x * STEP), 0, STARTY + (y * STEP))
+    btn.Text = texto
+    btn.TextSize = fontSize or 12
+    btn.Font = Enum.Font.Gotham
+    btn.BackgroundColor3 = cor or Color3.fromRGB(30,30,30)
+    btn.TextColor3 = textoCor or Color3.fromRGB(220,220,220)
+
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 7)
+
+    btn.MouseButton1Click:Connect(function()
+        if texto == "AC" then
+            current = "0"
+            atualizar(current)
+        elseif texto == "DEL" then
+            deletarUltimo()
+        elseif texto == "=" then
+            calcular()
+        elseif texto == "%" then
+            local num = tonumber(current)
+            if num then current = tostring(num / 100) end
+            atualizar(current)
+        elseif texto == "+" or texto == "-" or texto == "×" or texto == "÷" then
+            local ultimo = current:sub(-1)
+            if ultimo ~= "+" and ultimo ~= "-" and ultimo ~= "×" and ultimo ~= "÷" then
+                current = current .. texto
+                atualizar(current)
+            end
+        elseif texto == "." then
+            local segmento = current:match("[%d%.]+$") or ""
+            if not segmento:find("%.") then
+                current = current .. "."
+                atualizar(current)
+            end
+        else
+            adicionar(texto)
+        end
+    end)
+end
+
+local layout = {
+    {"AC",  "(",  ")",  "÷"},
+    {"7",   "8",  "9",  "×"},
+    {"4",   "5",  "6",  "-"},
+    {"1",   "2",  "3",  "+"},
+    {"0",   ".",  "%",  "="},
+    {"DEL", "",   "",   ""}
+}
+
+for y, linha in ipairs(layout) do
+    for x, texto in ipairs(linha) do
+        if texto == "" then continue end
+
+        local cor      = Color3.fromRGB(30,30,30)
+        local textoCor = Color3.fromRGB(220,220,220)
+        local fontSize = 12
+
+        if texto == "AC" then
+            cor = Color3.fromRGB(45,45,45)
+            textoCor = Color3.fromRGB(255,100,100)
+        elseif texto == "DEL" then
+            cor = Color3.fromRGB(45,45,45)
+            textoCor = Color3.fromRGB(255,100,100)
+        elseif texto == "=" then
+            cor = Color3.fromRGB(240,200,80)
+            textoCor = Color3.fromRGB(20,20,20)
+            fontSize = 16
+        elseif texto == "+" or texto == "-" or texto == "×" or texto == "÷" then
+            cor = Color3.fromRGB(36,36,36)
+            textoCor = Color3.fromRGB(210,210,210)
+            fontSize = 17
+        elseif texto == "(" or texto == ")" or texto == "%" then
+            textoCor = Color3.fromRGB(130,130,130)
+        end
+
+        criarBotao(texto, x-1, y-1, cor, textoCor, fontSize)
+    end
+end
