@@ -489,32 +489,14 @@ Dragify(floatingBar)
 
     -- ── Window wrap & prism border ────────────────────────────
     local wrap = Create("Frame",{
-        Size        = Config.WindowSize,
-        Position    = UDim2.fromScale(.5,.5),
-        AnchorPoint = Vector2.new(.5,.5),
-        BackgroundTransparency = 1,
-        Parent      = root,
-    })
-    Corner(wrap, 16)
-    -- ── Prism Border Animada ──────────────────────────────────
-local prismBorder = Stroke(wrap, Theme.Accent1, 2, 0)
-local prismGrad = Gradient(prismBorder, {
-    ColorSequenceKeypoint.new(0,    Theme.Accent1),
-    ColorSequenceKeypoint.new(.25,  Theme.Accent2),
-    ColorSequenceKeypoint.new(.5,   Theme.Accent3),
-    ColorSequenceKeypoint.new(.75,  Theme.Accent2),
-    ColorSequenceKeypoint.new(1,    Theme.Accent1),
+    Size        = Config.WindowSize,
+    Position    = UDim2.fromScale(.5,.5),
+    AnchorPoint = Vector2.new(.5,.5),
+    BackgroundTransparency = 1,
+    Parent      = root,
 })
-task.spawn(function()
-    while wrap and wrap.Parent do
-        TweenService:Create(prismGrad, TweenInfo.new(3, Enum.EasingStyle.Linear), {
-            Rotation = prismGrad.Rotation + 360
-        }):Play()
-        task.wait(3)
-    end
-end)
--- ─────────────────────────────────────────────────────────
-    local window = Create("Frame",{
+
+local window = Create("Frame",{
     Size             = UDim2.fromScale(1,1),
     Position         = UDim2.fromOffset(0,0),
     BackgroundColor3 = Theme.Window,
@@ -522,6 +504,14 @@ end)
     Parent           = wrap,
 })
 Corner(window, 16)
+
+local wrapStroke = Stroke(window, Theme.Accent1, 1.5, .3)
+AnimateGradient(Gradient(wrapStroke, {
+    ColorSequenceKeypoint.new(0,   Theme.Accent1),
+    ColorSequenceKeypoint.new(.33, Theme.Accent2),
+    ColorSequenceKeypoint.new(.66, Theme.Accent3),
+    ColorSequenceKeypoint.new(1,   Theme.Accent1),
+}))
 
     -- ── Sidebar ───────────────────────────────────────────────
     local sidebar = Create("Frame",{
