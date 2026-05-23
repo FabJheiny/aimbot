@@ -828,48 +828,35 @@ function GUI:NavSection(label)
     end
 end)
 
-local _btnHover = false
-local _btnPress = false
+local clickBtn = Instance.new("TextButton", Btn.frame)
+clickBtn.BackgroundTransparency = 1
+clickBtn.BorderSizePixel        = 0
+clickBtn.Size                   = UDim2.new(1, 0, 1, 0)
+clickBtn.Text                   = ""
+clickBtn.AutoButtonColor        = false
+clickBtn.ZIndex                 = 10
 
-Btn.frame.MouseEnter:Connect(function()
-    _btnHover = true
-    if not _btnPress then
-        Btn.frame.BackgroundTransparency = 0.55
-        Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
-        bStroke.Color                    = T.BorderHover
-    end
+clickBtn.MouseEnter:Connect(function()
+    Btn.frame.BackgroundTransparency = 0.55
+    Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+    bStroke.Color                    = T.BorderHover
 end)
-Btn.frame.MouseLeave:Connect(function()
-    _btnHover = false
-    if not _btnPress then
-        Btn.frame.BackgroundTransparency = 1
-        Btn.frame.BackgroundColor3       = T.Surface
-        bStroke.Color                    = T.Border
-    end
+clickBtn.MouseLeave:Connect(function()
+    Btn.frame.BackgroundTransparency = 1
+    Btn.frame.BackgroundColor3       = T.Surface
+    bStroke.Color                    = T.Border
 end)
-Btn.frame.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1
-        or i.UserInputType == Enum.UserInputType.Touch then
-        _btnPress = true
-        Btn.frame.BackgroundTransparency = 0.3
-        Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
-        opts.callback()
-    end
+clickBtn.MouseButton1Down:Connect(function()
+    Btn.frame.BackgroundTransparency = 0.3
+    Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
 end)
-Btn.frame.InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1
-        or i.UserInputType == Enum.UserInputType.Touch then
-        _btnPress = false
-        if _btnHover then
-            Btn.frame.BackgroundTransparency = 0.55
-            Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
-            bStroke.Color                    = T.BorderHover
-        else
-            Btn.frame.BackgroundTransparency = 1
-            Btn.frame.BackgroundColor3       = T.Surface
-            bStroke.Color                    = T.Border
-        end
-    end
+clickBtn.MouseButton1Up:Connect(function()
+    Btn.frame.BackgroundTransparency = 0.55
+    Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+    bStroke.Color                    = T.BorderHover
+end)
+clickBtn.MouseButton1Click:Connect(function()
+    opts.callback()
 end)
 
 		function Tab:Toggle(opts)
