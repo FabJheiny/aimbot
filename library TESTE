@@ -211,7 +211,7 @@ function Library:new(options)
 	local Topbar = Instance.new("Frame", Main)
 	Topbar.Name                   = "Topbar"
 	Topbar.BackgroundColor3       = T.Topbar
-	Topbar.BackgroundTransparency = 0.20
+	Topbar.BackgroundTransparency = 0.45
 	Topbar.BorderSizePixel        = 0
 	Topbar.Size                   = UDim2.new(1, 0, 0, 36)
 	corner(Topbar, 8)
@@ -226,12 +226,12 @@ function Library:new(options)
 	local Nav = Instance.new("Frame", Main)
 	Nav.Name                   = "Nav"
 	Nav.BackgroundColor3       = T.Nav
-	Nav.BackgroundTransparency = 0.40
+	Nav.BackgroundTransparency = 0.55
 	Nav.BorderSizePixel        = 0
 	Nav.Size                   = UDim2.new(0, NAV_W, 1, -36)
 	Nav.Position               = UDim2.new(0, 0, 0, 36)
 	Nav.ClipsDescendants       = true
-	cornerBottomOnly(Nav, 6)
+	corner(Nav, 0)
 
 	local BtnHolder = Instance.new("ScrollingFrame", Nav)
 	BtnHolder.BackgroundTransparency = 1
@@ -606,7 +606,7 @@ function GUI:CreateTab(opts)
 			f.Name                   = name
 			f.BorderSizePixel        = 0
 			f.BackgroundColor3       = T.Surface
-			f.BackgroundTransparency = 0.50
+			f.BackgroundTransparency = 0.62
 			f.Size                   = UDim2.new(1, 0, 0, h or 34)
 			corner(f, 5)
 			stroke(f, T.Border)
