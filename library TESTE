@@ -327,7 +327,7 @@ function Library:new(options)
 			tw(Nav,     { Size = UDim2.new(0, 0, 1, -36) }, TI_MED)
 			tw(Content, { Position = UDim2.new(0, 4, 0, 40),
 			              Size     = UDim2.new(1, -8, 1, -46) }, TI_MED)
-			sidebarBtn.TextColor3 = T.Accent
+			sidebarBtn.TextColor3 = T.TextPrimary
 		end
 	end)
 
@@ -354,7 +354,7 @@ function Library:new(options)
 		stroke(card, T.Border)
 		local acc = Instance.new("Frame", card)
 		acc.Size             = UDim2.new(0, 2, 1, 0)
-		acc.BackgroundColor3 = T.Accent
+		acc.BackgroundColor3 = T.Border
 		acc.BorderSizePixel  = 0
 		acc.ZIndex           = 601
 		local t1 = lbl(card, title or "Ventura", 13, T.TextPrimary, UBUNTU_BOLD)
@@ -476,7 +476,7 @@ function Library:new(options)
 	floatBtn.AutoButtonColor        = false
 	floatBtn.ZIndex                 = 900
 	corner(floatBtn, FB / 2)
-	local floatStroke = stroke(floatBtn, T.Accent, 1)
+	local floatStroke = stroke(floatBtn, T.Border, 1)
 	floatStroke.Transparency = 1
 	GUI._floatBtn = floatBtn
 
@@ -519,8 +519,8 @@ function Library:new(options)
 		if fbDrag and not fbMoved then
 			_open = not _open
 			Main.Visible        = _open
-			floatBtn.TextColor3 = _open and T.Accent or T.TextSecondary
-			floatStroke.Color   = _open and T.Accent or T.Border
+			floatBtn.TextColor3 = _open and T.TextPrimary or T.TextSecondary
+			floatStroke.Color   = _open and T.Border or T.Border
 		end
 		if fbDrag then floatShow() end
 		fbDrag = false
@@ -531,8 +531,8 @@ function Library:new(options)
 		if input.KeyCode == options.toggleKey then
 			_open = not _open
 			Main.Visible        = _open
-			floatStroke.Color   = _open and T.Accent or T.Border
-			floatBtn.TextColor3 = _open and T.Accent or T.TextSecondary
+			floatStroke.Color   = T.Border
+			floatBtn.TextColor3 = _open and T.TextPrimary or T.TextSecondary
 			floatShow()
 		end
 	end))
@@ -635,7 +635,7 @@ function Library:new(options)
 		end
 
 		local indicator = Instance.new("Frame", Tab._navBtn)
-		indicator.BackgroundColor3 = T.Accent
+		indicator.BackgroundColor3 = T.TextPrimary
 		indicator.BorderSizePixel  = 0
 		indicator.AnchorPoint      = Vector2.new(0, 0.5)
 		indicator.Size             = UDim2.new(0, isFirst and 2 or 0, 0.6, 0)
@@ -682,8 +682,8 @@ function Library:new(options)
 		navText.Text                   = opts.name
 		navText.TextTruncate           = Enum.TextTruncate.AtEnd
 		navText.TextXAlignment         = Enum.TextXAlignment.Left
-		navText.Size                   = UDim2.new(1, -22, 1, 0)
-		navText.Position               = UDim2.new(0, 22, 0, 0)
+		navText.Size                   = UDim2.new(1, -12, 1, 0)
+		navText.Position               = UDim2.new(0, 8, 0, 0)
 		navText.ZIndex                 = 2
 		Tab._navText = navText
 
@@ -769,17 +769,12 @@ function Library:new(options)
 			local f = Instance.new("Frame", Tab._scroll)
 			f.BackgroundTransparency = 1; f.BorderSizePixel = 0
 			f.Size = UDim2.new(1, 0, 0, 22)
-			local line = Instance.new("Frame", f)
-			line.BackgroundColor3 = T.Border; line.BorderSizePixel = 0
-			line.AnchorPoint = Vector2.new(0, 0.5)
-			line.Size        = UDim2.new(1, 0, 0, 1)
-			line.Position    = UDim2.new(0, 0, 0.5, 0)
 			local sLbl = lbl(f, opts.name:upper(), 9, T.TextDisabled, UBUNTU_BOLD)
-			sLbl.BackgroundColor3       = T.Background
 			sLbl.BackgroundTransparency = 1
-			sLbl.Size                   = UDim2.new(0, #opts.name * 7 + 10, 1, 0)
+			sLbl.Size                   = UDim2.new(1, 0, 1, 0)
 			sLbl.ZIndex                 = 2
-			sLbl.TextXAlignment         = Enum.TextXAlignment.Center
+			sLbl.TextXAlignment         = Enum.TextXAlignment.Left
+			pad(sLbl, 0, 0, 0, 2)
 			return f
 		end
 
@@ -1445,8 +1440,6 @@ function Library:new(options)
 			pcall(function() if isfile(_cfgFile) then delfile(_cfgFile) end end)
 			GUI.notify("Config", "Reset.", 2)
 		end })
-		S:Section({ name = "About" })
-		S:Label({ text = "Ventura UI v" .. Library.Version })
 	end)
 
 	return GUI
