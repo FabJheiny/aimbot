@@ -828,12 +828,37 @@ function GUI:NavSection(label)
     end
 end)
 local _btnHover = false
-Btn.frame.MouseEnter:Connect(function() _btnHover = true end)
-Btn.frame.MouseLeave:Connect(function() _btnHover = false end)
+local _btnPress = false
 
+Btn.frame.MouseEnter:Connect(function()
+    _btnHover = true
+    if not _btnPress then
+        Btn.frame.BackgroundTransparency = 0.55
+        Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+        bStroke.Color                    = T.BorderHover
+    end
+end)
+Btn.frame.MouseLeave:Connect(function()
+    _btnHover = false
+    if not _btnPress then
+        Btn.frame.BackgroundTransparency = 1
+        Btn.frame.BackgroundColor3       = T.Surface
+        bStroke.Color                    = T.Border
+    end
+end)
+Btn.frame.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1
+        or i.UserInputType == Enum.UserInputType.Touch then
+        _btnPress = true
+        Btn.frame.BackgroundTransparency = 0.3
+        Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+        opts.callback()
+    end
+end)
 Btn.frame.InputEnded:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
+        _btnPress = false
         if _btnHover then
             Btn.frame.BackgroundTransparency = 0.55
             Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
@@ -845,18 +870,6 @@ Btn.frame.InputEnded:Connect(function(i)
         end
     end
 end)
-Btn.frame.MouseEnter:Connect(function()
-    Btn.frame.BackgroundTransparency = 0.55
-    Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
-    bStroke.Color                    = T.BorderHover
-end)
-Btn.frame.MouseLeave:Connect(function()
-    Btn.frame.BackgroundTransparency = 1
-    Btn.frame.BackgroundColor3       = T.Surface
-    bStroke.Color                    = T.Border
-end)
-			return Btn
-		end
 
 		function Tab:Toggle(opts)
 			opts = validate({ name = "Toggle", description = "", tooltip = "", default = false, callback = function() end }, opts)
