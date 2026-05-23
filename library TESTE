@@ -199,7 +199,7 @@ function Library:new(options)
 	local Topbar = Instance.new("Frame", Main)
 	Topbar.Name                   = "Topbar"
 	Topbar.BackgroundColor3       = T.Topbar
-	Topbar.BackgroundTransparency = 1
+	Topbar.BackgroundTransparency = 0.35
 	Topbar.BorderSizePixel        = 0
 	Topbar.Size                   = UDim2.new(1, 0, 0, 36)
 	corner(Topbar, 8)
@@ -598,7 +598,7 @@ end)
 			f.Name                   = name
 			f.BorderSizePixel        = 0
 			f.BackgroundColor3       = T.Surface
-			f.BackgroundTransparency = 1
+			f.BackgroundTransparency = 0.65
 			f.Size                   = UDim2.new(1, 0, 0, h or 34)
 			corner(f, 5)
 			stroke(f, T.Border)
