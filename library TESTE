@@ -202,10 +202,10 @@ function Library:new(options)
 	Topbar.BorderSizePixel        = 0
 	Topbar.Size                   = UDim2.new(1, 0, 0, 36)
 	corner(Topbar, 8)
-	
-	local titleLbl = lbl(Topbar, options.name, 13, T.TextPrimary, UBUNTU_BOLD)
-    titleLbl.Size     = UDim2.new(1, -20, 1, 0)
-    titleLbl.Position = UDim2.new(0, 10, 0, 0)
+
+local titleLbl = lbl(Topbar, options.name, 13, T.TextPrimary, UBUNTU_BOLD)
+titleLbl.Size     = UDim2.new(1, -20, 1, 0)
+titleLbl.Position = UDim2.new(0, 10, 0, 0)
 
 	local NAV_W   = 130
 	local navOpen = true
