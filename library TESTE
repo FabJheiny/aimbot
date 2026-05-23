@@ -168,14 +168,6 @@ function Library:new(options)
 	stroke(Main, T.Border)
 	GUI._main = Main
 
-	local accentGlow = Instance.new("Frame", Main)
-	accentGlow.BackgroundColor3       = T.Accent
-	accentGlow.BackgroundTransparency = 0.82
-	accentGlow.BorderSizePixel        = 0
-	accentGlow.Size                   = UDim2.new(1, 0, 0, 1)
-	accentGlow.Position               = UDim2.new(0, 0, 0, 0)
-	accentGlow.ZIndex                 = 2
-
 	local Topbar = Instance.new("Frame", Main)
 	Topbar.Name                   = "Topbar"
 	Topbar.BackgroundColor3       = T.Topbar
@@ -480,15 +472,15 @@ function Library:new(options)
 	GUI._floatBtn = floatBtn
 
 	local floatFadeTask = nil
-	local function floatShow()
-		if floatFadeTask then task.cancel(floatFadeTask) end
-		tw(floatBtn, { BackgroundTransparency = 0.08 }, TI_FAST)
-		floatStroke.Transparency = 0
-		floatFadeTask = task.delay(3, function()
-			tw(floatBtn, { BackgroundTransparency = 1 }, TI_MED)
-			floatStroke.Transparency = 1
-		end)
-	end
+local function floatShow()
+	if floatFadeTask then task.cancel(floatFadeTask) end
+	tw(floatBtn, { BackgroundTransparency = 0.08 }, TI_FAST)
+	floatStroke.Transparency = 0
+	floatFadeTask = task.delay(3, function()
+		tw(floatBtn, { BackgroundTransparency = 0.55 }, TI_MED)
+		floatStroke.Transparency = 0.6
+	end)
+end
 
 	local fbDrag, fbStart, fbOrigin, fbMoved = false, nil, nil, false
 	floatBtn.InputBegan:Connect(function(i)
@@ -830,7 +822,7 @@ function GUI:NavSection(label)
 			Btn.frame.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
-        Btn.frame.BackgroundTransparency = 0.4
+        Btn.frame.BackgroundTransparency = 0.3
         Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
         opts.callback()
     end
@@ -838,12 +830,13 @@ end)
 Btn.frame.InputEnded:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1
         or i.UserInputType == Enum.UserInputType.Touch then
-        Btn.frame.BackgroundTransparency = 0.6
+        Btn.frame.BackgroundTransparency = 0.55
         Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+        bStroke.Color                    = T.BorderHover
     end
 end)
 Btn.frame.MouseEnter:Connect(function()
-    Btn.frame.BackgroundTransparency = 0.6
+    Btn.frame.BackgroundTransparency = 0.55
     Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
     bStroke.Color                    = T.BorderHover
 end)
