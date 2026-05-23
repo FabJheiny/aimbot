@@ -21,7 +21,6 @@ Library.Theme = {
 	Accent        = Color3.fromRGB(220, 220, 225),
 	Background    = Color3.fromRGB(12, 12, 14),
 	Surface       = Color3.fromRGB(20, 20, 24),
-	SurfaceHover  = Color3.fromRGB(30, 30, 36),
 	Nav           = Color3.fromRGB(10, 10, 12),
 	Topbar        = Color3.fromRGB(10, 10, 12),
 	Border        = Color3.fromRGB(40, 40, 48),
@@ -29,18 +28,6 @@ Library.Theme = {
 	TextPrimary   = Color3.fromRGB(210, 210, 215),
 	TextSecondary = Color3.fromRGB(110, 110, 120),
 	TextDisabled  = Color3.fromRGB(60, 60, 68),
-	BgAlpha       = 0.18,
-	SurfaceAlpha  = 0.10,
-	NavAlpha      = 0.22,
-}
-
-Library.Icons = {
-	home="home", settings="settings", search="search", close="X",
-	check="v", plus="+", minus="-", star="*",
-	edit="edit", warning="!", info="i", bolt="!",
-	user="O", lock="X", eye="O", target="+",
-	fire="*", shield="[]", sword="x", gun="O",
-	esp="O", aimbot="+", tp="*", speed=">",
 }
 
 local function tw(obj, goal, ti, cb)
@@ -97,22 +84,8 @@ local function validate(defaults, opts)
 	return opts
 end
 
-local function resolveIcon(icon)
-	if not icon or icon == "" then return {kind="none", value=""} end
-	if type(icon) == "string" then
-		if icon:match("^rbxasset") then return {kind="image", value=icon} end
-		if icon:match("^%d+$") then return {kind="image", value="rbxassetid://"..icon} end
-		-- Strip emojis: keep only printable ASCII
-		local stripped = icon:gsub("[%z\1-\31\127-\255]", ""):match("^%s*(.-)%s*$")
-		if stripped and #stripped > 0 then return {kind="text", value=stripped} end
-		return {kind="none", value=""}
-	end
-	return {kind="none", value=""}
-end
-
 local function stripEmoji(str)
 	if not str then return "" end
-	-- Remove non-ASCII characters (emoji are multi-byte UTF-8)
 	return str:gsub("[\xC2-\xFD][\x80-\xBF]*", ""):match("^%s*(.-)%s*$")
 end
 
@@ -134,8 +107,6 @@ function Library:new(options)
 		name        = "Ventura",
 		toggleKey   = Enum.KeyCode.Insert,
 		accent      = nil,
-		onClose     = nil,
-		watermark   = nil,
 	}, options)
 
 	if options.accent then Library.Theme.Accent = options.accent end
@@ -159,10 +130,10 @@ function Library:new(options)
 	GUI._sg = SG
 
 	local vp   = workspace.CurrentCamera.ViewportSize
-	local winW = MOBILE and math.min(vp.X - 16, 520) or 580
-	local winH = 400
-	local MIN_W, MAX_W = 380, 900
-	local MIN_H, MAX_H = 260, 680
+	local winW = MOBILE and math.min(vp.X - 16, 620) or 700
+	local winH = 480
+	local MIN_W, MAX_W = 460, 1000
+	local MIN_H, MAX_H = 320, 760
 
 	local Main = Instance.new("Frame", SG)
 	Main.Name                   = "Main"
@@ -204,7 +175,7 @@ function Library:new(options)
 	sidebarBtn.MouseEnter:Connect(function() sidebarBtn.TextColor3 = T.TextPrimary end)
 	sidebarBtn.MouseLeave:Connect(function() sidebarBtn.TextColor3 = T.TextSecondary end)
 
-	local NAV_W   = 120
+	local NAV_W   = 130
 	local navOpen = true
 
 	local Nav = Instance.new("Frame", Main)
@@ -224,29 +195,11 @@ function Library:new(options)
 	navBorder.Size             = UDim2.new(0, 1, 1, 0)
 	navBorder.Position         = UDim2.new(1, 0, 0, 0)
 
-	local searchBox = Instance.new("TextBox", Nav)
-	searchBox.BackgroundColor3       = T.Surface
-	searchBox.BackgroundTransparency = 1
-	searchBox.BorderSizePixel        = 0
-	searchBox.Size                   = UDim2.new(1, -8, 0, 22)
-	searchBox.Position               = UDim2.new(0, 4, 0, 5)
-	searchBox.TextSize               = 11
-	searchBox.FontFace               = UBUNTU
-	searchBox.TextColor3             = T.TextPrimary
-	searchBox.PlaceholderText        = "search..."
-	searchBox.PlaceholderColor3      = T.TextDisabled
-	searchBox.Text                   = ""
-	searchBox.ClearTextOnFocus       = false
-	searchBox.TextXAlignment         = Enum.TextXAlignment.Left
-	corner(searchBox, 3)
-	stroke(searchBox, T.Border)
-	pad(searchBox, 0, 0, 0, 4)
-
 	local BtnHolder = Instance.new("ScrollingFrame", Nav)
 	BtnHolder.BackgroundTransparency = 1
 	BtnHolder.BorderSizePixel        = 0
-	BtnHolder.Size                   = UDim2.new(1, 0, 1, -96)
-	BtnHolder.Position               = UDim2.new(0, 0, 0, 34)
+	BtnHolder.Size                   = UDim2.new(1, 0, 1, -60)
+	BtnHolder.Position               = UDim2.new(0, 0, 0, 6)
 	BtnHolder.ScrollBarThickness     = 2
 	BtnHolder.ScrollBarImageColor3   = Color3.fromRGB(55, 55, 65)
 	BtnHolder.CanvasSize             = UDim2.new(0, 0, 0, 0)
@@ -331,15 +284,6 @@ function Library:new(options)
 		end
 	end)
 
-	track(searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-		local q = searchBox.Text:lower()
-		for _, tab in ipairs(GUI._tabs) do
-			if tab._navBtn then
-				tab._navBtn.Visible = (q == "" or tab._name:lower():find(q, 1, true) ~= nil)
-			end
-		end
-	end))
-
 	function GUI.notify(title, body, dur)
 		dur = dur or 3
 		local card = Instance.new("Frame", SG)
@@ -354,7 +298,7 @@ function Library:new(options)
 		stroke(card, T.Border)
 		local acc = Instance.new("Frame", card)
 		acc.Size             = UDim2.new(0, 2, 1, 0)
-		acc.BackgroundColor3 = T.Border
+		acc.BackgroundColor3 = T.TextPrimary
 		acc.BorderSizePixel  = 0
 		acc.ZIndex           = 601
 		local t1 = lbl(card, title or "Ventura", 13, T.TextPrimary, UBUNTU_BOLD)
@@ -476,7 +420,7 @@ function Library:new(options)
 	floatBtn.AutoButtonColor        = false
 	floatBtn.ZIndex                 = 900
 	corner(floatBtn, FB / 2)
-	local floatStroke = stroke(floatBtn, T.Border, 1)
+	local floatStroke = stroke(floatBtn, T.TextPrimary, 1)
 	floatStroke.Transparency = 1
 	GUI._floatBtn = floatBtn
 
@@ -520,7 +464,7 @@ function Library:new(options)
 			_open = not _open
 			Main.Visible        = _open
 			floatBtn.TextColor3 = _open and T.TextPrimary or T.TextSecondary
-			floatStroke.Color   = _open and T.Border or T.Border
+			floatStroke.Color   = T.TextPrimary
 		end
 		if fbDrag then floatShow() end
 		fbDrag = false
@@ -531,68 +475,15 @@ function Library:new(options)
 		if input.KeyCode == options.toggleKey then
 			_open = not _open
 			Main.Visible        = _open
-			floatStroke.Color   = T.Border
+			floatStroke.Color   = T.TextPrimary
 			floatBtn.TextColor3 = _open and T.TextPrimary or T.TextSecondary
 			floatShow()
 		end
 	end))
 
-	function GUI:NavSection(label)
-		local collapsed  = false
-		local memberBtns = {}
-
-		local sf = Instance.new("Frame", BtnHolder)
-		sf.BackgroundTransparency = 1
-		sf.BorderSizePixel        = 0
-		sf.Size                   = UDim2.new(1, 0, 0, 20)
-		sf.LayoutOrder            = nextOrder()
-
-		local sBtn = Instance.new("TextButton", sf)
-		sBtn.BackgroundTransparency = 1
-		sBtn.BorderSizePixel        = 0
-		sBtn.Size                   = UDim2.new(1, 0, 1, 0)
-		sBtn.Text                   = ""
-		sBtn.AutoButtonColor        = false
-
-		local sLbl = lbl(sBtn, label:upper(), 9, T.TextDisabled, UBUNTU_BOLD)
-		sLbl.Size = UDim2.new(1, -14, 1, 0)
-
-		local arrow = Instance.new("TextLabel", sBtn)
-		arrow.BackgroundTransparency = 1
-		arrow.AnchorPoint            = Vector2.new(1, 0.5)
-		arrow.Size                   = UDim2.new(0, 12, 0, 12)
-		arrow.Position               = UDim2.new(1, 0, 0.5, 0)
-		arrow.Text                   = "-"
-		arrow.TextSize               = 10
-		arrow.FontFace               = MONO
-		arrow.TextColor3             = T.TextDisabled
-		arrow.TextXAlignment         = Enum.TextXAlignment.Center
-
-		local Section = {}
-		local function applyCollapse()
-			arrow.Text = collapsed and "+" or "-"
-			for _, nb in ipairs(memberBtns) do nb.Visible = not collapsed end
-		end
-		function Section:Collapse() collapsed = true;  applyCollapse() end
-		function Section:Expand()   collapsed = false; applyCollapse() end
-		function Section:Toggle()   collapsed = not collapsed; applyCollapse() end
-		Section._registerTab = function(nb)
-			table.insert(memberBtns, nb)
-			if collapsed then nb.Visible = false end
-		end
-		sBtn.InputBegan:Connect(function(i)
-			if i.UserInputType == Enum.UserInputType.MouseButton1
-				or i.UserInputType == Enum.UserInputType.Touch then
-				Section:Toggle()
-			end
-		end)
-		if not GUI._navSections then GUI._navSections = {} end
-		table.insert(GUI._navSections, Section)
-		return Section
-	end
 
 	function GUI:CreateTab(opts)
-		opts = validate({ name = "Tab", icon = "" }, opts)
+		opts = validate({ name = "Tab" }, opts)
 		-- Strip emojis from tab name
 		opts.name = stripEmoji(opts.name)
 		if opts.name == "" then opts.name = "Tab" end
@@ -629,11 +520,6 @@ function Library:new(options)
 		Tab._navBtn.LayoutOrder            = nextOrder()
 		corner(Tab._navBtn, 4)
 
-		if GUI._navSections and #GUI._navSections > 0 then
-			local sec = GUI._navSections[#GUI._navSections]
-			if sec and sec._registerTab then sec._registerTab(Tab._navBtn) end
-		end
-
 		local indicator = Instance.new("Frame", Tab._navBtn)
 		indicator.BackgroundColor3 = T.TextPrimary
 		indicator.BorderSizePixel  = 0
@@ -643,35 +529,6 @@ function Library:new(options)
 		indicator.ZIndex           = 1
 		corner(indicator, 2)
 		Tab._indicator = indicator
-
-		local iconInfo = resolveIcon(opts.icon)
-		local navIcon
-		if iconInfo.kind == "text" then
-			navIcon = Instance.new("TextLabel", Tab._navBtn)
-			navIcon.BackgroundTransparency = 1
-			navIcon.BorderSizePixel        = 0
-			navIcon.AnchorPoint            = Vector2.new(0, 0.5)
-			navIcon.Size                   = UDim2.new(0, 14, 0, 14)
-			navIcon.Position               = UDim2.new(0, 6, 0.5, 0)
-			navIcon.ZIndex                 = 2
-			navIcon.Text                   = iconInfo.value
-			navIcon.TextSize               = 12
-			navIcon.FontFace               = UBUNTU
-			navIcon.TextColor3             = isFirst and T.TextPrimary or T.TextSecondary
-			navIcon.TextXAlignment         = Enum.TextXAlignment.Center
-		else
-			navIcon = Instance.new("ImageLabel", Tab._navBtn)
-			navIcon.BackgroundTransparency = 1
-			navIcon.BorderSizePixel        = 0
-			navIcon.AnchorPoint            = Vector2.new(0, 0.5)
-			navIcon.Image                  = iconInfo.kind == "image" and iconInfo.value or ""
-			navIcon.ImageColor3            = isFirst and T.TextPrimary or T.TextSecondary
-			navIcon.Size                   = UDim2.new(0, 14, 0, 14)
-			navIcon.Position               = UDim2.new(0, 6, 0.5, 0)
-			navIcon.ZIndex                 = 2
-		end
-		Tab._navIcon     = navIcon
-		Tab._navIconKind = iconInfo.kind
 
 		local navText = Instance.new("TextLabel", Tab._navBtn)
 		navText.BackgroundTransparency = 1
@@ -699,15 +556,11 @@ function Library:new(options)
 			if Tab.Active or Tab._disabled then return end
 			Tab._navBtn.BackgroundTransparency = 0.8
 			navText.TextColor3 = T.TextPrimary
-			if Tab._navIconKind == "text" then navIcon.TextColor3  = T.TextPrimary
-			else                                navIcon.ImageColor3 = T.TextPrimary end
 		end)
 		navClick.MouseLeave:Connect(function()
 			if Tab.Active or Tab._disabled then return end
 			Tab._navBtn.BackgroundTransparency = 1
 			navText.TextColor3 = T.TextSecondary
-			if Tab._navIconKind == "text" then navIcon.TextColor3  = T.TextSecondary
-			else                                navIcon.ImageColor3 = T.TextSecondary end
 		end)
 		navClick.MouseButton1Click:Connect(function()
 			if not Tab._disabled then Tab:Activate() end
@@ -721,8 +574,6 @@ function Library:new(options)
 			GUI.CurrentTab       = Tab
 			Tab._navBtn.BackgroundTransparency = 0.35
 			navText.TextColor3 = T.TextPrimary
-			if Tab._navIconKind == "text" then navIcon.TextColor3  = T.TextPrimary
-			else                                navIcon.ImageColor3 = T.TextPrimary end
 			tw(Tab._indicator, { Size = UDim2.new(0, 2, 0.6, 0) })
 		end
 
@@ -732,24 +583,18 @@ function Library:new(options)
 			Tab._scroll.Position = UDim2.new(0, 99999, 0, 0)
 			Tab._navBtn.BackgroundTransparency = 1
 			navText.TextColor3 = T.TextSecondary
-			if Tab._navIconKind == "text" then navIcon.TextColor3  = T.TextSecondary
-			else                                navIcon.ImageColor3 = T.TextSecondary end
 			tw(Tab._indicator, { Size = UDim2.new(0, 0, 0.6, 0) })
 		end
 
 		function Tab:Disable()
 			Tab._disabled = true; navClick.Active = false
 			navText.TextColor3 = T.TextDisabled
-			if Tab._navIconKind == "text" then navIcon.TextColor3  = T.TextDisabled
-			else                                navIcon.ImageColor3 = T.TextDisabled end
 		end
 
 		function Tab:Enable()
 			Tab._disabled = false; navClick.Active = true
 			local c = Tab.Active and T.TextPrimary or T.TextSecondary
 			navText.TextColor3 = c
-			if Tab._navIconKind == "text" then navIcon.TextColor3 = c
-			else navIcon.ImageColor3 = c end
 		end
 
 		local function base(name, h)
@@ -811,7 +656,7 @@ function Library:new(options)
 		end
 
 		function Tab:Button(opts)
-			opts = validate({ name = "Button", description = "", tooltip = "", callback = function() end }, opts)
+			opts = validate({ name = "Button", description = "", callback = function() end }, opts)
 			local h   = opts.description ~= "" and 48 or 36
 			local Btn = {}
 			Btn.frame = base("Button", h)
@@ -861,7 +706,7 @@ function Library:new(options)
 		end
 
 		function Tab:Toggle(opts)
-			opts = validate({ name = "Toggle", description = "", tooltip = "", default = false, callback = function() end }, opts)
+			opts = validate({ name = "Toggle", description = "", default = false, callback = function() end }, opts)
 			local h      = opts.description ~= "" and 48 or 36
 			local Toggle = { Value = opts.default }
 			Toggle.frame = base("Toggle", h)
@@ -907,13 +752,12 @@ function Library:new(options)
 		end
 
 		function Tab:Slider(opts)
-			opts = validate({ name = "Slider", min = 0, max = 100, default = 50, suffix = "", callback = function() end }, opts)
+			opts = validate({ name = "Slider", min = 0, max = 100, default = 50, callback = function() end }, opts)
 			local Slider = { Value = opts.default, Dragging = false }
 			Slider.frame = base("Slider", 54)
 			pad(Slider.frame, 8, 10, 9, 10)
 			local nl = lbl(Slider.frame, opts.name, 13, T.TextPrimary)
 			nl.Size = UDim2.new(1, -46, 0, 17)
-			-- Only show the number, no suffix
 			local vl = lbl(Slider.frame, tostring(opts.default), 12, T.TextSecondary, nil, Enum.TextXAlignment.Right)
 			vl.AnchorPoint = Vector2.new(1, 0)
 			vl.Size        = UDim2.new(0, 42, 0, 17)
@@ -1258,7 +1102,7 @@ function Library:new(options)
 			if opts.text ~= "" then
 				local bg = lbl(f, opts.text, 9, opts.color or T.TextDisabled, UBUNTU_BOLD)
 				bg.BackgroundColor3       = T.Background
-				bg.BackgroundTransparency = 1
+				bg.BackgroundTransparency = 0
 				bg.AnchorPoint            = Vector2.new(0.5, 0.5)
 				bg.Position               = UDim2.new(0.5, 0, 0.5, 0)
 				bg.Size                   = UDim2.new(0, #opts.text * 7 + 12, 1, 0)
@@ -1407,39 +1251,6 @@ function Library:new(options)
 
 	task.delay(0.3, function()
 		local d = GUI:LoadConfig(); if d then GUI:ApplyConfig(d) end
-	end)
-
-	task.defer(function()
-		local S = GUI:CreateTab({ name = "Settings", icon = "" })
-		S:Section({ name = "Anti-AFK" })
-		local afkConn
-		S:Toggle({
-			name        = "Anti-AFK",
-			description = "Prevents inactivity kick",
-			default     = false,
-			callback    = function(v)
-				if afkConn then afkConn:Disconnect(); afkConn = nil end
-				if v then
-					afkConn = LP.Idled:Connect(function()
-						local vu = game:GetService("VirtualUser")
-						pcall(function() vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame) end)
-						task.wait(0.1)
-						pcall(function() vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame) end)
-					end)
-				end
-			end,
-		})
-		S:Section({ name = "Config" })
-		S:Button({ name = "Save Config",  callback = function() GUI:SaveConfig(); GUI.notify("Config", "Saved.", 2) end })
-		S:Button({ name = "Load Config",  callback = function()
-			local d = GUI:LoadConfig()
-			if d then GUI:ApplyConfig(d); GUI.notify("Config", "Loaded.", 2)
-			else GUI.notify("Config", "No save found.", 2) end
-		end })
-		S:Button({ name = "Reset Config", callback = function()
-			pcall(function() if isfile(_cfgFile) then delfile(_cfgFile) end end)
-			GUI.notify("Config", "Reset.", 2)
-		end })
 	end)
 
 	return GUI
