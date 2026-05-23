@@ -15,7 +15,7 @@ local TI_MED  = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.
 local MOBILE  = UIS.TouchEnabled and not UIS.KeyboardEnabled
 
 local Library = {}
-Library.Version = "4.0"
+Library.Version = "1.0"
 
 Library.Theme = {
 	Accent        = Color3.fromRGB(220, 220, 225),
@@ -204,6 +204,7 @@ function Library:new(options)
 	Topbar.Size                   = UDim2.new(1, 0, 0, 36)
 	corner(Topbar, 8)
 
+
 local titleLbl = lbl(Topbar, options.name, 13, T.TextPrimary, UBUNTU_BOLD)
 titleLbl.Size     = UDim2.new(1, -20, 1, 0)
 titleLbl.Position = UDim2.new(0, 10, 0, 0)
@@ -240,9 +241,10 @@ titleLbl.Position = UDim2.new(0, 10, 0, 0)
 	local _navOrder = 0
 	local function nextOrder() _navOrder += 1; return _navOrder end
 
+
 	local UserBox = Instance.new("Frame", Nav)
 	UserBox.BackgroundTransparency = 0.75
-    UserBox.BackgroundColor3       = T.Border
+UserBox.BackgroundColor3       = T.Border
 	UserBox.BorderSizePixel        = 0
 	UserBox.AnchorPoint            = Vector2.new(0, 1)
 	UserBox.Size                   = UDim2.new(1, 0, 0, 60)
