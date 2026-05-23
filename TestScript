@@ -1,156 +1,219 @@
-local Library = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/library%20TESTE"
-))()
+--[[
+    APEX UI LIBRARY — Exemplo de uso completo
+    Carregue o UILibrary.lua via loadstring e use a API abaixo.
+]]
 
-local GUI = Library:new({
-    name      = "My Script",
-    toggleKey = Enum.KeyCode.Insert,
+-- ─── Carregamento (substitua a URL pela sua) ─────────────────
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/library%20TESTE"))()
+
+-- ─── Criar janela ────────────────────────────────────────────
+local Window = Library:CreateWindow({
+    Title    = "Apex Suite",
+    Subtitle = "v1.0 • Mobile Ready",
+    Width    = 320,
+    Height   = 460,
 })
 
-local Players    = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UIS        = game:GetService("UserInputService")
-local LP         = Players.LocalPlayer
+-- ─── Aba: Principal ──────────────────────────────────────────
+local Main = Window:AddTab("Main")
 
-local function char() return LP.Character end
-local function hum()  local c = char(); return c and c:FindFirstChildOfClass("Humanoid") end
-local function hrp()  local c = char(); return c and c:FindFirstChild("HumanoidRootPart") end
+-- Seção com toggle e slider
+local Combat = Main:AddSection({ Title = "Combat" })
 
--- ── Tab 1: Player ─────────────────────────────────────────────────────────────
-local PlayerTab = GUI:CreateTab({ name = "Player" })
-
-PlayerTab:Section({ name = "Movement" })
-
-local speedValue  = 16
-local speedActive = false
-
-PlayerTab:Slider({
-    name     = "Walk Speed",
-    min      = 16, max = 350, default = 16,
-    callback = function(v)
-        speedValue = v
-        if speedActive then
-            local h = hum()
-            if h then h.WalkSpeed = v end
-        end
+local ESPToggle = Combat:AddToggle({
+    Title   = "ESP",
+    Default = false,
+    Callback = function(v)
+        print("ESP:", v)
     end,
 })
 
-PlayerTab:Toggle({
-    name     = "Speed Hack",
-    default  = false,
-    callback = function(v)
-        speedActive = v
-        local h = hum()
-        if h then h.WalkSpeed = v and speedValue or 16 end
+local AimbotToggle = Combat:AddToggle({
+    Title   = "Aimbot",
+    Default = false,
+    Callback = function(v)
+        print("Aimbot:", v)
     end,
 })
 
-PlayerTab:Slider({
-    name     = "Jump Power",
-    min      = 7, max = 300, default = 7,
-    callback = function(v)
-        local h = hum()
-        if h then h.JumpPower = v end
+Combat:AddDivider()
+
+local SpeedSlider = Combat:AddSlider({
+    Title    = "Walk Speed",
+    Min      = 16,
+    Max      = 200,
+    Value    = 16,
+    Step     = 1,
+    Suffix   = " st/s",
+    Callback = function(v)
+        -- game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
+        print("Speed:", v)
     end,
 })
 
-PlayerTab:Section({ name = "Extras" })
-
-local noclipConn
-PlayerTab:Toggle({
-    name        = "Noclip",
-    description = "Walk through walls",
-    default     = false,
-    callback    = function(v)
-        if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
-        if v then
-            noclipConn = RunService.Stepped:Connect(function()
-                local c = char(); if not c then return end
-                for _, p in ipairs(c:GetDescendants()) do
-                    if p:IsA("BasePart") then p.CanCollide = false end
-                end
-            end)
-        end
+local JumpSlider = Combat:AddSlider({
+    Title    = "Jump Power",
+    Min      = 50,
+    Max      = 300,
+    Value    = 50,
+    Step     = 5,
+    Callback = function(v)
+        print("JumpPower:", v)
     end,
 })
 
-local jumpConn
-PlayerTab:Toggle({
-    name     = "Infinite Jump",
-    default  = false,
-    callback = function(v)
-        if jumpConn then jumpConn:Disconnect(); jumpConn = nil end
-        if v then
-            jumpConn = UIS.JumpRequest:Connect(function()
-                local h = hum()
-                if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end
-            end)
-        end
+-- ─── Aba: Visual ─────────────────────────────────────────────
+local Visual = Window:AddTab("Visual")
+
+local ESPSection = Visual:AddSection({ Title = "ESP Settings" })
+
+ESPSection:AddDropdown({
+    Title   = "ESP Mode",
+    Options = { "Box", "Skeleton", "Dot", "Chams" },
+    Default = "Box",
+    Callback = function(v)
+        print("ESP Mode:", v)
     end,
 })
 
-PlayerTab:Button({
-    name     = "Teleport Up",
-    callback = function()
-        local r = hrp()
-        if r then pcall(function() r.CFrame = r.CFrame + Vector3.new(0, 50, 0) end) end
+ESPSection:AddMultiDropdown({
+    Title   = "Show Info",
+    Options = { "Name", "Health", "Distance", "Weapon" },
+    Callback = function(v)
+        print("Info:", table.concat(v, ", "))
     end,
 })
 
--- ── Tab 2: World ──────────────────────────────────────────────────────────────
-local WorldTab = GUI:CreateTab({ name = "World" })
-local Lighting = game:GetService("Lighting")
-
-WorldTab:Section({ name = "Lighting" })
-
-WorldTab:Slider({
-    name     = "Time of Day",
-    min      = 0, max = 24, default = 14,
-    callback = function(v) pcall(function() Lighting.ClockTime = v end) end,
-})
-
-WorldTab:Toggle({
-    name     = "Fullbright",
-    default  = false,
-    callback = function(v)
-        pcall(function()
-            Lighting.Ambient        = v and Color3.fromRGB(255,255,255) or Color3.fromRGB(70,70,70)
-            Lighting.OutdoorAmbient = v and Color3.fromRGB(255,255,255) or Color3.fromRGB(140,140,140)
-            Lighting.Brightness     = v and 10 or 2
-        end)
+local ESPColor = ESPSection:AddColorPicker({
+    Title   = "ESP Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(color)
+        print("Color:", color)
     end,
 })
 
-WorldTab:Slider({
-    name     = "Gravity",
-    min      = 0, max = 400, default = 196,
-    callback = function(v) pcall(function() workspace.Gravity = v end) end,
-})
+-- ─── Aba: Settings ───────────────────────────────────────────
+local Settings = Window:AddTab("Settings")
 
--- ── Tab 3: Misc ───────────────────────────────────────────────────────────────
-local MiscTab = GUI:CreateTab({ name = "Misc" })
+local GeneralSection = Settings:AddSection({ Title = "General" })
 
-MiscTab:Section({ name = "Utilities" })
-
-local afkConn
-MiscTab:Toggle({
-    name        = "Anti-AFK",
-    description = "Prevents inactivity kick",
-    default     = false,
-    callback    = function(v)
-        if afkConn then afkConn:Disconnect(); afkConn = nil end
-        if v then
-            afkConn = LP.Idled:Connect(function()
-                local vu = game:GetService("VirtualUser")
-                pcall(function() vu:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame) end)
-                task.wait(0.1)
-                pcall(function() vu:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame) end)
-            end)
-        end
+GeneralSection:AddSearchBar({
+    Placeholder = "Search settings...",
+    Callback = function(text)
+        print("Search:", text)
     end,
 })
 
-task.delay(2, function()
-    GUI.notify("My Script", "Loaded! Press Insert to toggle.", 4)
+GeneralSection:AddTextbox({
+    Title       = "Custom Tag",
+    Placeholder = "Enter player tag...",
+    Default     = "",
+    Callback    = function(text, enter)
+        print("Tag:", text, "| Enter:", enter)
+    end,
+})
+
+local KeySection = Settings:AddSection({ Title = "Keybinds" })
+
+KeySection:AddKeybind({
+    Title   = "Toggle Menu",
+    Default = Enum.KeyCode.RightShift,
+    Callback = function(key)
+        -- key pressed = toggle window
+        Window:Toggle()
+    end,
+})
+
+KeySection:AddKeybind({
+    Title   = "Toggle ESP",
+    Default = Enum.KeyCode.F1,
+    Callback = function(key)
+        ESPToggle:SetValue(not ESPToggle:GetValue())
+    end,
+})
+
+local ConfigSection = Settings:AddSection({ Title = "Config" })
+
+ConfigSection:AddButton({
+    Title    = "Save Config",
+    Style    = "Primary",
+    Callback = function()
+        Window:SaveConfig("myconfig")
+        Library:Notify({
+            Title   = "Config Saved",
+            Message = "Your settings were saved successfully.",
+            Type    = "success",
+            Duration = 3,
+        })
+    end,
+})
+
+ConfigSection:AddButton({
+    Title    = "Load Config",
+    Callback = function()
+        Window:LoadConfig("myconfig")
+        Library:Notify({
+            Title   = "Config Loaded",
+            Message = "Settings restored.",
+            Type    = "info",
+            Duration = 3,
+        })
+    end,
+})
+
+ConfigSection:AddButton({
+    Title    = "Reset All",
+    Callback = function()
+        Library:Dialog({
+            Title   = "Reset Config",
+            Message = "Are you sure you want to reset all settings? This cannot be undone.",
+            Buttons = {
+                {
+                    Text     = "Cancel",
+                    Primary  = false,
+                    Callback = function() end,
+                },
+                {
+                    Text     = "Reset",
+                    Primary  = true,
+                    Callback = function()
+                        ESPToggle:SetValue(false)
+                        AimbotToggle:SetValue(false)
+                        SpeedSlider:SetValue(16)
+                        JumpSlider:SetValue(50)
+                        Library:Notify({
+                            Title   = "Reset Complete",
+                            Message = "All settings returned to default.",
+                            Type    = "warning",
+                        })
+                    end,
+                },
+            },
+        })
+    end,
+})
+
+-- ─── Notificação de boas-vindas ──────────────────────────────
+task.delay(0.5, function()
+    Library:Notify({
+        Title    = "Apex Suite Loaded",
+        Message  = "Hold header 0.5s to drag • Mobile ready",
+        Type     = "info",
+        Duration = 5,
+    })
 end)
+
+-- ─── Botão flutuante (toggle rápido) ────────────────────────
+local FAB = Library:FloatingButton({
+    Icon     = "≡",
+    Callback = function()
+        Window:Toggle()
+    end,
+})
+
+-- ─── Tema personalizado (opcional) ───────────────────────────
+-- Library:SetTheme({
+--     Accent    = Color3.fromRGB(100, 180, 255),
+--     ToggleOn  = Color3.fromRGB(100, 180, 255),
+--     SliderFill = Color3.fromRGB(100, 180, 255),
+-- })
