@@ -940,69 +940,62 @@ end)
 			hitbox.AutoButtonColor        = false
 			hitbox.ZIndex                 = 10
 
-local lastValue      = opts.default
-local renderConn     = nil
-local touchDragX     = nil 
-local touchDragDelta = 6 
+			local lastValue   = opts.default
+			local renderConn  = nil
 
-local function syncUI(x)
-    local range = opts.max - opts.min
-    if range == 0 then return end
-    local a   = math.clamp((x - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
-    local val = math.floor(opts.min + range * a)
-    fill.Size      = UDim2.new(a, 0, 1, 0)
-    thumb.Position = UDim2.new(a, 0, 0.5, 0)
-    vl.Text        = tostring(val)
-    if val ~= lastValue then
-        lastValue    = val
-        Slider.Value = val
-        opts.callback(val)
-    end
-end
+			local function syncUI(x)
+				local range = opts.max - opts.min
+				if range == 0 then return end
+				local a   = math.clamp((x - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+				local val = math.floor(opts.min + range * a)
+				fill.Size      = UDim2.new(a, 0, 1, 0)
+				thumb.Position = UDim2.new(a, 0, 0.5, 0)
+				vl.Text        = tostring(val)
+				if val ~= lastValue then
+					lastValue    = val
+					Slider.Value = val
+					opts.callback(val)
+				end
+			end
 
-local function stopDrag()
-    if not Slider.Dragging then return end
-    Slider.Dragging = false
-    activeTouchId   = nil
-    if renderConn then renderConn:Disconnect(); renderConn = nil end
-end
+			local function fromMouse()
+				syncUI(UIS:GetMouseLocation().X)
+			end
 
-hitbox.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 then
-        Slider.Dragging = true
-        syncUI(i.Position.X)
-        renderConn = RunService.RenderStepped:Connect(function()
-            if Slider.Dragging then syncUI(UIS:GetMouseLocation().X) end
-        end)
-    elseif i.UserInputType == Enum.UserInputType.Touch then
-        if Slider.Dragging then return end  -- já arrastando, ignora
-        Slider.Dragging = true
-        touchDragX = i.Position.X          -- guarda X do toque inicial
-        syncUI(i.Position.X)
-    end
-end)
+			local function startDrag()
+				if Slider.Dragging then return end
+				Slider.Dragging = true
+				fromMouse()
+				renderConn = RunService.RenderStepped:Connect(function()
+					if Slider.Dragging then fromMouse() end
+				end)
+			end
 
-local c1 = UIS.InputEnded:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 then
-        stopDrag()
-    elseif i.UserInputType == Enum.UserInputType.Touch then
-        -- só para se o toque terminou perto de onde começou o drag deste slider
-        if Slider.Dragging and touchDragX
-            and math.abs(i.Position.X - touchDragX) < (track.AbsoluteSize.X + touchDragDelta) then
-            stopDrag()
-        end
-    end
-end)
+			local function stopDrag()
+				if not Slider.Dragging then return end
+				Slider.Dragging = false
+				if renderConn then renderConn:Disconnect(); renderConn = nil end
+			end
 
-local c2 = UIS.InputChanged:Connect(function(i)
-    if not Slider.Dragging then return end
-    if i.UserInputType == Enum.UserInputType.Touch then
-        if touchDragX and math.abs(i.Position.X - touchDragX) < track.AbsoluteSize.X + 60 then
-            touchDragX = i.Position.X  -- atualiza para seguir o arrasto
-            syncUI(i.Position.X)
-        end
-    end
-end)
+			hitbox.InputBegan:Connect(function(i)
+				if i.UserInputType == Enum.UserInputType.MouseButton1
+					or i.UserInputType == Enum.UserInputType.Touch then
+					startDrag()
+				end
+			end)
+
+			local c1 = UIS.InputEnded:Connect(function(i)
+				if i.UserInputType == Enum.UserInputType.MouseButton1
+					or i.UserInputType == Enum.UserInputType.Touch then
+					stopDrag()
+				end
+			end)
+			-- Touch: rastrear posição durante drag
+			local c2 = UIS.InputChanged:Connect(function(i)
+				if Slider.Dragging and i.UserInputType == Enum.UserInputType.Touch then
+					syncUI(i.Position.X)
+				end
+			end)
 
 			Slider.frame.AncestryChanged:Connect(function()
 				if not Slider.frame:IsDescendantOf(game) then
