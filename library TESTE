@@ -18,14 +18,14 @@ local Library = {}
 Library.Version = "4.0"
 
 Library.Theme = {
-	Accent        = Color3.fromRGB(110, 160, 255),
+	Accent        = Color3.fromRGB(220, 220, 225),
 	Background    = Color3.fromRGB(12, 12, 14),
 	Surface       = Color3.fromRGB(20, 20, 24),
 	SurfaceHover  = Color3.fromRGB(30, 30, 36),
 	Nav           = Color3.fromRGB(10, 10, 12),
 	Topbar        = Color3.fromRGB(10, 10, 12),
 	Border        = Color3.fromRGB(40, 40, 48),
-	BorderHover   = Color3.fromRGB(70, 70, 90),
+	BorderHover   = Color3.fromRGB(90, 90, 100),
 	TextPrimary   = Color3.fromRGB(210, 210, 215),
 	TextSecondary = Color3.fromRGB(110, 110, 120),
 	TextDisabled  = Color3.fromRGB(60, 60, 68),
@@ -35,12 +35,12 @@ Library.Theme = {
 }
 
 Library.Icons = {
-	home="🏠", settings="⚙️", search="🔍", close="✕",
-	check="✓", plus="＋", minus="－", star="★",
-	edit="✎", warning="⚠", info="ℹ", bolt="⚡",
-	user="◉", lock="⊘", eye="◎", target="⊕",
-	fire="◈", shield="◆", sword="⚔", gun="◉",
-	esp="◎", aimbot="⊕", tp="⊛", speed="»",
+	home="home", settings="settings", search="search", close="X",
+	check="v", plus="+", minus="-", star="*",
+	edit="edit", warning="!", info="i", bolt="!",
+	user="O", lock="X", eye="O", target="+",
+	fire="*", shield="[]", sword="x", gun="O",
+	esp="O", aimbot="+", tp="*", speed=">",
 }
 
 local function tw(obj, goal, ti, cb)
@@ -102,9 +102,18 @@ local function resolveIcon(icon)
 	if type(icon) == "string" then
 		if icon:match("^rbxasset") then return {kind="image", value=icon} end
 		if icon:match("^%d+$") then return {kind="image", value="rbxassetid://"..icon} end
-		return {kind="text", value=icon}
+		-- Strip emojis: keep only printable ASCII
+		local stripped = icon:gsub("[%z\1-\31\127-\255]", ""):match("^%s*(.-)%s*$")
+		if stripped and #stripped > 0 then return {kind="text", value=stripped} end
+		return {kind="none", value=""}
 	end
 	return {kind="none", value=""}
+end
+
+local function stripEmoji(str)
+	if not str then return "" end
+	-- Remove non-ASCII characters (emoji are multi-byte UTF-8)
+	return str:gsub("[\xC2-\xFD][\x80-\xBF]*", ""):match("^%s*(.-)%s*$")
 end
 
 local function destroyExisting()
@@ -150,10 +159,10 @@ function Library:new(options)
 	GUI._sg = SG
 
 	local vp   = workspace.CurrentCamera.ViewportSize
-	local winW = MOBILE and math.min(vp.X - 16, 400) or 460
-	local winH = 310
-	local MIN_W, MAX_W = 300, 760
-	local MIN_H, MAX_H = 200, 580
+	local winW = MOBILE and math.min(vp.X - 16, 520) or 580
+	local winH = 400
+	local MIN_W, MAX_W = 380, 900
+	local MIN_H, MAX_H = 260, 680
 
 	local Main = Instance.new("Frame", SG)
 	Main.Name                   = "Main"
@@ -173,21 +182,21 @@ function Library:new(options)
 	Topbar.BackgroundColor3       = T.Topbar
 	Topbar.BackgroundTransparency = 1
 	Topbar.BorderSizePixel        = 0
-	Topbar.Size                   = UDim2.new(1, 0, 0, 32)
+	Topbar.Size                   = UDim2.new(1, 0, 0, 36)
 	corner(Topbar, 8)
 
-	local titleLbl = lbl(Topbar, options.name, 12, T.TextPrimary, UBUNTU_BOLD)
+	local titleLbl = lbl(Topbar, options.name, 13, T.TextPrimary, UBUNTU_BOLD)
 	titleLbl.Size     = UDim2.new(1, -80, 1, 0)
-	titleLbl.Position = UDim2.new(0, 36, 0, 0)
+	titleLbl.Position = UDim2.new(0, 40, 0, 0)
 
 	local sidebarBtn = Instance.new("TextButton", Topbar)
 	sidebarBtn.BackgroundTransparency = 1
 	sidebarBtn.BorderSizePixel        = 0
 	sidebarBtn.AnchorPoint            = Vector2.new(0, 0.5)
 	sidebarBtn.Position               = UDim2.new(0, 8, 0.5, 0)
-	sidebarBtn.Size                   = UDim2.new(0, 22, 0, 22)
+	sidebarBtn.Size                   = UDim2.new(0, 24, 0, 24)
 	sidebarBtn.Text                   = "≡"
-	sidebarBtn.TextSize               = 18
+	sidebarBtn.TextSize               = 20
 	sidebarBtn.FontFace               = UBUNTU_BOLD
 	sidebarBtn.TextColor3             = T.TextSecondary
 	sidebarBtn.AutoButtonColor        = false
@@ -195,7 +204,7 @@ function Library:new(options)
 	sidebarBtn.MouseEnter:Connect(function() sidebarBtn.TextColor3 = T.TextPrimary end)
 	sidebarBtn.MouseLeave:Connect(function() sidebarBtn.TextColor3 = T.TextSecondary end)
 
-	local NAV_W   = 100
+	local NAV_W   = 120
 	local navOpen = true
 
 	local Nav = Instance.new("Frame", Main)
@@ -203,8 +212,8 @@ function Library:new(options)
 	Nav.BackgroundColor3       = T.Nav
 	Nav.BackgroundTransparency = 1
 	Nav.BorderSizePixel        = 0
-	Nav.Size                   = UDim2.new(0, NAV_W, 1, -32)
-	Nav.Position               = UDim2.new(0, 0, 0, 32)
+	Nav.Size                   = UDim2.new(0, NAV_W, 1, -36)
+	Nav.Position               = UDim2.new(0, 0, 0, 36)
 	Nav.ClipsDescendants       = true
 	corner(Nav, 6)
 
@@ -219,9 +228,9 @@ function Library:new(options)
 	searchBox.BackgroundColor3       = T.Surface
 	searchBox.BackgroundTransparency = 1
 	searchBox.BorderSizePixel        = 0
-	searchBox.Size                   = UDim2.new(1, -8, 0, 20)
-	searchBox.Position               = UDim2.new(0, 4, 0, 4)
-	searchBox.TextSize               = 10
+	searchBox.Size                   = UDim2.new(1, -8, 0, 22)
+	searchBox.Position               = UDim2.new(0, 4, 0, 5)
+	searchBox.TextSize               = 11
 	searchBox.FontFace               = UBUNTU
 	searchBox.TextColor3             = T.TextPrimary
 	searchBox.PlaceholderText        = "search..."
@@ -236,8 +245,8 @@ function Library:new(options)
 	local BtnHolder = Instance.new("ScrollingFrame", Nav)
 	BtnHolder.BackgroundTransparency = 1
 	BtnHolder.BorderSizePixel        = 0
-	BtnHolder.Size                   = UDim2.new(1, 0, 1, -88)
-	BtnHolder.Position               = UDim2.new(0, 0, 0, 30)
+	BtnHolder.Size                   = UDim2.new(1, 0, 1, -96)
+	BtnHolder.Position               = UDim2.new(0, 0, 0, 34)
 	BtnHolder.ScrollBarThickness     = 2
 	BtnHolder.ScrollBarImageColor3   = Color3.fromRGB(55, 55, 65)
 	BtnHolder.CanvasSize             = UDim2.new(0, 0, 0, 0)
@@ -257,13 +266,13 @@ function Library:new(options)
 	userSep.BorderSizePixel  = 0
 	userSep.AnchorPoint      = Vector2.new(0, 1)
 	userSep.Size             = UDim2.new(1, 0, 0, 1)
-	userSep.Position         = UDim2.new(0, 0, 1, -56)
+	userSep.Position         = UDim2.new(0, 0, 1, -60)
 
 	local UserBox = Instance.new("Frame", Nav)
 	UserBox.BackgroundTransparency = 1
 	UserBox.BorderSizePixel        = 0
 	UserBox.AnchorPoint            = Vector2.new(0, 1)
-	UserBox.Size                   = UDim2.new(1, 0, 0, 55)
+	UserBox.Size                   = UDim2.new(1, 0, 0, 60)
 	UserBox.Position               = UDim2.new(0, 0, 1, 0)
 	pad(UserBox, 4, 4, 4, 6)
 
@@ -271,7 +280,7 @@ function Library:new(options)
 	avtr.BackgroundColor3 = T.Surface
 	avtr.BorderSizePixel  = 0
 	avtr.AnchorPoint      = Vector2.new(0, 0.5)
-	avtr.Size             = UDim2.new(0, 28, 0, 28)
+	avtr.Size             = UDim2.new(0, 30, 0, 30)
 	avtr.Position         = UDim2.new(0, 0, 0.5, 0)
 	avtr.ScaleType        = Enum.ScaleType.Crop
 	avtr.Image            = ("https://www.roblox.com/headshot-thumbnail/image?userId=%d&width=48&height=48&format=png"):format(LP.UserId)
@@ -281,27 +290,27 @@ function Library:new(options)
 	usStack.BackgroundTransparency = 1
 	usStack.BorderSizePixel        = 0
 	usStack.AnchorPoint            = Vector2.new(0, 0.5)
-	usStack.Size                   = UDim2.new(1, -34, 0, 30)
-	usStack.Position               = UDim2.new(0, 32, 0.5, 0)
+	usStack.Size                   = UDim2.new(1, -36, 0, 32)
+	usStack.Position               = UDim2.new(0, 34, 0.5, 0)
 
 	local usl = Instance.new("UIListLayout", usStack)
 	usl.SortOrder = Enum.SortOrder.LayoutOrder
 	usl.Padding   = UDim.new(0, 1)
 
-	local dispLbl = lbl(usStack, LP.DisplayName, 10, T.TextPrimary, UBUNTU_BOLD)
-	dispLbl.Size        = UDim2.new(1, 0, 0, 14)
+	local dispLbl = lbl(usStack, LP.DisplayName, 11, T.TextPrimary, UBUNTU_BOLD)
+	dispLbl.Size        = UDim2.new(1, 0, 0, 15)
 	dispLbl.LayoutOrder = 1
 
-	local unLbl = lbl(usStack, "@" .. LP.Name, 9, T.TextSecondary)
-	unLbl.Size        = UDim2.new(1, 0, 0, 13)
+	local unLbl = lbl(usStack, "@" .. LP.Name, 10, T.TextSecondary)
+	unLbl.Size        = UDim2.new(1, 0, 0, 14)
 	unLbl.LayoutOrder = 2
 
 	local Content = Instance.new("Frame", Main)
 	Content.Name                  = "Content"
 	Content.BackgroundTransparency = 1
 	Content.BorderSizePixel       = 0
-	Content.Position              = UDim2.new(0, NAV_W + 4, 0, 36)
-	Content.Size                  = UDim2.new(1, -(NAV_W + 8), 1, -42)
+	Content.Position              = UDim2.new(0, NAV_W + 4, 0, 40)
+	Content.Size                  = UDim2.new(1, -(NAV_W + 8), 1, -46)
 	Content.ClipsDescendants      = true
 	GUI._content = Content
 
@@ -310,14 +319,14 @@ function Library:new(options)
 			and i.UserInputType ~= Enum.UserInputType.Touch then return end
 		navOpen = not navOpen
 		if navOpen then
-			tw(Nav,     { Size = UDim2.new(0, NAV_W, 1, -32) }, TI_MED)
-			tw(Content, { Position = UDim2.new(0, NAV_W + 4, 0, 36),
-			              Size     = UDim2.new(1, -(NAV_W + 8), 1, -42) }, TI_MED)
+			tw(Nav,     { Size = UDim2.new(0, NAV_W, 1, -36) }, TI_MED)
+			tw(Content, { Position = UDim2.new(0, NAV_W + 4, 0, 40),
+			              Size     = UDim2.new(1, -(NAV_W + 8), 1, -46) }, TI_MED)
 			sidebarBtn.TextColor3 = T.TextSecondary
 		else
-			tw(Nav,     { Size = UDim2.new(0, 0, 1, -32) }, TI_MED)
-			tw(Content, { Position = UDim2.new(0, 4, 0, 36),
-			              Size     = UDim2.new(1, -8, 1, -42) }, TI_MED)
+			tw(Nav,     { Size = UDim2.new(0, 0, 1, -36) }, TI_MED)
+			tw(Content, { Position = UDim2.new(0, 4, 0, 40),
+			              Size     = UDim2.new(1, -8, 1, -46) }, TI_MED)
 			sidebarBtn.TextColor3 = T.Accent
 		end
 	end)
@@ -334,7 +343,7 @@ function Library:new(options)
 	function GUI.notify(title, body, dur)
 		dur = dur or 3
 		local card = Instance.new("Frame", SG)
-		card.Size                   = UDim2.new(0, 200, 0, 44)
+		card.Size                   = UDim2.new(0, 220, 0, 48)
 		card.BackgroundColor3       = T.Surface
 		card.BackgroundTransparency = 0.12
 		card.BorderSizePixel        = 0
@@ -348,13 +357,13 @@ function Library:new(options)
 		acc.BackgroundColor3 = T.Accent
 		acc.BorderSizePixel  = 0
 		acc.ZIndex           = 601
-		local t1 = lbl(card, title or "Ventura", 12, T.TextPrimary, UBUNTU_BOLD)
-		t1.Size     = UDim2.new(1, -14, 0, 16)
-		t1.Position = UDim2.new(0, 10, 0, 7)
+		local t1 = lbl(card, title or "Ventura", 13, T.TextPrimary, UBUNTU_BOLD)
+		t1.Size     = UDim2.new(1, -14, 0, 17)
+		t1.Position = UDim2.new(0, 10, 0, 8)
 		t1.ZIndex   = 601
-		local t2 = lbl(card, body or "", 11, T.TextSecondary)
-		t2.Size        = UDim2.new(1, -14, 0, 14)
-		t2.Position    = UDim2.new(0, 10, 0, 25)
+		local t2 = lbl(card, body or "", 12, T.TextSecondary)
+		t2.Size        = UDim2.new(1, -14, 0, 15)
+		t2.Position    = UDim2.new(0, 10, 0, 27)
 		t2.TextWrapped = true
 		t2.ZIndex      = 601
 		task.delay(dur, function()
@@ -376,7 +385,7 @@ function Library:new(options)
 	end
 
 	function GUI:SetTitle(t)  titleLbl.Text = tostring(t or "") end
-	function GUI:SetAccent(c) T.Accent = c; accentGlow.BackgroundColor3 = c end
+	function GUI:SetAccent(c) T.Accent = c end
 	function GUI:SelectTab(name)
 		for _, tab in ipairs(GUI._tabs) do
 			if tab._name == name and not tab._disabled then tab:Activate(); return true end
@@ -451,7 +460,7 @@ function Library:new(options)
 		end
 	end))
 
-	local FB = 48
+	local FB = 52
 	local floatBtn = Instance.new("TextButton", SG)
 	floatBtn.Name                   = "FloatToggle"
 	floatBtn.Size                   = UDim2.new(0, FB, 0, FB)
@@ -459,9 +468,9 @@ function Library:new(options)
 	floatBtn.BackgroundTransparency = 0.15
 	floatBtn.BorderSizePixel        = 0
 	floatBtn.AnchorPoint            = Vector2.new(0.5, 0.5)
-	floatBtn.Position               = UDim2.new(1, -38, 1, -38)
+	floatBtn.Position               = UDim2.new(1, -42, 1, -42)
 	floatBtn.Text                   = "V"
-	floatBtn.TextSize               = 15
+	floatBtn.TextSize               = 16
 	floatBtn.FontFace               = UBUNTU_BOLD
 	floatBtn.TextColor3             = T.Accent
 	floatBtn.AutoButtonColor        = false
@@ -472,15 +481,15 @@ function Library:new(options)
 	GUI._floatBtn = floatBtn
 
 	local floatFadeTask = nil
-local function floatShow()
-	if floatFadeTask then task.cancel(floatFadeTask) end
-	tw(floatBtn, { BackgroundTransparency = 0.08 }, TI_FAST)
-	floatStroke.Transparency = 0
-	floatFadeTask = task.delay(3, function()
-		tw(floatBtn, { BackgroundTransparency = 0.55 }, TI_MED)
-		floatStroke.Transparency = 0.6
-	end)
-end
+	local function floatShow()
+		if floatFadeTask then task.cancel(floatFadeTask) end
+		tw(floatBtn, { BackgroundTransparency = 0.08 }, TI_FAST)
+		floatStroke.Transparency = 0
+		floatFadeTask = task.delay(3, function()
+			tw(floatBtn, { BackgroundTransparency = 0.55 }, TI_MED)
+			floatStroke.Transparency = 0.6
+		end)
+	end
 
 	local fbDrag, fbStart, fbOrigin, fbMoved = false, nil, nil, false
 	floatBtn.InputBegan:Connect(function(i)
@@ -527,14 +536,15 @@ end
 			floatShow()
 		end
 	end))
-function GUI:NavSection(label)
+
+	function GUI:NavSection(label)
 		local collapsed  = false
 		local memberBtns = {}
 
 		local sf = Instance.new("Frame", BtnHolder)
 		sf.BackgroundTransparency = 1
 		sf.BorderSizePixel        = 0
-		sf.Size                   = UDim2.new(1, 0, 0, 18)
+		sf.Size                   = UDim2.new(1, 0, 0, 20)
 		sf.LayoutOrder            = nextOrder()
 
 		local sBtn = Instance.new("TextButton", sf)
@@ -544,7 +554,7 @@ function GUI:NavSection(label)
 		sBtn.Text                   = ""
 		sBtn.AutoButtonColor        = false
 
-		local sLbl = lbl(sBtn, label:upper(), 8, T.TextDisabled, UBUNTU_BOLD)
+		local sLbl = lbl(sBtn, label:upper(), 9, T.TextDisabled, UBUNTU_BOLD)
 		sLbl.Size = UDim2.new(1, -14, 1, 0)
 
 		local arrow = Instance.new("TextLabel", sBtn)
@@ -552,7 +562,7 @@ function GUI:NavSection(label)
 		arrow.AnchorPoint            = Vector2.new(1, 0.5)
 		arrow.Size                   = UDim2.new(0, 12, 0, 12)
 		arrow.Position               = UDim2.new(1, 0, 0.5, 0)
-		arrow.Text                   = "−"
+		arrow.Text                   = "-"
 		arrow.TextSize               = 10
 		arrow.FontFace               = MONO
 		arrow.TextColor3             = T.TextDisabled
@@ -560,7 +570,7 @@ function GUI:NavSection(label)
 
 		local Section = {}
 		local function applyCollapse()
-			arrow.Text = collapsed and "+" or "−"
+			arrow.Text = collapsed and "+" or "-"
 			for _, nb in ipairs(memberBtns) do nb.Visible = not collapsed end
 		end
 		function Section:Collapse() collapsed = true;  applyCollapse() end
@@ -583,6 +593,10 @@ function GUI:NavSection(label)
 
 	function GUI:CreateTab(opts)
 		opts = validate({ name = "Tab", icon = "" }, opts)
+		-- Strip emojis from tab name
+		opts.name = stripEmoji(opts.name)
+		if opts.name == "" then opts.name = "Tab" end
+
 		local Tab     = { Active = false, _name = opts.name, _disabled = false }
 		local isFirst = (#GUI._tabs == 0)
 		table.insert(GUI._tabs, Tab)
@@ -611,7 +625,7 @@ function GUI:NavSection(label)
 		Tab._navBtn.BorderSizePixel        = 0
 		Tab._navBtn.BackgroundColor3       = T.Border
 		Tab._navBtn.BackgroundTransparency = isFirst and 0.35 or 1
-		Tab._navBtn.Size                   = UDim2.new(1, 0, 0, 24)
+		Tab._navBtn.Size                   = UDim2.new(1, 0, 0, 28)
 		Tab._navBtn.LayoutOrder            = nextOrder()
 		corner(Tab._navBtn, 4)
 
@@ -638,10 +652,10 @@ function GUI:NavSection(label)
 			navIcon.BorderSizePixel        = 0
 			navIcon.AnchorPoint            = Vector2.new(0, 0.5)
 			navIcon.Size                   = UDim2.new(0, 14, 0, 14)
-			navIcon.Position               = UDim2.new(0, 4, 0.5, 0)
+			navIcon.Position               = UDim2.new(0, 6, 0.5, 0)
 			navIcon.ZIndex                 = 2
 			navIcon.Text                   = iconInfo.value
-			navIcon.TextSize               = 11
+			navIcon.TextSize               = 12
 			navIcon.FontFace               = UBUNTU
 			navIcon.TextColor3             = isFirst and T.TextPrimary or T.TextSecondary
 			navIcon.TextXAlignment         = Enum.TextXAlignment.Center
@@ -652,8 +666,8 @@ function GUI:NavSection(label)
 			navIcon.AnchorPoint            = Vector2.new(0, 0.5)
 			navIcon.Image                  = iconInfo.kind == "image" and iconInfo.value or ""
 			navIcon.ImageColor3            = isFirst and T.TextPrimary or T.TextSecondary
-			navIcon.Size                   = UDim2.new(0, 12, 0, 12)
-			navIcon.Position               = UDim2.new(0, 5, 0.5, 0)
+			navIcon.Size                   = UDim2.new(0, 14, 0, 14)
+			navIcon.Position               = UDim2.new(0, 6, 0.5, 0)
 			navIcon.ZIndex                 = 2
 		end
 		Tab._navIcon     = navIcon
@@ -662,14 +676,14 @@ function GUI:NavSection(label)
 		local navText = Instance.new("TextLabel", Tab._navBtn)
 		navText.BackgroundTransparency = 1
 		navText.BorderSizePixel        = 0
-		navText.TextSize               = 11
+		navText.TextSize               = 12
 		navText.FontFace               = UBUNTU
 		navText.TextColor3             = isFirst and T.TextPrimary or T.TextSecondary
 		navText.Text                   = opts.name
 		navText.TextTruncate           = Enum.TextTruncate.AtEnd
 		navText.TextXAlignment         = Enum.TextXAlignment.Left
 		navText.Size                   = UDim2.new(1, -22, 1, 0)
-		navText.Position               = UDim2.new(0, 20, 0, 0)
+		navText.Position               = UDim2.new(0, 22, 0, 0)
 		navText.ZIndex                 = 2
 		Tab._navText = navText
 
@@ -744,7 +758,7 @@ function GUI:NavSection(label)
 			f.BorderSizePixel        = 0
 			f.BackgroundColor3       = T.Surface
 			f.BackgroundTransparency = 1
-			f.Size                   = UDim2.new(1, 0, 0, h or 32)
+			f.Size                   = UDim2.new(1, 0, 0, h or 34)
 			corner(f, 5)
 			stroke(f, T.Border)
 			return f
@@ -754,7 +768,7 @@ function GUI:NavSection(label)
 			opts = validate({ name = "Section" }, opts)
 			local f = Instance.new("Frame", Tab._scroll)
 			f.BackgroundTransparency = 1; f.BorderSizePixel = 0
-			f.Size = UDim2.new(1, 0, 0, 20)
+			f.Size = UDim2.new(1, 0, 0, 22)
 			local line = Instance.new("Frame", f)
 			line.BackgroundColor3 = T.Border; line.BorderSizePixel = 0
 			line.AnchorPoint = Vector2.new(0, 0.5)
@@ -772,8 +786,8 @@ function GUI:NavSection(label)
 		function Tab:Label(opts)
 			opts = validate({ text = "Label", color = nil }, opts)
 			local f = Instance.new("Frame", Tab._scroll)
-			f.BackgroundTransparency = 1; f.BorderSizePixel = 0; f.Size = UDim2.new(1, 0, 0, 22)
-			local l2 = lbl(f, opts.text, 11, opts.color or T.TextSecondary)
+			f.BackgroundTransparency = 1; f.BorderSizePixel = 0; f.Size = UDim2.new(1, 0, 0, 24)
+			local l2 = lbl(f, opts.text, 12, opts.color or T.TextSecondary)
 			pad(l2, 0, 0, 0, 4)
 			return f
 		end
@@ -783,17 +797,17 @@ function GUI:NavSection(label)
 			local charsPerLine = math.max(1, math.floor(300 / 7))
 			local lines        = math.max(1, math.ceil(#opts.text / charsPerLine))
 			local bodyH        = lines * 15 + 4
-			local titleH       = opts.title ~= "" and 16 or 0
+			local titleH       = opts.title ~= "" and 18 or 0
 			local totalH       = titleH + bodyH + 14
 			local f            = base("Paragraph", totalH)
 			pad(f, 7, 8, 7, 10)
 			local yOff = 0
 			if opts.title ~= "" then
-				local tl = lbl(f, opts.title, 12, T.TextPrimary, UBUNTU_BOLD)
-				tl.Size = UDim2.new(1, 0, 0, 16); tl.Position = UDim2.new(0, 0, 0, 0)
-				yOff = 18
+				local tl = lbl(f, opts.title, 13, T.TextPrimary, UBUNTU_BOLD)
+				tl.Size = UDim2.new(1, 0, 0, 18); tl.Position = UDim2.new(0, 0, 0, 0)
+				yOff = 20
 			end
-			local bl = lbl(f, opts.text, 11, opts.color or T.TextSecondary)
+			local bl = lbl(f, opts.text, 12, opts.color or T.TextSecondary)
 			bl.TextWrapped  = true
 			bl.TextTruncate = Enum.TextTruncate.None
 			bl.Size         = UDim2.new(1, 0, 0, bodyH)
@@ -803,20 +817,20 @@ function GUI:NavSection(label)
 
 		function Tab:Button(opts)
 			opts = validate({ name = "Button", description = "", tooltip = "", callback = function() end }, opts)
-			local h   = opts.description ~= "" and 44 or 34
+			local h   = opts.description ~= "" and 48 or 36
 			local Btn = {}
 			Btn.frame = base("Button", h)
 			pad(Btn.frame, 0, 8, 0, 10)
 			local bStroke = Btn.frame:FindFirstChildOfClass("UIStroke")
-			local nl = lbl(Btn.frame, opts.name, 12, T.TextPrimary)
-			nl.Size     = UDim2.new(1, -22, 0, 16)
-			nl.Position = UDim2.new(0, 0, 0, h == 44 and 7 or 9)
+			local nl = lbl(Btn.frame, opts.name, 13, T.TextPrimary)
+			nl.Size     = UDim2.new(1, -22, 0, 17)
+			nl.Position = UDim2.new(0, 0, 0, h == 48 and 8 or 10)
 			if opts.description ~= "" then
-				local dl = lbl(Btn.frame, opts.description, 10, T.TextSecondary)
-				dl.Size     = UDim2.new(1, -22, 0, 13)
-				dl.Position = UDim2.new(0, 0, 0, 24)
+				local dl = lbl(Btn.frame, opts.description, 11, T.TextSecondary)
+				dl.Size     = UDim2.new(1, -22, 0, 14)
+				dl.Position = UDim2.new(0, 0, 0, 27)
 			end
-			local arr = lbl(Btn.frame, "›", 16, T.TextDisabled, MONO, Enum.TextXAlignment.Right)
+			local arr = lbl(Btn.frame, "›", 17, T.TextDisabled, MONO, Enum.TextXAlignment.Right)
 			arr.Size     = UDim2.new(0, 14, 1, 0)
 			arr.Position = UDim2.new(1, -14, 0, 0)
 			local clickBtn = Instance.new("TextButton", Btn.frame)
@@ -853,45 +867,45 @@ function GUI:NavSection(label)
 
 		function Tab:Toggle(opts)
 			opts = validate({ name = "Toggle", description = "", tooltip = "", default = false, callback = function() end }, opts)
-			local h      = opts.description ~= "" and 44 or 34
+			local h      = opts.description ~= "" and 48 or 36
 			local Toggle = { Value = opts.default }
 			Toggle.frame = base("Toggle", h)
 			pad(Toggle.frame, 0, 8, 0, 10)
-			local nl = lbl(Toggle.frame, opts.name, 12, T.TextPrimary)
-			nl.Size     = UDim2.new(1, -38, 0, 16)
-			nl.Position = UDim2.new(0, 0, 0, h == 44 and 7 or 9)
+			local nl = lbl(Toggle.frame, opts.name, 13, T.TextPrimary)
+			nl.Size     = UDim2.new(1, -38, 0, 17)
+			nl.Position = UDim2.new(0, 0, 0, h == 48 and 8 or 10)
 			if opts.description ~= "" then
-				local dl = lbl(Toggle.frame, opts.description, 10, T.TextSecondary)
-				dl.Size     = UDim2.new(1, -38, 0, 13)
-				dl.Position = UDim2.new(0, 0, 0, 24)
+				local dl = lbl(Toggle.frame, opts.description, 11, T.TextSecondary)
+				dl.Size     = UDim2.new(1, -38, 0, 14)
+				dl.Position = UDim2.new(0, 0, 0, 27)
 			end
 			local pill = Instance.new("Frame", Toggle.frame)
 			pill.BackgroundColor3 = opts.default and T.Accent or Color3.fromRGB(42, 42, 48)
 			pill.BorderSizePixel  = 0
 			pill.AnchorPoint      = Vector2.new(1, 0.5)
-			pill.Size             = UDim2.new(0, 28, 0, 14)
+			pill.Size             = UDim2.new(0, 30, 0, 16)
 			pill.Position         = UDim2.new(1, 0, 0.5, 0)
-			corner(pill, 7)
+			corner(pill, 8)
 			local knob = Instance.new("Frame", pill)
 			knob.BackgroundColor3 = Color3.fromRGB(210, 210, 215)
 			knob.BorderSizePixel  = 0
 			knob.AnchorPoint      = Vector2.new(0, 0.5)
-			knob.Size             = UDim2.new(0, 10, 0, 10)
-			knob.Position         = opts.default and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
-			corner(knob, 5)
+			knob.Size             = UDim2.new(0, 12, 0, 12)
+			knob.Position         = opts.default and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+			corner(knob, 6)
 			Toggle.frame.InputBegan:Connect(function(i)
 				if i.UserInputType == Enum.UserInputType.MouseButton1
 					or i.UserInputType == Enum.UserInputType.Touch then
 					Toggle.Value = not Toggle.Value
 					tw(pill, { BackgroundColor3 = Toggle.Value and T.Accent or Color3.fromRGB(42, 42, 48) })
-					tw(knob, { Position = Toggle.Value and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0) })
+					tw(knob, { Position = Toggle.Value and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 2, 0.5, 0) })
 					opts.callback(Toggle.Value)
 				end
 			end)
 			function Toggle:Set(v, silent)
 				Toggle.Value = v
 				tw(pill, { BackgroundColor3 = v and T.Accent or Color3.fromRGB(42, 42, 48) })
-				tw(knob, { Position = v and UDim2.new(1, -12, 0.5, 0) or UDim2.new(0, 2, 0.5, 0) })
+				tw(knob, { Position = v and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 2, 0.5, 0) })
 				if not silent then opts.callback(v) end
 			end
 			return Toggle
@@ -900,13 +914,14 @@ function GUI:NavSection(label)
 		function Tab:Slider(opts)
 			opts = validate({ name = "Slider", min = 0, max = 100, default = 50, suffix = "", callback = function() end }, opts)
 			local Slider = { Value = opts.default, Dragging = false }
-			Slider.frame = base("Slider", 50)
-			pad(Slider.frame, 7, 10, 8, 10)
-			local nl = lbl(Slider.frame, opts.name, 12, T.TextPrimary)
-			nl.Size = UDim2.new(1, -42, 0, 16)
-			local vl = lbl(Slider.frame, tostring(opts.default) .. opts.suffix, 11, T.TextSecondary, nil, Enum.TextXAlignment.Right)
+			Slider.frame = base("Slider", 54)
+			pad(Slider.frame, 8, 10, 9, 10)
+			local nl = lbl(Slider.frame, opts.name, 13, T.TextPrimary)
+			nl.Size = UDim2.new(1, -46, 0, 17)
+			-- Only show the number, no suffix
+			local vl = lbl(Slider.frame, tostring(opts.default), 12, T.TextSecondary, nil, Enum.TextXAlignment.Right)
 			vl.AnchorPoint = Vector2.new(1, 0)
-			vl.Size        = UDim2.new(0, 40, 0, 16)
+			vl.Size        = UDim2.new(0, 42, 0, 17)
 			vl.Position    = UDim2.new(1, 0, 0, 0)
 			local track = Instance.new("Frame", Slider.frame)
 			track.BackgroundColor3       = Color3.fromRGB(10, 10, 14)
@@ -925,9 +940,9 @@ function GUI:NavSection(label)
 			thumb.BackgroundColor3 = Color3.fromRGB(220, 220, 225)
 			thumb.BorderSizePixel  = 0
 			thumb.AnchorPoint      = Vector2.new(0.5, 0.5)
-			thumb.Size             = UDim2.new(0, 8, 0, 8)
+			thumb.Size             = UDim2.new(0, 10, 0, 10)
 			thumb.Position         = UDim2.new((opts.default - opts.min) / (opts.max - opts.min), 0, 0.5, 0)
-			corner(thumb, 4)
+			corner(thumb, 5)
 			local function upd(x)
 				local range = opts.max - opts.min
 				if range == 0 then return end
@@ -935,7 +950,7 @@ function GUI:NavSection(label)
 				Slider.Value   = math.floor(opts.min + range * a)
 				fill.Size      = UDim2.new(a, 0, 1, 0)
 				thumb.Position = UDim2.new(a, 0, 0.5, 0)
-				vl.Text        = tostring(Slider.Value) .. opts.suffix
+				vl.Text        = tostring(Slider.Value)
 				opts.callback(Slider.Value)
 			end
 			track.InputBegan:Connect(function(i)
@@ -961,7 +976,7 @@ function GUI:NavSection(label)
 				Slider.Value   = v
 				fill.Size      = UDim2.new(a, 0, 1, 0)
 				thumb.Position = UDim2.new(a, 0, 0.5, 0)
-				vl.Text        = tostring(v) .. opts.suffix
+				vl.Text        = tostring(v)
 				if not silent then opts.callback(v) end
 			end
 			return Slider
@@ -970,7 +985,7 @@ function GUI:NavSection(label)
 		function Tab:Dropdown(opts)
 			opts = validate({ name = "Dropdown", items = {}, default = nil, multi = false, callback = function() end }, opts)
 			local DD = { Open = false, Selected = opts.default, Multi = {} }
-			DD.frame = base("Dropdown", 34)
+			DD.frame = base("Dropdown", 36)
 			DD.frame.ClipsDescendants       = true
 			DD.frame.BackgroundTransparency = 1
 			DD.frame:FindFirstChildOfClass("UIStroke"):Destroy()
@@ -979,15 +994,15 @@ function GUI:NavSection(label)
 			header.BackgroundColor3       = T.Surface
 			header.BackgroundTransparency = 1
 			header.BorderSizePixel        = 0
-			header.Size                   = UDim2.new(1, 0, 0, 34)
+			header.Size                   = UDim2.new(1, 0, 0, 36)
 			header.Text                   = ""
 			header.ZIndex                 = 2
 			corner(header, 5); stroke(header, T.Border)
-			local selLbl = lbl(header, opts.default or opts.name, 12, T.TextPrimary)
+			local selLbl = lbl(header, opts.default or opts.name, 13, T.TextPrimary)
 			selLbl.Size   = UDim2.new(1, -20, 1, 0)
 			selLbl.ZIndex = 3
 			pad(selLbl, 0, 0, 0, 10)
-			local arrowLbl = lbl(header, "▾", 11, T.TextSecondary, MONO, Enum.TextXAlignment.Right)
+			local arrowLbl = lbl(header, "v", 12, T.TextSecondary, MONO, Enum.TextXAlignment.Right)
 			arrowLbl.AnchorPoint = Vector2.new(1, 0.5)
 			arrowLbl.Size        = UDim2.new(0, 16, 0, 16)
 			arrowLbl.Position    = UDim2.new(1, -6, 0.5, 0)
@@ -996,7 +1011,7 @@ function GUI:NavSection(label)
 			optHolder.BackgroundTransparency = 1
 			optHolder.BorderSizePixel        = 0
 			optHolder.Size                   = UDim2.new(1, 0, 0, 0)
-			optHolder.Position               = UDim2.new(0, 0, 0, 30)
+			optHolder.Position               = UDim2.new(0, 0, 0, 32)
 			optHolder.Visible                = false
 			optHolder.ZIndex                 = 4
 			local ol = Instance.new("UIListLayout", optHolder)
@@ -1014,11 +1029,11 @@ function GUI:NavSection(label)
 					opt.BorderSizePixel        = 0
 					opt.BackgroundColor3       = isSel and Color3.fromRGB(40, 40, 50) or Color3.fromRGB(22, 22, 28)
 					opt.BackgroundTransparency = 1
-					opt.TextSize               = 11
+					opt.TextSize               = 12
 					opt.TextXAlignment         = Enum.TextXAlignment.Left
 					opt.FontFace               = UBUNTU
 					opt.TextColor3             = isSel and T.TextPrimary or T.TextSecondary
-					opt.Size                   = UDim2.new(1, 0, 0, 24)
+					opt.Size                   = UDim2.new(1, 0, 0, 26)
 					opt.Text                   = item
 					opt.ZIndex                 = 5
 					corner(opt, 3); pad(opt, 0, 0, 0, 8)
@@ -1032,21 +1047,21 @@ function GUI:NavSection(label)
 						else
 							DD.Selected = item; selLbl.Text = item; opts.callback(item)
 							DD.Open = false; optHolder.Visible = false
-							arrowLbl.Text = "▾"
-							DD.frame.Size = UDim2.new(1, 0, 0, 34)
+							arrowLbl.Text = "v"
+							DD.frame.Size = UDim2.new(1, 0, 0, 36)
 							refresh()
 						end
 					end)
-					total = total + 24
+					total = total + 26
 				end
 				optHolder.Size = UDim2.new(1, 0, 0, total)
-				DD.frame.Size  = UDim2.new(1, 0, 0, DD.Open and (30 + total + 4) or 34)
+				DD.frame.Size  = UDim2.new(1, 0, 0, DD.Open and (32 + total + 4) or 36)
 			end
 			header.MouseButton1Click:Connect(function()
 				DD.Open = not DD.Open
 				optHolder.Visible = DD.Open
-				arrowLbl.Text     = DD.Open and "▴" or "▾"
-				if DD.Open then refresh() else DD.frame.Size = UDim2.new(1, 0, 0, 34) end
+				arrowLbl.Text     = DD.Open and "^" or "v"
+				if DD.Open then refresh() else DD.frame.Size = UDim2.new(1, 0, 0, 36) end
 			end)
 			refresh()
 			function DD:Set(v) DD.Selected = v; selLbl.Text = v; refresh() end
@@ -1056,25 +1071,26 @@ function GUI:NavSection(label)
 			end
 			return DD
 		end
-function Tab:TextInput(opts)
+
+		function Tab:TextInput(opts)
 			opts = validate({ name = "Input", placeholder = "...", default = "", numeric = false, callback = function() end }, opts)
 			local TIc = { Value = opts.default }
-			TIc.frame = base("TextInput", 48)
-			pad(TIc.frame, 5, 8, 5, 10)
-			local nl = lbl(TIc.frame, opts.name, 10, T.TextSecondary)
-			nl.Size = UDim2.new(1, 0, 0, 14)
+			TIc.frame = base("TextInput", 52)
+			pad(TIc.frame, 6, 8, 6, 10)
+			local nl = lbl(TIc.frame, opts.name, 11, T.TextSecondary)
+			nl.Size = UDim2.new(1, 0, 0, 15)
 			local ibg = Instance.new("Frame", TIc.frame)
 			ibg.BackgroundColor3       = Color3.fromRGB(10, 10, 14)
 			ibg.BackgroundTransparency = 1
 			ibg.BorderSizePixel        = 0
-			ibg.Size                   = UDim2.new(1, 0, 0, 22)
-			ibg.Position               = UDim2.new(0, 0, 0, 17)
+			ibg.Size                   = UDim2.new(1, 0, 0, 24)
+			ibg.Position               = UDim2.new(0, 0, 0, 19)
 			corner(ibg, 3)
 			local ibStroke = stroke(ibg, T.Border)
 			local box = Instance.new("TextBox", ibg)
 			box.BackgroundTransparency = 1
 			box.BorderSizePixel        = 0
-			box.TextSize               = 11
+			box.TextSize               = 12
 			box.FontFace               = UBUNTU
 			box.TextColor3             = T.TextPrimary
 			box.PlaceholderText        = opts.placeholder
@@ -1095,26 +1111,26 @@ function Tab:TextInput(opts)
 		end
 
 		function Tab:ColorPicker(opts)
-			opts = validate({ name = "Color", default = Color3.fromRGB(110, 160, 255), callback = function() end }, opts)
+			opts = validate({ name = "Color", default = Color3.fromRGB(220, 220, 225), callback = function() end }, opts)
 			local CP = { Value = opts.default, Open = false }
-			CP.frame = base("ColorPicker", 34)
+			CP.frame = base("ColorPicker", 36)
 			CP.frame.ClipsDescendants = true
 			pad(CP.frame, 0, 8, 0, 10)
 			local header = Instance.new("TextButton", CP.frame)
 			header.BackgroundTransparency = 1; header.BorderSizePixel = 0
-			header.Size = UDim2.new(1, 0, 0, 34); header.Text = ""; header.AutoButtonColor = false; header.ZIndex = 5
-			local nl = lbl(CP.frame, opts.name, 12, T.TextPrimary); nl.Size = UDim2.new(1, -34, 0, 34); nl.ZIndex = 4
+			header.Size = UDim2.new(1, 0, 0, 36); header.Text = ""; header.AutoButtonColor = false; header.ZIndex = 5
+			local nl = lbl(CP.frame, opts.name, 13, T.TextPrimary); nl.Size = UDim2.new(1, -34, 0, 36); nl.ZIndex = 4
 			local preview = Instance.new("Frame", CP.frame)
 			preview.BackgroundColor3 = opts.default; preview.BorderSizePixel = 0
-			preview.AnchorPoint = Vector2.new(1, 0); preview.Size = UDim2.new(0, 20, 0, 14)
+			preview.AnchorPoint = Vector2.new(1, 0); preview.Size = UDim2.new(0, 22, 0, 16)
 			preview.Position = UDim2.new(1, 0, 0, 10); preview.ZIndex = 4
 			corner(preview, 3); stroke(preview, T.Border)
 			local picker = Instance.new("Frame", CP.frame)
 			picker.BackgroundColor3       = Color3.fromRGB(14, 14, 18)
 			picker.BackgroundTransparency = 1
 			picker.BorderSizePixel        = 0
-			picker.Size                   = UDim2.new(1, 0, 0, 72)
-			picker.Position               = UDim2.new(0, 0, 0, 28)
+			picker.Size                   = UDim2.new(1, 0, 0, 76)
+			picker.Position               = UDim2.new(0, 0, 0, 30)
 			picker.Visible                = false
 			corner(picker, 4); pad(picker, 5, 8, 5, 8)
 			local pL = Instance.new("UIListLayout", picker)
@@ -1128,8 +1144,8 @@ function Tab:TextInput(opts)
 			end
 			local function makeHSVSlider(name, init, cb)
 				local row = Instance.new("Frame", picker)
-				row.BackgroundTransparency = 1; row.BorderSizePixel = 0; row.Size = UDim2.new(1, 0, 0, 14)
-				local rl = lbl(row, name, 9, T.TextSecondary); rl.Size = UDim2.new(0, 10, 1, 0)
+				row.BackgroundTransparency = 1; row.BorderSizePixel = 0; row.Size = UDim2.new(1, 0, 0, 16)
+				local rl = lbl(row, name, 10, T.TextSecondary); rl.Size = UDim2.new(0, 10, 1, 0)
 				local tr = Instance.new("Frame", row)
 				tr.BackgroundColor3 = Color3.fromRGB(10, 10, 14); tr.BorderSizePixel = 0
 				tr.AnchorPoint = Vector2.new(0, 0.5); tr.Size = UDim2.new(1, -14, 0, 4)
@@ -1165,7 +1181,7 @@ function Tab:TextInput(opts)
 			end)
 			header.MouseButton1Click:Connect(function()
 				CP.Open = not CP.Open; picker.Visible = CP.Open
-				CP.frame.Size = UDim2.new(1, 0, 0, CP.Open and 104 or 34)
+				CP.frame.Size = UDim2.new(1, 0, 0, CP.Open and 110 or 36)
 			end)
 			function CP:Set(c) CP.Value = c; preview.BackgroundColor3 = c; h_v, s_v, v_v = Color3.toHSV(c) end
 			return CP
@@ -1174,18 +1190,18 @@ function Tab:TextInput(opts)
 		function Tab:Keybind(opts)
 			opts = validate({ name = "Keybind", default = Enum.KeyCode.E, callback = function() end }, opts)
 			local KB = { Value = opts.default, Listening = false }
-			KB.frame = base("Keybind", 34)
+			KB.frame = base("Keybind", 36)
 			pad(KB.frame, 0, 8, 0, 10)
-			local nl = lbl(KB.frame, opts.name, 12, T.TextPrimary); nl.Size = UDim2.new(1, -68, 1, 0)
+			local nl = lbl(KB.frame, opts.name, 13, T.TextPrimary); nl.Size = UDim2.new(1, -68, 1, 0)
 			local kBg = Instance.new("Frame", KB.frame)
 			kBg.BackgroundColor3       = Color3.fromRGB(15, 15, 18)
 			kBg.BackgroundTransparency = 1
 			kBg.BorderSizePixel        = 0
 			kBg.AnchorPoint            = Vector2.new(1, 0.5)
-			kBg.Size                   = UDim2.new(0, 58, 0, 18)
+			kBg.Size                   = UDim2.new(0, 62, 0, 20)
 			kBg.Position               = UDim2.new(1, 0, 0.5, 0)
 			corner(kBg, 3); stroke(kBg, T.Border)
-			local kLbl = lbl(kBg, opts.default.Name, 10, T.TextSecondary, MONO, Enum.TextXAlignment.Center)
+			local kLbl = lbl(kBg, opts.default.Name, 11, T.TextSecondary, MONO, Enum.TextXAlignment.Center)
 			kBg.InputBegan:Connect(function(i)
 				if i.UserInputType == Enum.UserInputType.MouseButton1
 					or i.UserInputType == Enum.UserInputType.Touch then
@@ -1207,37 +1223,37 @@ function Tab:TextInput(opts)
 
 		function Tab:Warning(opts)
 			opts = validate({ text = "Warning" }, opts)
-			local f = base("Warning", 32)
+			local f = base("Warning", 34)
 			f.BackgroundColor3 = Color3.fromRGB(20, 16, 4)
 			f:FindFirstChildOfClass("UIStroke").Color = Color3.fromRGB(55, 45, 0)
 			pad(f, 0, 8, 0, 28)
-			lbl(f, "⚠  " .. opts.text, 11, Color3.fromRGB(210, 185, 100))
+			lbl(f, "!  " .. opts.text, 12, Color3.fromRGB(210, 185, 100))
 			return f
 		end
 
 		function Tab:Info(opts)
 			opts = validate({ text = "Info" }, opts)
-			local f = base("Info", 32)
+			local f = base("Info", 34)
 			f.BackgroundColor3 = Color3.fromRGB(4, 14, 22)
 			f:FindFirstChildOfClass("UIStroke").Color = Color3.fromRGB(0, 40, 65)
 			pad(f, 0, 8, 0, 28)
-			lbl(f, "ℹ  " .. opts.text, 11, Color3.fromRGB(130, 190, 220))
+			lbl(f, "i  " .. opts.text, 12, Color3.fromRGB(130, 190, 220))
 			return f
 		end
 
 		function Tab:Success(opts)
 			opts = validate({ text = "Success!" }, opts)
-			local f = base("Success", 32)
+			local f = base("Success", 34)
 			f.BackgroundColor3 = Color3.fromRGB(6, 22, 10)
 			f:FindFirstChildOfClass("UIStroke").Color = Color3.fromRGB(0, 60, 25)
 			pad(f, 0, 8, 0, 28)
-			lbl(f, "✓  " .. opts.text, 11, Color3.fromRGB(80, 200, 110))
+			lbl(f, "v  " .. opts.text, 12, Color3.fromRGB(80, 200, 110))
 			return f
 		end
 
 		function Tab:Divider(opts)
 			opts = validate({ text = "", color = nil }, opts)
-			local h = opts.text ~= "" and 18 or 4
+			local h = opts.text ~= "" and 20 or 4
 			local f = Instance.new("Frame", Tab._scroll)
 			f.BackgroundTransparency = 1; f.BorderSizePixel = 0; f.Size = UDim2.new(1, 0, 0, h)
 			local line = Instance.new("Frame", f)
@@ -1259,10 +1275,10 @@ function Tab:TextInput(opts)
 		function Tab:ProgressBar(opts)
 			opts = validate({ name = "Progress", default = 0, suffix = "%", color = nil }, opts)
 			local PB = { Value = math.clamp(opts.default, 0, 100) }
-			PB.frame = base("ProgressBar", 46); pad(PB.frame, 6, 10, 7, 10)
-			local nl = lbl(PB.frame, opts.name, 12, T.TextPrimary); nl.Size = UDim2.new(1, -38, 0, 16)
-			local vl = lbl(PB.frame, tostring(PB.Value) .. opts.suffix, 11, T.TextSecondary, nil, Enum.TextXAlignment.Right)
-			vl.AnchorPoint = Vector2.new(1, 0); vl.Size = UDim2.new(0, 34, 0, 16); vl.Position = UDim2.new(1, 0, 0, 0)
+			PB.frame = base("ProgressBar", 50); pad(PB.frame, 7, 10, 8, 10)
+			local nl = lbl(PB.frame, opts.name, 13, T.TextPrimary); nl.Size = UDim2.new(1, -38, 0, 17)
+			local vl = lbl(PB.frame, tostring(PB.Value) .. opts.suffix, 12, T.TextSecondary, nil, Enum.TextXAlignment.Right)
+			vl.AnchorPoint = Vector2.new(1, 0); vl.Size = UDim2.new(0, 34, 0, 17); vl.Position = UDim2.new(1, 0, 0, 0)
 			local trackF = Instance.new("Frame", PB.frame)
 			trackF.BackgroundColor3       = Color3.fromRGB(10, 10, 14)
 			trackF.BackgroundTransparency = 1
@@ -1286,7 +1302,7 @@ function Tab:TextInput(opts)
 			opts = validate({ buttons = {}, columns = 2 }, opts)
 			local cols  = math.clamp(opts.columns, 1, 4)
 			local rows  = math.ceil(#opts.buttons / cols)
-			local rowH  = 30
+			local rowH  = 32
 			local gap   = 3
 			local total = rows * (rowH + gap) - gap + 6
 			local f     = Instance.new("Frame", Tab._scroll)
@@ -1304,7 +1320,7 @@ function Tab:TextInput(opts)
 				b.Position               = UDim2.new(col * w, col * gap, 0, row * (rowH + gap))
 				b.Text                   = (btn.icon and btn.icon ~= "" and btn.icon .. " " or "") .. btn.name
 				b.Font                   = Enum.Font.GothamBold
-				b.TextSize               = 11
+				b.TextSize               = 12
 				b.TextColor3             = T.TextPrimary
 				corner(b, 4); stroke(b, T.Border)
 				b.MouseEnter:Connect(function() b.BackgroundTransparency = 0; b.TextColor3 = T.Accent end)
@@ -1319,18 +1335,18 @@ function Tab:TextInput(opts)
 
 		function Tab:Hyperlink(opts)
 			opts = validate({ text = "Link", url = "" }, opts)
-			local f       = base("Hyperlink", 34)
+			local f       = base("Hyperlink", 36)
 			local bStroke = f:FindFirstChildOfClass("UIStroke")
 			pad(f, 0, 8, 0, 10)
-			local nl = lbl(f, opts.text, 12, T.Accent); nl.Size = UDim2.new(1, -46, 1, 0)
-			local tag = lbl(f, "copy", 10, T.TextDisabled, UBUNTU, Enum.TextXAlignment.Right)
-			tag.AnchorPoint = Vector2.new(1, 0.5); tag.Size = UDim2.new(0, 36, 0, 14)
+			local nl = lbl(f, opts.text, 13, T.Accent); nl.Size = UDim2.new(1, -46, 1, 0)
+			local tag = lbl(f, "copy", 11, T.TextDisabled, UBUNTU, Enum.TextXAlignment.Right)
+			tag.AnchorPoint = Vector2.new(1, 0.5); tag.Size = UDim2.new(0, 36, 0, 15)
 			tag.Position    = UDim2.new(1, 0, 0.5, 0)
 			f.InputBegan:Connect(function(i)
 				if i.UserInputType == Enum.UserInputType.MouseButton1
 					or i.UserInputType == Enum.UserInputType.Touch then
 					pcall(function() setclipboard(opts.url) end)
-					tag.TextColor3 = Color3.fromRGB(60, 200, 90); tag.Text = "✓ copied"
+					tag.TextColor3 = Color3.fromRGB(60, 200, 90); tag.Text = "v copied"
 					task.delay(2, function() pcall(function() tag.TextColor3 = T.TextDisabled; tag.Text = "copy" end) end)
 				end
 			end)
@@ -1386,7 +1402,7 @@ function Tab:TextInput(opts)
 	end
 	function GUI:ApplyConfig(data)
 		if not data then return end
-		if data.accent then T.Accent = hexToC3(data.accent); accentGlow.BackgroundColor3 = T.Accent end
+		if data.accent then T.Accent = hexToC3(data.accent) end
 		if data.winW and data.winH then
 			winW = math.clamp(tonumber(data.winW) or winW, MIN_W, MAX_W)
 			winH = math.clamp(tonumber(data.winH) or winH, MIN_H, MAX_H)
@@ -1399,7 +1415,7 @@ function Tab:TextInput(opts)
 	end)
 
 	task.defer(function()
-		local S = GUI:CreateTab({ name = "Settings", icon = "⚙️" })
+		local S = GUI:CreateTab({ name = "Settings", icon = "" })
 		S:Section({ name = "Anti-AFK" })
 		local afkConn
 		S:Toggle({
