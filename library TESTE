@@ -849,32 +849,40 @@ function Library:new(options)
 
 			-- Botão invisível sobre o frame inteiro.
 			-- Mobile: só dispara ao soltar sem arrastar (arrasto = scroll).
-			local toggleBtn = Instance.new("TextButton", Toggle.frame)
-			toggleBtn.BackgroundTransparency = 1
-			toggleBtn.BorderSizePixel        = 0
-			toggleBtn.Size                   = UDim2.new(1, 0, 1, 0)
-			toggleBtn.Text                   = ""
-			toggleBtn.AutoButtonColor        = false
-			toggleBtn.ZIndex                 = 10
-			-- Desktop
-			toggleBtn.MouseButton1Click:Connect(doToggle)
-			-- Mobile
-			local ts, tm = nil, false
-			toggleBtn.InputBegan:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.Touch then ts = i.Position; tm = false end
-			end)
-			toggleBtn.InputChanged:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.Touch and ts then
-					local d = i.Position - ts
-					if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then tm = true end
-				end
-			end)
-			toggleBtn.InputEnded:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.Touch then
-					if not tm then doToggle() end
-					ts = nil; tm = false
-				end
-			end)
+local toggleBtn = Instance.new("TextButton", Toggle.frame)
+toggleBtn.BackgroundTransparency = 1
+toggleBtn.BorderSizePixel        = 0
+toggleBtn.Size                   = UDim2.new(1, 0, 1, 0)
+toggleBtn.Text                   = ""
+toggleBtn.AutoButtonColor        = false
+toggleBtn.ZIndex                 = 10
+
+local ts, tm = nil, false
+
+toggleBtn.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+        ts = i.Position; tm = false
+    elseif i.UserInputType == Enum.UserInputType.Touch then
+        ts = i.Position; tm = false
+    end
+end)
+
+toggleBtn.InputChanged:Connect(function(i)
+    if (i.UserInputType == Enum.UserInputType.Touch) and ts then
+        local d = i.Position - ts
+        if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then tm = true end
+    end
+end)
+
+toggleBtn.InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+        if not tm then doToggle() end
+        ts = nil; tm = false
+    elseif i.UserInputType == Enum.UserInputType.Touch then
+        if not tm then doToggle() end
+        ts = nil; tm = false
+    end
+end)
 
 			function Toggle:Set(v, silent)
 				Toggle.Value = v
