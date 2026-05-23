@@ -420,18 +420,14 @@ function Library:new(options)
 	floatBtn.AutoButtonColor        = false
 	floatBtn.ZIndex                 = 900
 	corner(floatBtn, FB / 2)
-	local floatStroke = stroke(floatBtn, T.TextPrimary, 1)
-	floatStroke.Transparency = 1
 	GUI._floatBtn = floatBtn
 
 	local floatFadeTask = nil
 	local function floatShow()
 		if floatFadeTask then task.cancel(floatFadeTask) end
 		tw(floatBtn, { BackgroundTransparency = 0.08 }, TI_FAST)
-		floatStroke.Transparency = 0
 		floatFadeTask = task.delay(3, function()
 			tw(floatBtn, { BackgroundTransparency = 0.55 }, TI_MED)
-			floatStroke.Transparency = 0.6
 		end)
 	end
 
@@ -462,9 +458,7 @@ function Library:new(options)
 			and i.UserInputType ~= Enum.UserInputType.Touch then return end
 		if fbDrag and not fbMoved then
 			_open = not _open
-			Main.Visible        = _open
-			floatBtn.TextColor3 = _open and T.TextPrimary or T.TextSecondary
-			floatStroke.Color   = T.TextPrimary
+			Main.Visible = _open
 		end
 		if fbDrag then floatShow() end
 		fbDrag = false
@@ -474,9 +468,7 @@ function Library:new(options)
 		if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
 		if input.KeyCode == options.toggleKey then
 			_open = not _open
-			Main.Visible        = _open
-			floatStroke.Color   = T.TextPrimary
-			floatBtn.TextColor3 = _open and T.TextPrimary or T.TextSecondary
+			Main.Visible = _open
 			floatShow()
 		end
 	end))
@@ -698,9 +690,26 @@ function Library:new(options)
 				Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
 			end)
 			clickBtn.MouseButton1Up:Connect(function()
-				Btn.frame.BackgroundTransparency = 0.55
-				Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
-				bStroke.Color                    = T.BorderHover
+				Btn.frame.BackgroundTransparency = 1
+				Btn.frame.BackgroundColor3       = T.Surface
+				bStroke.Color                    = T.Border
+			end)
+			local btnPressing = false
+			clickBtn.InputBegan:Connect(function(i)
+				if i.UserInputType == Enum.UserInputType.Touch then
+					btnPressing = true
+					Btn.frame.BackgroundTransparency = 0.3
+					Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+				end
+			end)
+			clickBtn.InputEnded:Connect(function(i)
+				if i.UserInputType == Enum.UserInputType.Touch and btnPressing then
+					btnPressing = false
+					Btn.frame.BackgroundTransparency = 1
+					Btn.frame.BackgroundColor3       = T.Surface
+					bStroke.Color                    = T.Border
+					opts.callback()
+				end
 			end)
 			clickBtn.MouseButton1Click:Connect(function()
 				opts.callback()
@@ -736,9 +745,17 @@ function Library:new(options)
 			knob.Size             = UDim2.new(0, 12, 0, 12)
 			knob.Position         = opts.default and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
 			corner(knob, 6)
+			local togglePressing = false
 			Toggle.frame.InputBegan:Connect(function(i)
 				if i.UserInputType == Enum.UserInputType.MouseButton1
 					or i.UserInputType == Enum.UserInputType.Touch then
+					togglePressing = true
+				end
+			end)
+			Toggle.frame.InputEnded:Connect(function(i)
+				if (i.UserInputType == Enum.UserInputType.MouseButton1
+					or i.UserInputType == Enum.UserInputType.Touch) and togglePressing then
+					togglePressing = false
 					Toggle.Value = not Toggle.Value
 					tw(pill, { BackgroundColor3 = Toggle.Value and T.Accent or Color3.fromRGB(42, 42, 48) })
 					tw(knob, { Position = Toggle.Value and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 2, 0.5, 0) })
@@ -799,6 +816,12 @@ function Library:new(options)
 				if i.UserInputType == Enum.UserInputType.MouseButton1
 					or i.UserInputType == Enum.UserInputType.Touch then
 					Slider.Dragging = true; upd(i.Position.X)
+				end
+			end)
+			track.InputEnded:Connect(function(i)
+				if i.UserInputType == Enum.UserInputType.MouseButton1
+					or i.UserInputType == Enum.UserInputType.Touch then
+					Slider.Dragging = false
 				end
 			end)
 			local c1 = UIS.InputChanged:Connect(function(i)
