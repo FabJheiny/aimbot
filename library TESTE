@@ -388,13 +388,14 @@ end)
 
 	local dragging, dragStart, startPos
 	Topbar.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1
-			or i.UserInputType == Enum.UserInputType.Touch then
-			local relX = i.Position.X - Main.AbsolutePosition.X
-			if relX >= Main.AbsoluteSize.X - 54 then return end
-			dragging = true; dragStart = i.Position; startPos = Main.Position
-		end
-	end)
+	if i.UserInputType == Enum.UserInputType.MouseButton1
+		or i.UserInputType == Enum.UserInputType.Touch then
+		local relX = i.Position.X - Main.AbsolutePosition.X
+		if relX >= Main.AbsoluteSize.X - 54 then return end
+		if relX <= 50 then return end  -- protege área do sidebarBtn
+		dragging = true; dragStart = i.Position; startPos = Main.Position
+	end
+end)
 	track(UIS.InputChanged:Connect(function(i)
 		if not dragging then return end
 		if i.UserInputType ~= Enum.UserInputType.MouseMovement
