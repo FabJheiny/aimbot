@@ -102,6 +102,47 @@ local function destroyExisting()
 	if pg then pcall(clean, pg) end
 end
 
+-- ── Helper: cria um botão invisível sobre um frame que só dispara
+--    o callback ao soltar O TOQUE/CLIQUE sem ter arrastado. ──────────
+local function makeTapButton(parent, zIndex, onTap)
+	local btn = Instance.new("TextButton", parent)
+	btn.BackgroundTransparency = 1
+	btn.BorderSizePixel        = 0
+	btn.Size                   = UDim2.new(1, 0, 1, 0)
+	btn.Text                   = ""
+	btn.AutoButtonColor        = false
+	btn.ZIndex                 = zIndex or 10
+
+	-- Desktop
+	btn.MouseButton1Click:Connect(onTap)
+
+	-- Mobile: só dispara se não houve arrasto
+	local touchStart, touchMoved = nil, false
+	btn.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.Touch then
+			touchStart = i.Position
+			touchMoved = false
+		end
+	end)
+	btn.InputChanged:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.Touch and touchStart then
+			local d = i.Position - touchStart
+			if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then
+				touchMoved = true
+			end
+		end
+	end)
+	btn.InputEnded:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.Touch then
+			if not touchMoved then onTap() end
+			touchStart = nil
+			touchMoved = false
+		end
+	end)
+
+	return btn
+end
+
 function Library:new(options)
 	options = validate({
 		name        = "Ventura",
@@ -172,8 +213,10 @@ function Library:new(options)
 	sidebarBtn.TextColor3             = T.TextSecondary
 	sidebarBtn.AutoButtonColor        = false
 	sidebarBtn.ZIndex                 = 5
-	sidebarBtn.MouseEnter:Connect(function() sidebarBtn.TextColor3 = T.TextPrimary end)
-	sidebarBtn.MouseLeave:Connect(function() sidebarBtn.TextColor3 = T.TextSecondary end)
+	if not MOBILE then
+		sidebarBtn.MouseEnter:Connect(function() sidebarBtn.TextColor3 = T.TextPrimary end)
+		sidebarBtn.MouseLeave:Connect(function() sidebarBtn.TextColor3 = T.TextSecondary end)
+	end
 
 	local NAV_W   = 130
 	local navOpen = true
@@ -267,22 +310,52 @@ function Library:new(options)
 	Content.ClipsDescendants      = true
 	GUI._content = Content
 
-	sidebarBtn.InputBegan:Connect(function(i)
-		if i.UserInputType ~= Enum.UserInputType.MouseButton1
-			and i.UserInputType ~= Enum.UserInputType.Touch then return end
+	sidebarBtn.MouseButton1Click:Connect(function()
 		navOpen = not navOpen
 		if navOpen then
 			tw(Nav,     { Size = UDim2.new(0, NAV_W, 1, -36) }, TI_MED)
 			tw(Content, { Position = UDim2.new(0, NAV_W + 4, 0, 40),
 			              Size     = UDim2.new(1, -(NAV_W + 8), 1, -46) }, TI_MED)
-			sidebarBtn.TextColor3 = T.TextSecondary
+			if not MOBILE then sidebarBtn.TextColor3 = T.TextSecondary end
 		else
 			tw(Nav,     { Size = UDim2.new(0, 0, 1, -36) }, TI_MED)
 			tw(Content, { Position = UDim2.new(0, 4, 0, 40),
 			              Size     = UDim2.new(1, -8, 1, -46) }, TI_MED)
-			sidebarBtn.TextColor3 = T.TextPrimary
+			if not MOBILE then sidebarBtn.TextColor3 = T.TextPrimary end
 		end
 	end)
+	-- Mobile tap para sidebar
+	do
+		local sbStart, sbMoved = nil, false
+		sidebarBtn.InputBegan:Connect(function(i)
+			if i.UserInputType == Enum.UserInputType.Touch then
+				sbStart = i.Position; sbMoved = false
+			end
+		end)
+		sidebarBtn.InputChanged:Connect(function(i)
+			if i.UserInputType == Enum.UserInputType.Touch and sbStart then
+				local d = i.Position - sbStart
+				if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then sbMoved = true end
+			end
+		end)
+		sidebarBtn.InputEnded:Connect(function(i)
+			if i.UserInputType == Enum.UserInputType.Touch then
+				if not sbMoved then
+					navOpen = not navOpen
+					if navOpen then
+						tw(Nav,     { Size = UDim2.new(0, NAV_W, 1, -36) }, TI_MED)
+						tw(Content, { Position = UDim2.new(0, NAV_W + 4, 0, 40),
+						              Size     = UDim2.new(1, -(NAV_W + 8), 1, -46) }, TI_MED)
+					else
+						tw(Nav,     { Size = UDim2.new(0, 0, 1, -36) }, TI_MED)
+						tw(Content, { Position = UDim2.new(0, 4, 0, 40),
+						              Size     = UDim2.new(1, -8, 1, -46) }, TI_MED)
+					end
+				end
+				sbStart = nil; sbMoved = false
+			end
+		end)
+	end
 
 	function GUI.notify(title, body, dur)
 		dur = dur or 3
@@ -539,27 +612,24 @@ function Library:new(options)
 		navText.ZIndex                 = 2
 		Tab._navText = navText
 
-		local navClick = Instance.new("TextButton", Tab._navBtn)
-		navClick.BackgroundTransparency = 1
-		navClick.BorderSizePixel        = 0
-		navClick.Size                   = UDim2.new(1, 0, 1, 0)
-		navClick.Text                   = ""
-		navClick.ZIndex                 = 3
-		navClick.AutoButtonColor        = false
-
-		navClick.MouseEnter:Connect(function()
-			if Tab.Active or Tab._disabled then return end
-			Tab._navBtn.BackgroundTransparency = 0.8
-			navText.TextColor3 = T.TextPrimary
-		end)
-		navClick.MouseLeave:Connect(function()
-			if Tab.Active or Tab._disabled then return end
-			Tab._navBtn.BackgroundTransparency = 1
-			navText.TextColor3 = T.TextSecondary
-		end)
-		navClick.MouseButton1Click:Connect(function()
+		-- Usa makeTapButton para o nav: sem hover acidental no mobile
+		local navClick = makeTapButton(Tab._navBtn, 3, function()
 			if not Tab._disabled then Tab:Activate() end
 		end)
+		navClick.AutoButtonColor = false
+
+		if not MOBILE then
+			navClick.MouseEnter:Connect(function()
+				if Tab.Active or Tab._disabled then return end
+				Tab._navBtn.BackgroundTransparency = 0.8
+				navText.TextColor3 = T.TextPrimary
+			end)
+			navClick.MouseLeave:Connect(function()
+				if Tab.Active or Tab._disabled then return end
+				Tab._navBtn.BackgroundTransparency = 1
+				navText.TextColor3 = T.TextSecondary
+			end)
+		end
 
 		function Tab:Activate()
 			if Tab.Active or Tab._disabled then return end
@@ -668,6 +738,9 @@ function Library:new(options)
 			local arr = lbl(Btn.frame, "›", 17, T.TextDisabled, MONO, Enum.TextXAlignment.Right)
 			arr.Size     = UDim2.new(0, 14, 1, 0)
 			arr.Position = UDim2.new(1, -14, 0, 0)
+
+			-- Desktop: hover visual + click
+			-- Mobile: tap sem arrastar
 			local clickBtn = Instance.new("TextButton", Btn.frame)
 			clickBtn.BackgroundTransparency = 1
 			clickBtn.BorderSizePixel        = 0
@@ -675,45 +748,63 @@ function Library:new(options)
 			clickBtn.Text                   = ""
 			clickBtn.AutoButtonColor        = false
 			clickBtn.ZIndex                 = 10
-			clickBtn.MouseEnter:Connect(function()
-				Btn.frame.BackgroundTransparency = 0.55
-				Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
-				bStroke.Color                    = T.BorderHover
-			end)
-			clickBtn.MouseLeave:Connect(function()
-				Btn.frame.BackgroundTransparency = 1
-				Btn.frame.BackgroundColor3       = T.Surface
-				bStroke.Color                    = T.Border
-			end)
-			clickBtn.MouseButton1Down:Connect(function()
-				Btn.frame.BackgroundTransparency = 0.3
-				Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
-			end)
-			clickBtn.MouseButton1Up:Connect(function()
-				Btn.frame.BackgroundTransparency = 1
-				Btn.frame.BackgroundColor3       = T.Surface
-				bStroke.Color                    = T.Border
-			end)
-			local btnPressing = false
-			clickBtn.InputBegan:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.Touch then
-					btnPressing = true
-					Btn.frame.BackgroundTransparency = 0.3
+
+			if not MOBILE then
+				clickBtn.MouseEnter:Connect(function()
+					Btn.frame.BackgroundTransparency = 0.55
 					Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
-				end
-			end)
-			clickBtn.InputEnded:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.Touch and btnPressing then
-					btnPressing = false
+					bStroke.Color                    = T.BorderHover
+				end)
+				clickBtn.MouseLeave:Connect(function()
 					Btn.frame.BackgroundTransparency = 1
 					Btn.frame.BackgroundColor3       = T.Surface
 					bStroke.Color                    = T.Border
+				end)
+				clickBtn.MouseButton1Down:Connect(function()
+					Btn.frame.BackgroundTransparency = 0.3
+					Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+				end)
+				clickBtn.MouseButton1Up:Connect(function()
+					Btn.frame.BackgroundTransparency = 1
+					Btn.frame.BackgroundColor3       = T.Surface
+					bStroke.Color                    = T.Border
+				end)
+				clickBtn.MouseButton1Click:Connect(function()
 					opts.callback()
-				end
-			end)
-			clickBtn.MouseButton1Click:Connect(function()
-				opts.callback()
-			end)
+				end)
+			else
+				-- Mobile: feedback visual apenas durante o toque confirmado
+				local tapStart, tapMoved = nil, false
+				clickBtn.InputBegan:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch then
+						tapStart = i.Position; tapMoved = false
+						Btn.frame.BackgroundTransparency = 0.45
+						Btn.frame.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+					end
+				end)
+				clickBtn.InputChanged:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch and tapStart then
+						local d = i.Position - tapStart
+						if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then
+							tapMoved = true
+							-- cancelou: remove highlight
+							Btn.frame.BackgroundTransparency = 1
+							Btn.frame.BackgroundColor3       = T.Surface
+							bStroke.Color                    = T.Border
+						end
+					end
+				end)
+				clickBtn.InputEnded:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch then
+						Btn.frame.BackgroundTransparency = 1
+						Btn.frame.BackgroundColor3       = T.Surface
+						bStroke.Color                    = T.Border
+						if not tapMoved then opts.callback() end
+						tapStart = nil; tapMoved = false
+					end
+				end)
+			end
+
 			return Btn
 		end
 
@@ -745,23 +836,16 @@ function Library:new(options)
 			knob.Size             = UDim2.new(0, 12, 0, 12)
 			knob.Position         = opts.default and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
 			corner(knob, 6)
-			local togglePressing = false
-			Toggle.frame.InputBegan:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1
-					or i.UserInputType == Enum.UserInputType.Touch then
-					togglePressing = true
-				end
+
+			-- Botão invisível sobre o frame inteiro — tap sem arrasto
+			local toggleBtn = makeTapButton(Toggle.frame, 10, function()
+				Toggle.Value = not Toggle.Value
+				tw(pill, { BackgroundColor3 = Toggle.Value and T.Accent or Color3.fromRGB(42, 42, 48) })
+				tw(knob, { Position = Toggle.Value and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 2, 0.5, 0) })
+				opts.callback(Toggle.Value)
 			end)
-			Toggle.frame.InputEnded:Connect(function(i)
-				if (i.UserInputType == Enum.UserInputType.MouseButton1
-					or i.UserInputType == Enum.UserInputType.Touch) and togglePressing then
-					togglePressing = false
-					Toggle.Value = not Toggle.Value
-					tw(pill, { BackgroundColor3 = Toggle.Value and T.Accent or Color3.fromRGB(42, 42, 48) })
-					tw(knob, { Position = Toggle.Value and UDim2.new(1, -14, 0.5, 0) or UDim2.new(0, 2, 0.5, 0) })
-					opts.callback(Toggle.Value)
-				end
-			end)
+			toggleBtn.AutoButtonColor = false
+
 			function Toggle:Set(v, silent)
 				Toggle.Value = v
 				tw(pill, { BackgroundColor3 = v and T.Accent or Color3.fromRGB(42, 42, 48) })
@@ -802,6 +886,16 @@ function Library:new(options)
 			thumb.Size             = UDim2.new(0, 10, 0, 10)
 			thumb.Position         = UDim2.new((opts.default - opts.min) / (opts.max - opts.min), 0, 0.5, 0)
 			corner(thumb, 5)
+
+			-- Área de interação maior para o slider (mais fácil de tocar)
+			local hitbox = Instance.new("TextButton", Slider.frame)
+			hitbox.BackgroundTransparency = 1
+			hitbox.BorderSizePixel        = 0
+			hitbox.Size                   = UDim2.new(1, 0, 1, 0)
+			hitbox.Text                   = ""
+			hitbox.AutoButtonColor        = false
+			hitbox.ZIndex                 = 10
+
 			local function upd(x)
 				local range = opts.max - opts.min
 				if range == 0 then return end
@@ -812,18 +906,22 @@ function Library:new(options)
 				vl.Text        = tostring(Slider.Value)
 				opts.callback(Slider.Value)
 			end
-			track.InputBegan:Connect(function(i)
+
+			-- Inicia o drag apenas se o toque/clique começa na hitbox
+			-- (não ao apenas passar o dedo por cima)
+			hitbox.InputBegan:Connect(function(i)
 				if i.UserInputType == Enum.UserInputType.MouseButton1
 					or i.UserInputType == Enum.UserInputType.Touch then
 					Slider.Dragging = true; upd(i.Position.X)
 				end
 			end)
-			track.InputEnded:Connect(function(i)
+			hitbox.InputEnded:Connect(function(i)
 				if i.UserInputType == Enum.UserInputType.MouseButton1
 					or i.UserInputType == Enum.UserInputType.Touch then
 					Slider.Dragging = false
 				end
 			end)
+
 			local c1 = UIS.InputChanged:Connect(function(i)
 				if Slider.Dragging and (i.UserInputType == Enum.UserInputType.MouseMovement
 					or i.UserInputType == Enum.UserInputType.Touch) then upd(i.Position.X) end
@@ -902,6 +1000,7 @@ function Library:new(options)
 					opt.Text                   = item
 					opt.ZIndex                 = 5
 					corner(opt, 3); pad(opt, 0, 0, 0, 8)
+					-- Usa makeTapButton para itens do dropdown também
 					opt.MouseButton1Click:Connect(function()
 						if opts.multi then
 							DD.Multi[item] = not DD.Multi[item]
@@ -917,17 +1016,78 @@ function Library:new(options)
 							refresh()
 						end
 					end)
+					-- Mobile tap para opção
+					do
+						local ts2, tm2 = nil, false
+						opt.InputBegan:Connect(function(i)
+							if i.UserInputType == Enum.UserInputType.Touch then
+								ts2 = i.Position; tm2 = false
+							end
+						end)
+						opt.InputChanged:Connect(function(i)
+							if i.UserInputType == Enum.UserInputType.Touch and ts2 then
+								local d = i.Position - ts2
+								if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then tm2 = true end
+							end
+						end)
+						opt.InputEnded:Connect(function(i)
+							if i.UserInputType == Enum.UserInputType.Touch then
+								if not tm2 then
+									if opts.multi then
+										DD.Multi[item] = not DD.Multi[item]
+										local s = {}
+										for k, v in pairs(DD.Multi) do if v then table.insert(s, k) end end
+										selLbl.Text = #s > 0 and table.concat(s, ", ") or opts.name
+										opts.callback(s); refresh()
+									else
+										DD.Selected = item; selLbl.Text = item; opts.callback(item)
+										DD.Open = false; optHolder.Visible = false
+										arrowLbl.Text = "v"
+										DD.frame.Size = UDim2.new(1, 0, 0, 36)
+										refresh()
+									end
+								end
+								ts2 = nil; tm2 = false
+							end
+						end)
+					end
 					total = total + 26
 				end
 				optHolder.Size = UDim2.new(1, 0, 0, total)
 				DD.frame.Size  = UDim2.new(1, 0, 0, DD.Open and (32 + total + 4) or 36)
 			end
+			-- Header também usa tap seguro
 			header.MouseButton1Click:Connect(function()
 				DD.Open = not DD.Open
 				optHolder.Visible = DD.Open
 				arrowLbl.Text     = DD.Open and "^" or "v"
 				if DD.Open then refresh() else DD.frame.Size = UDim2.new(1, 0, 0, 36) end
 			end)
+			do
+				local hs, hm = nil, false
+				header.InputBegan:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch then
+						hs = i.Position; hm = false
+					end
+				end)
+				header.InputChanged:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch and hs then
+						local d = i.Position - hs
+						if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then hm = true end
+					end
+				end)
+				header.InputEnded:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch then
+						if not hm then
+							DD.Open = not DD.Open
+							optHolder.Visible = DD.Open
+							arrowLbl.Text     = DD.Open and "^" or "v"
+							if DD.Open then refresh() else DD.frame.Size = UDim2.new(1, 0, 0, 36) end
+						end
+						hs = nil; hm = false
+					end
+				end)
+			end
 			refresh()
 			function DD:Set(v) DD.Selected = v; selLbl.Text = v; refresh() end
 			function DD:SetItems(newItems)
@@ -1023,12 +1183,14 @@ function Library:new(options)
 					local a = math.clamp((x - tr.AbsolutePosition.X) / tr.AbsoluteSize.X, 0, 1)
 					fl.Size = UDim2.new(a, 0, 1, 0); cb(a); rebuild()
 				end
+				-- Inicia drag apenas com InputBegan no track (não por hover)
 				tr.InputBegan:Connect(function(i)
 					if i.UserInputType == Enum.UserInputType.MouseButton1
 						or i.UserInputType == Enum.UserInputType.Touch then drag2 = true; upd2(i.Position.X) end
 				end)
 				local ca = UIS.InputChanged:Connect(function(i)
-					if drag2 and i.UserInputType == Enum.UserInputType.MouseMovement then upd2(i.Position.X) end
+					if drag2 and (i.UserInputType == Enum.UserInputType.MouseMovement
+						or i.UserInputType == Enum.UserInputType.Touch) then upd2(i.Position.X) end
 				end)
 				local cb2 = UIS.InputEnded:Connect(function(i)
 					if i.UserInputType == Enum.UserInputType.MouseButton1
@@ -1044,10 +1206,34 @@ function Library:new(options)
 					for _, c in ipairs(_hsvConns) do pcall(c.Disconnect, c) end
 				end
 			end)
+			-- ColorPicker header: tap seguro no mobile
 			header.MouseButton1Click:Connect(function()
 				CP.Open = not CP.Open; picker.Visible = CP.Open
 				CP.frame.Size = UDim2.new(1, 0, 0, CP.Open and 110 or 36)
 			end)
+			do
+				local cs, cm = nil, false
+				header.InputBegan:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch then
+						cs = i.Position; cm = false
+					end
+				end)
+				header.InputChanged:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch and cs then
+						local d = i.Position - cs
+						if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then cm = true end
+					end
+				end)
+				header.InputEnded:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.Touch then
+						if not cm then
+							CP.Open = not CP.Open; picker.Visible = CP.Open
+							CP.frame.Size = UDim2.new(1, 0, 0, CP.Open and 110 or 36)
+						end
+						cs = nil; cm = false
+					end
+				end)
+			end
 			function CP:Set(c) CP.Value = c; preview.BackgroundColor3 = c; h_v, s_v, v_v = Color3.toHSV(c) end
 			return CP
 		end
@@ -1067,11 +1253,9 @@ function Library:new(options)
 			kBg.Position               = UDim2.new(1, 0, 0.5, 0)
 			corner(kBg, 3); stroke(kBg, T.Border)
 			local kLbl = lbl(kBg, opts.default.Name, 11, T.TextSecondary, MONO, Enum.TextXAlignment.Center)
-			kBg.InputBegan:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1
-					or i.UserInputType == Enum.UserInputType.Touch then
-					KB.Listening = true; kLbl.Text = "..."
-				end
+			-- Usa makeTapButton para ativar o listening
+			makeTapButton(kBg, 5, function()
+				KB.Listening = true; kLbl.Text = "..."
 			end)
 			track(UIS.InputBegan:Connect(function(i, gpe)
 				if not KB.Listening then return end
@@ -1188,12 +1372,37 @@ function Library:new(options)
 				b.TextSize               = 12
 				b.TextColor3             = T.TextPrimary
 				corner(b, 4); stroke(b, T.Border)
-				b.MouseEnter:Connect(function() b.BackgroundTransparency = 0; b.TextColor3 = T.Accent end)
-				b.MouseLeave:Connect(function() b.BackgroundTransparency = 1; b.TextColor3 = T.TextPrimary end)
-				b.InputBegan:Connect(function(i)
-					if i.UserInputType == Enum.UserInputType.MouseButton1
-						or i.UserInputType == Enum.UserInputType.Touch then pcall(btn.callback) end
-				end)
+				if not MOBILE then
+					b.MouseEnter:Connect(function() b.BackgroundTransparency = 0; b.TextColor3 = T.Accent end)
+					b.MouseLeave:Connect(function() b.BackgroundTransparency = 1; b.TextColor3 = T.TextPrimary end)
+				end
+				-- Usa tap seguro para mobile
+				b.MouseButton1Click:Connect(function() pcall(btn.callback) end)
+				do
+					local gs, gm = nil, false
+					b.InputBegan:Connect(function(i)
+						if i.UserInputType == Enum.UserInputType.Touch then
+							gs = i.Position; gm = false
+							b.BackgroundTransparency = 0.5
+						end
+					end)
+					b.InputChanged:Connect(function(i)
+						if i.UserInputType == Enum.UserInputType.Touch and gs then
+							local d = i.Position - gs
+							if math.abs(d.X) > 8 or math.abs(d.Y) > 8 then
+								gm = true
+								b.BackgroundTransparency = 1
+							end
+						end
+					end)
+					b.InputEnded:Connect(function(i)
+						if i.UserInputType == Enum.UserInputType.Touch then
+							b.BackgroundTransparency = 1
+							if not gm then pcall(btn.callback) end
+							gs = nil; gm = false
+						end
+					end)
+				end
 			end
 			return f
 		end
@@ -1207,16 +1416,18 @@ function Library:new(options)
 			local tag = lbl(f, "copy", 11, T.TextDisabled, UBUNTU, Enum.TextXAlignment.Right)
 			tag.AnchorPoint = Vector2.new(1, 0.5); tag.Size = UDim2.new(0, 36, 0, 15)
 			tag.Position    = UDim2.new(1, 0, 0.5, 0)
-			f.InputBegan:Connect(function(i)
-				if i.UserInputType == Enum.UserInputType.MouseButton1
-					or i.UserInputType == Enum.UserInputType.Touch then
-					pcall(function() setclipboard(opts.url) end)
-					tag.TextColor3 = Color3.fromRGB(60, 200, 90); tag.Text = "v copied"
-					task.delay(2, function() pcall(function() tag.TextColor3 = T.TextDisabled; tag.Text = "copy" end) end)
-				end
+
+			-- Usa tap seguro para copiar
+			makeTapButton(f, 5, function()
+				pcall(function() setclipboard(opts.url) end)
+				tag.TextColor3 = Color3.fromRGB(60, 200, 90); tag.Text = "v copied"
+				task.delay(2, function() pcall(function() tag.TextColor3 = T.TextDisabled; tag.Text = "copy" end) end)
 			end)
-			f.MouseEnter:Connect(function() f.BackgroundTransparency = 0; bStroke.Color = T.BorderHover end)
-			f.MouseLeave:Connect(function() f.BackgroundTransparency = 1; bStroke.Color = T.Border end)
+
+			if not MOBILE then
+				f.MouseEnter:Connect(function() f.BackgroundTransparency = 0; bStroke.Color = T.BorderHover end)
+				f.MouseLeave:Connect(function() f.BackgroundTransparency = 1; bStroke.Color = T.Border end)
+			end
 			return f
 		end
 
