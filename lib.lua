@@ -314,41 +314,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		Setup.Keybind = Settings.MinimizeKeybind
 	end
 
-	--// Topbar no conteúdo principal
-	-- Reduz o Holder para dar espaço à topbar no topo
-	local TopbarHeight = 32
-
-	local Topbar = Instance.new("Frame")
-	SetProperty(Topbar, {
-		Name = "Topbar",
-		Size = UDim2.new(1, 0, 0, TopbarHeight),
-		Position = UDim2.new(0, 0, 0, 0),
-		BackgroundColor3 = Theme.Primary,
-		BorderSizePixel = 0,
-		ZIndex = 10,
-		Parent = Holder,
-	})
-
-	local TopbarStroke = Instance.new("UIStroke")
-	SetProperty(TopbarStroke, {
-		Color = Theme.Outline,
-		Thickness = 1,
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-		Parent = Topbar,
-	})
-
-	-- Empurra o conteúdo do Holder para baixo da topbar
-	local HolderPadding = Holder:FindFirstChildOfClass("UIPadding")
-	if HolderPadding then
-		HolderPadding.PaddingTop = UDim.new(0, TopbarHeight + 4)
-	else
-		local NewPadding = Instance.new("UIPadding")
-		SetProperty(NewPadding, {
-			PaddingTop = UDim.new(0, TopbarHeight + 4),
-			Parent = Holder,
-		})
-	end
-
 	--// Animate
 	local Close = function()
 		if Opened then
@@ -392,27 +357,26 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 	end)
 
 	--// FloatButton
-	local TopbarHeight = 32
 	local FloatBtn = Instance.new("TextButton")
 	SetProperty(FloatBtn, {
-		Name       = "FloatButton",
-		Text       = "×",
-		Font       = Enum.Font.GothamBold,
-		TextSize   = 22,
-		TextColor3 = Color3.fromRGB(240, 240, 240),
+		Name            = "FloatButton",
+		Text            = "×",
+		Font            = Enum.Font.GothamBold,
+		TextSize        = 22,
+		TextColor3      = Color3.fromRGB(240, 240, 240),
 		BackgroundColor3 = Color3.fromRGB(45, 45, 45),
-		Size       = UDim2.new(0, 42, 0, 42),
-		Position   = UDim2.new(0, 12, 1, -54),
-		AnchorPoint = Vector2.new(0, 0),
+		Size            = UDim2.new(0, 42, 0, 42),
+		Position        = UDim2.new(0, 12, 1, -54),
+		AnchorPoint     = Vector2.new(0, 0),
 		AutoButtonColor = false,
-		ZIndex     = 999,
-		Parent     = Screen,
+		ZIndex          = 999,
+		Parent          = Screen,
 	})
 
 	local FloatCorner = Instance.new("UICorner")
 	SetProperty(FloatCorner, {
 		CornerRadius = UDim.new(1, 0),
-		Parent = FloatBtn,
+		Parent       = FloatBtn,
 	})
 
 	local FloatStroke = Instance.new("UIStroke")
@@ -422,13 +386,37 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		Parent    = FloatBtn,
 	})
 
-	local function SyncFloatIcon()
-		FloatBtn.Text = Opened and "×" or "▶"
-	end
+	--// FloatButton: arrastar
+	local FBDragging    = false
+	local FBDragInput   = nil
+	local FBStart       = nil
+	local FBStartPos    = nil
+	local FBMoved       = false  -- distingue clique de arrasto
 
 	Connect(FloatBtn.InputBegan, function(Input)
+		if Input.UserInputType == Enum.UserInputType.MouseButton1
+			or Input.UserInputType == Enum.UserInputType.Touch then
+			FBDragging  = true
+			FBMoved     = false
+			FBStart     = Input.Position
+			FBStartPos  = FloatBtn.Position
+
+			Connect(Input.Changed, function()
+				if Input.UserInputState == Enum.UserInputState.End then
+					FBDragging = false
+				end
+			end)
+		end
+
 		if Input.UserInputType == Enum.UserInputType.MouseMovement then
 			Tween(FloatBtn, .2, { BackgroundColor3 = Color3.fromRGB(60, 60, 60) })
+		end
+	end)
+
+	Connect(FloatBtn.InputChanged, function(Input)
+		if Input.UserInputType == Enum.UserInputType.MouseMovement
+			or Input.UserInputType == Enum.UserInputType.Touch then
+			FBDragInput = Input
 		end
 	end)
 
@@ -438,25 +426,43 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		end
 	end)
 
+	Connect(Services.Input.InputChanged, function(Input)
+		if Input == FBDragInput and FBDragging then
+			local Delta = Input.Position - FBStart
+			-- só considera arrasto após 4px de movimento (evita falso drag no clique)
+			if Delta.Magnitude > 4 then
+				FBMoved = true
+			end
+			if FBMoved then
+				FloatBtn.Position = UDim2.new(
+					FBStartPos.X.Scale,
+					FBStartPos.X.Offset + Delta.X,
+					FBStartPos.Y.Scale,
+					FBStartPos.Y.Offset + Delta.Y
+				)
+			end
+		end
+	end)
+
+	--// FloatButton: ícone e toggle
+	local function SyncFloatIcon()
+		FloatBtn.Text = Opened and "×" or "+"
+	end
+
 	Connect(FloatBtn.MouseButton1Click, function()
+		if FBMoved then return end   -- ignora clique se foi arrasto
 		Close()
 		SyncFloatIcon()
 	end)
 
-	-- Sobrescreve Close para sincronizar o ícone em qualquer origem
-	local _BaseClose = Close
-	Close = function()
-		_BaseClose()
-		SyncFloatIcon()
-	end
-
+	-- garante sync quando o keybind ou outros botões mudam o estado
 	Services.Input.InputBegan:Connect(function(Input, Focused)
 		if (Input == Setup.Keybind or Input.KeyCode == Setup.Keybind) and not Focused then
 			task.defer(SyncFloatIcon)
 		end
 	end)
 
-	-- Estado inicial: janela já aberta → ícone ×
+	-- ícone inicial: janela já aberta → ×
 	SyncFloatIcon()
 
 	--// Tab Functions
@@ -871,35 +877,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		})
 	end
 
-	--// Topbar API exposta
-	function Options:GetTopbar()
-		return Topbar
-	end
-
-	function Options:SetTopbarContent(Settings: { Title: string?, TextColor: Color3? })
-		if Settings.Title then
-			local Lbl = Topbar:FindFirstChild("TopbarLabel")
-			if not Lbl then
-				Lbl = Instance.new("TextLabel")
-				SetProperty(Lbl, {
-					Name = "TopbarLabel",
-					Size = UDim2.new(1, -12, 1, 0),
-					Position = UDim2.new(0, 12, 0, 0),
-					BackgroundTransparency = 1,
-					Font = Enum.Font.GothamSemibold,
-					TextSize = 13,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					ZIndex = 11,
-					Parent = Topbar,
-				})
-			end
-			SetProperty(Lbl, {
-				Text = Settings.Title,
-				TextColor3 = Settings.TextColor or Theme.Title,
-			})
-		end
-	end
-
 	local Themes = {
 		Names = {	
 			["Paragraph"] = function(Label)
@@ -1002,14 +979,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 					Label.BackgroundColor3 = Theme.Outline
 				end
 			end,
-
-			["Topbar"] = function(Label)
-				if Label:IsA("Frame") then
-					Label.BackgroundColor3 = Theme.Primary
-					local Stroke = Label:FindFirstChildOfClass("UIStroke")
-					if Stroke then Stroke.Color = Theme.Outline end
-				end
-			end,
 		},
 
 		Classes = {
@@ -1043,11 +1012,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		Window.BackgroundColor3 = Theme.Primary
 		Holder.BackgroundColor3 = Theme.Secondary
 		Window.UIStroke.Color = Theme.Shadow
-
-		-- Atualiza topbar com novo tema
-		Topbar.BackgroundColor3 = Theme.Primary
-		local TStroke = Topbar:FindFirstChildOfClass("UIStroke")
-		if TStroke then TStroke.Color = Theme.Outline end
 
 		for Index, Descendant in next, Screen:GetDescendants() do
 			local Name, Class = Themes.Names[Descendant.Name], Themes.Classes[Descendant.ClassName]
