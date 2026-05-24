@@ -314,22 +314,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		Setup.Keybind = Settings.MinimizeKeybind
 	end
 
-	--// Remover botões (pontinhos) da topbar e adicionar título
-	if Sidebar.Top:FindFirstChild("Buttons") then
-		Destroy(Sidebar.Top.Buttons)
-	end
-
-	local TitleLabel = Instance.new("TextLabel")
-	TitleLabel.Text = Settings.Title or "Menu"
-	TitleLabel.Font = Enum.Font.GothamBold
-	TitleLabel.TextSize = 14
-	TitleLabel.TextColor3 = Theme.Title
-	TitleLabel.BackgroundTransparency = 1
-	TitleLabel.Size = UDim2.new(1, -16, 1, 0)
-	TitleLabel.Position = UDim2.new(0, 8, 0, 0)
-	TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-	TitleLabel.Parent = Sidebar.Top
-
 	--// Animate
 	local Close = function()
 		if Opened then
@@ -339,6 +323,30 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		else
 			Animations:Open(Window, Setup.Transparency)
 			Opened = true
+		end
+	end
+
+	for Index, Button in next, Sidebar.Top.Buttons:GetChildren() do
+		if Button:IsA("TextButton") then
+			local Name = Button.Name
+			Animations:Component(Button, true)
+
+			Connect(Button.MouseButton1Click, function() 
+				if Name == "Close" then
+					Close()
+				elseif Name == "Maximize" then
+					if Maximized then
+						Maximized = false
+						Tween(Window, .15, { Size = Setup.Size });
+					else
+						Maximized = true
+						Tween(Window, .15, { Size = UDim2.fromScale(1, 1), Position = UDim2.fromScale(0.5, 0.5) });
+					end
+				elseif Name == "Minimize" then
+					Opened = false
+					Window.Visible = false
+				end
+			end)
 		end
 	end
 
@@ -616,15 +624,24 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 
 		Connect(Dropdown.MouseButton1Click, function()
 			local Example = Clone(Examples["DropdownExample"]);
-
-			--// Remover botões (pontinhos) da dropdown
-			if Example:FindFirstChild("Top") and Example.Top:FindFirstChild("Buttons") then
-				Destroy(Example.Top.Buttons)
-			end
+			local Buttons = Example["Top"]["Buttons"];
 
 			Tween(BG, .25, { BackgroundTransparency = 0.6 });
 			SetProperty(Example, { Parent = Window });
 			Animations:Open(Example, 0, true)
+
+			for Index, Button in next, Buttons:GetChildren() do
+				if Button:IsA("TextButton") then
+					Animations:Component(Button, true)
+
+					Connect(Button.MouseButton1Click, function()
+						Tween(BG, .25, { BackgroundTransparency = 1 });
+						Animations:Close(Example);
+						task.wait(2)
+						Destroy(Example);
+					end)
+				end
+			end
 
 			for Index, Option in next, Settings.Options do
 				local Button = Clone(Examples["DropdownButtonExample"]);
