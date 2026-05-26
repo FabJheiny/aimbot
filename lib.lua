@@ -23,23 +23,16 @@ local Setup = {
 	Size = nil,
 }
 
-local Theme = { --// (Dark Theme)
-	--// Frames:
+local Theme = {
 	Primary = Color3.fromRGB(30, 30, 30),
 	Secondary = Color3.fromRGB(35, 35, 35),
 	Component = Color3.fromRGB(40, 40, 40),
 	Interactables = Color3.fromRGB(45, 45, 45),
-
-	--// Text:
 	Tab = Color3.fromRGB(200, 200, 200),
 	Title = Color3.fromRGB(240,240,240),
 	Description = Color3.fromRGB(200,200,200),
-
-	--// Outlines:
 	Shadow = Color3.fromRGB(0, 0, 0),
 	Outline = Color3.fromRGB(40, 40, 40),
-
-	--// Image:
 	Icon = Color3.fromRGB(220, 220, 220),
 }
 
@@ -58,23 +51,20 @@ local Player = {
 	GUI = LocalPlayer.PlayerGui;
 }
 
-local Tween = function(Object : Instance, Speed : number, Properties : {},  Info : { EasingStyle: Enum?, EasingDirection: Enum? })
+local Tween = function(Object, Speed, Properties, Info)
 	local Style, Direction
-
 	if Info then
 		Style, Direction = Info["EasingStyle"], Info["EasingDirection"]
 	else
 		Style, Direction = Enum.EasingStyle.Sine, Enum.EasingDirection.Out
 	end
-
 	return Services.Tween:Create(Object, TweenInfo.new(Speed, Style, Direction), Properties):Play()
 end
 
-local SetProperty = function(Object: Instance, Properties: {})
+local SetProperty = function(Object, Properties)
 	for Index, Property in next, Properties do
 		Object[Index] = (Property);
 	end
-
 	return Object
 end
 
@@ -85,13 +75,11 @@ local Multiply = function(Value, Amount)
 		Value.Y.Scale * Amount;
 		Value.Y.Offset * Amount;
 	}
-
 	return UDim2.new(unpack(New))
 end
 
 local Color = function(Color, Factor, Mode)
 	Mode = Mode or Setup.ThemeMode
-
 	if Mode == "Light" then
 		return Color3.fromRGB((Color.R * 255) - Factor, (Color.G * 255) - Factor, (Color.B * 255) - Factor)
 	else
@@ -116,7 +104,6 @@ local Drag = function(Canvas)
 				Dragging = true
 				Start = Input.Position
 				StartPosition = Canvas.Position
-
 				Connect(Input.Changed, function()
 					if Input.UserInputState == Enum.UserInputState.End then
 						Dragging = false
@@ -140,10 +127,10 @@ local Drag = function(Canvas)
 end
 
 Resizing = { 
-	TopLeft = { X = Vector2.new(-1, 0),   Y = Vector2.new(0, -1)};
-	TopRight = { X = Vector2.new(1, 0),    Y = Vector2.new(0, -1)};
-	BottomLeft = { X = Vector2.new(-1, 0),   Y = Vector2.new(0, 1)};
-	BottomRight = { X = Vector2.new(1, 0),    Y = Vector2.new(0, 1)};
+	TopLeft = { X = Vector2.new(-1, 0), Y = Vector2.new(0, -1)};
+	TopRight = { X = Vector2.new(1, 0), Y = Vector2.new(0, -1)};
+	BottomLeft = { X = Vector2.new(-1, 0), Y = Vector2.new(0, 1)};
+	BottomRight = { X = Vector2.new(1, 0), Y = Vector2.new(0, 1)};
 }
 
 Resizeable = function(Tab, Minimum, Maximum)
@@ -226,7 +213,7 @@ local StoredInfo = {
 };
 
 --// Animations [Window]
-function Animations:Open(Window: CanvasGroup, Transparency: number, UseCurrentSize: boolean)
+function Animations:Open(Window, Transparency, UseCurrentSize)
 	local Original = (UseCurrentSize and Window.Size) or Setup.Size
 	local Multiplied = Multiply(Original, 1.1)
 	local Shadow = Window:FindFirstChildOfClass("UIStroke")
@@ -245,14 +232,12 @@ function Animations:Open(Window: CanvasGroup, Transparency: number, UseCurrentSi
 	})
 end
 
-function Animations:Close(Window: CanvasGroup)
+function Animations:Close(Window)
 	local Original = Window.Size
 	local Multiplied = Multiply(Original, 1.1)
 	local Shadow = Window:FindFirstChildOfClass("UIStroke")
 
-	SetProperty(Window, {
-		Size = Original,
-	})
+	SetProperty(Window, { Size = Original })
 
 	Tween(Shadow, .25, { Transparency = 1 })
 	Tween(Window, .25, {
@@ -265,7 +250,7 @@ function Animations:Close(Window: CanvasGroup)
 	Window.Visible = false
 end
 
-function Animations:Component(Component: any, Custom: boolean)	
+function Animations:Component(Component, Custom)	
 	Connect(Component.InputBegan, function() 
 		if Custom then
 			Tween(Component, .25, { Transparency = .85 });
@@ -284,8 +269,7 @@ function Animations:Component(Component: any, Custom: boolean)
 end
 
 --// Library [Window]
-
-function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparency: number, MinimizeKeybind: Enum.KeyCode?, Theme: string })
+function Library:CreateWindow(Settings)
 	local Window = Clone(Screen:WaitForChild("Main"));
 	local Sidebar = Window:FindFirstChild("Sidebar");
 	local Holder = Window:FindFirstChild("Main");
@@ -303,7 +287,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		end
 	end
 
-	--// UI Setup
 	Drag(Window);
 	Resizeable(Window, Vector2.new(411, 271), Vector2.new(9e9, 9e9));
 	Setup.Transparency = Settings.Transparency or 0
@@ -314,7 +297,19 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		Setup.Keybind = Settings.MinimizeKeybind
 	end
 
-	--// Animate
+	-- Disable blur effect on asset if it exists
+	local BlurEffect = Screen:FindFirstChildWhichIsA("BlurEffect", true)
+	if BlurEffect then
+		BlurEffect:Destroy()
+	end
+
+	-- Disable reflection/glare effect on asset if it exists
+	for _, Descendant in next, Screen:GetDescendants() do
+		if Descendant.Name:lower():find("reflect") or Descendant.Name:lower():find("glare") or Descendant.Name:lower():find("shine") or Descendant.Name:lower():find("glass") then
+			Descendant:Destroy()
+		end
+	end
+
 	local Close = function()
 		if Opened then
 			Opened = false
@@ -356,9 +351,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		end
 	end)
 
-	--// Tab Functions
-
-	function Options:SetTab(Name: string)
+	function Options:SetTab(Name)
 		for Index, Button in next, Tab:GetChildren() do
 			if Button:IsA("TextButton") then
 				local Opened, SameName = Button.Value, (Button.Name == Name);
@@ -384,16 +377,12 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 				if SameName and not Opened.Value then
 					Opened.Value = true
 					Main.Visible = true
-
 					Tween(Main, .3, { GroupTransparency = 0 });
 					Tween(Scroll["UIPadding"], .3, { PaddingTop = UDim.new(0, 5) });
-
 				elseif not SameName and Opened.Value then
 					Opened.Value = false
-
 					Tween(Main, .15, { GroupTransparency = 1 });
 					Tween(Scroll["UIPadding"], .15, { PaddingTop = UDim.new(0, 15) });	
-
 					task.delay(.2, function()
 						Main.Visible = false
 					end)
@@ -402,7 +391,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		end
 	end
 
-	function Options:AddTabSection(Settings: { Name: string, Order: number })
+	function Options:AddTabSection(Settings)
 		local Example = Examples["SectionExample"];
 		local Section = Clone(Example);
 
@@ -416,7 +405,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		});
 	end
 
-	function Options:AddTab(Settings: { Title: string, Icon: string, Section: string? })
+	function Options:AddTab(Settings)
 		if StoredInfo["Tabs"][Settings.Title] then 
 			error("[UI LIB]: A tab with the same name has already been created") 
 		end 
@@ -453,10 +442,8 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 
 		return Main.ScrollingFrame
 	end
-	
-	--// Notifications
-	
-	function Options:Notify(Settings: { Title: string, Description: string, Duration: number }) 
+
+	function Options:Notify(Settings) 
 		local Notification = Clone(Components["Notification"]);
 		local Title, Description = Options:GetLabels(Notification);
 		local Timer = Notification["Timer"];
@@ -471,7 +458,8 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 			local Duration = Settings.Duration or 2
 			local Wait = task.wait;
 			
-			Animations:Open(Notification, Setup.Transparency, true); Tween(Timer, Duration, { Size = UDim2.new(0, 0, 0, 4) });
+			Animations:Open(Notification, Setup.Transparency, true);
+			Tween(Timer, Duration, { Size = UDim2.new(0, 0, 0, 4) });
 			Wait(Duration);
 			Animations:Close(Notification);
 			Wait(1);
@@ -479,14 +467,12 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		end)
 	end
 
-	--// Component Functions
-
 	function Options:GetLabels(Component)
 		local Labels = Component:FindFirstChild("Labels")
 		return Labels.Title, Labels.Description
 	end
 
-	function Options:AddSection(Settings: { Name: string, Tab: Instance }) 
+	function Options:AddSection(Settings) 
 		local Section = Clone(Components["Section"]);
 		SetProperty(Section, {
 			Text = Settings.Name,
@@ -495,7 +481,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		})
 	end
 	
-	function Options:AddButton(Settings: { Title: string, Description: string, Tab: Instance, Callback: any }) 
+	function Options:AddButton(Settings) 
 		local Button = Clone(Components["Button"]);
 		local Title, Description = Options:GetLabels(Button);
 
@@ -510,7 +496,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		})
 	end
 
-	function Options:AddInput(Settings: { Title: string, Description: string, Tab: Instance, Callback: any }) 
+	function Options:AddInput(Settings) 
 		local Input = Clone(Components["Input"]);
 		local Title, Description = Options:GetLabels(Input);
 		local TextBox = Input["Main"]["Input"];
@@ -533,7 +519,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		})
 	end
 
-	function Options:AddToggle(Settings: { Title: string, Description: string, Default: boolean, Tab: Instance, Callback: any }) 
+	function Options:AddToggle(Settings) 
 		local Toggle = Clone(Components["Toggle"]);
 		local Title, Description = Options:GetLabels(Toggle);
 
@@ -549,7 +535,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 				Tween(Main,   .2, { BackgroundColor3 = Theme.Interactables });
 				Tween(Circle, .2, { BackgroundColor3 = Theme.Primary, Position = UDim2.new(0, 3, 0.5, 0) });
 			end
-			
 			On.Value = Value
 		end 
 
@@ -570,7 +555,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		})
 	end
 	
-	function Options:AddKeybind(Settings: { Title: string, Description: string, Tab: Instance, Callback: any }) 
+	function Options:AddKeybind(Settings) 
 		local Dropdown = Clone(Components["Keybind"]);
 		local Title, Description = Options:GetLabels(Dropdown);
 		local Bind = Dropdown["Main"].Options;
@@ -617,7 +602,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		})
 	end
 
-	function Options:AddDropdown(Settings: { Title: string, Description: string, Options: {}, Tab: Instance, Callback: any }) 
+	function Options:AddDropdown(Settings) 
 		local Dropdown = Clone(Components["Dropdown"]);
 		local Title, Description = Options:GetLabels(Dropdown);
 		local Text = Dropdown["Main"].Options;
@@ -689,7 +674,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		})
 	end
 
-	function Options:AddSlider(Settings: { Title: string, Description: string, MaxValue: number, AllowDecimals: boolean, DecimalAmount: number, Tab: Instance, Callback: any }) 
+	function Options:AddSlider(Settings) 
 		local Slider = Clone(Components["Slider"]);
 		local Title, Description = Options:GetLabels(Slider);
 
@@ -756,7 +741,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		})
 	end
 
-	function Options:AddParagraph(Settings: { Title: string, Description: string, Tab: Instance }) 
+	function Options:AddParagraph(Settings) 
 		local Paragraph = Clone(Components["Paragraph"]);
 		local Title, Description = Options:GetLabels(Paragraph);
 
@@ -775,44 +760,37 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 					Label.BackgroundColor3 = Color(Theme.Component, 5, "Dark");
 				end
 			end,
-			
 			["Title"] = function(Label)
 				if Label:IsA("TextLabel") then
 					Label.TextColor3 = Theme.Title
 				end
 			end,
-
 			["Description"] = function(Label)
 				if Label:IsA("TextLabel") then
 					Label.TextColor3 = Theme.Description
 				end
 			end,
-			
 			["Section"] = function(Label)
 				if Label:IsA("TextLabel") then
 					Label.TextColor3 = Theme.Title
 				end
 			end,
-
 			["Options"] = function(Label)
 				if Label:IsA("TextLabel") and Label.Parent.Name == "Main" then
 					Label.TextColor3 = Theme.Title
 				end
 			end,
-			
 			["Notification"] = function(Label)
 				if Label:IsA("CanvasGroup") then
 					Label.BackgroundColor3 = Theme.Primary
 					Label.UIStroke.Color = Theme.Outline
 				end
 			end,
-
 			["TextLabel"] = function(Label)
 				if Label:IsA("TextLabel") and Label.Parent:FindFirstChild("List") then
 					Label.TextColor3 = Theme.Tab
 				end
 			end,
-
 			["Main"] = function(Label)
 				if Label:IsA("Frame") then
 					if Label.Parent == Window then
@@ -820,7 +798,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 					elseif Label.Parent:FindFirstChild("Value") then
 						local Toggle = Label.Parent.Value 
 						local Circle = Label:FindFirstChild("Circle")
-						
 						if not Toggle.Value then
 							Label.BackgroundColor3 = Theme.Interactables
 							Label.Circle.BackgroundColor3 = Theme.Primary
@@ -832,19 +809,16 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 					Label.TextColor3 = Theme.Title
 				end
 			end,
-
 			["Amount"] = function(Label)
 				if Label:IsA("Frame") then
 					Label.BackgroundColor3 = Theme.Interactables
 				end
 			end,
-
 			["Slide"] = function(Label)
 				if Label:IsA("Frame") then
 					Label.BackgroundColor3 = Theme.Interactables
 				end
 			end,
-
 			["Input"] = function(Label)
 				if Label:IsA("TextLabel") then
 					Label.TextColor3 = Theme.Title
@@ -854,17 +828,14 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 					Label.TextColor3 = Theme.Title
 				end
 			end,
-
 			["Outline"] = function(Stroke)
 				if Stroke:IsA("UIStroke") then
 					Stroke.Color = Theme.Outline
 				end
 			end,
-
 			["DropdownExample"] = function(Label)
 				Label.BackgroundColor3 = Theme.Secondary
 			end,
-
 			["Underline"] = function(Label)
 				if Label:IsA("Frame") then
 					Label.BackgroundColor3 = Theme.Outline
@@ -878,19 +849,16 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 					Label.ImageColor3 = Theme.Icon
 				end
 			end,
-
 			["TextLabel"] = function(Label)
 				if Label:FindFirstChild("Padding") then
 					Label.TextColor3 = Theme.Title
 				end
 			end,
-
 			["TextButton"] = function(Label)
 				if Label:FindFirstChild("Labels") then
 					Label.BackgroundColor3 = Theme.Component
 				end
 			end,
-
 			["ScrollingFrame"] = function(Label)
 				Label.ScrollBarImageColor3 = Theme.Component
 			end,
@@ -906,7 +874,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 
 		for Index, Descendant in next, Screen:GetDescendants() do
 			local Name, Class = Themes.Names[Descendant.Name], Themes.Classes[Descendant.ClassName]
-
 			if Name then
 				Name(Descendant);
 			elseif Class then
@@ -922,7 +889,6 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		elseif Setting == "Transparency" then
 			Window.GroupTransparency = Value
 			Setup.Transparency = Value
-			
 			for Index, Notification in next, Screen:GetDescendants() do
 				if Notification:IsA("CanvasGroup") and Notification.Name == "Notification" then
 					Notification.GroupTransparency = Value
