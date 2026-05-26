@@ -163,7 +163,7 @@ Btn.Size = UDim2.new(0, 44, 0, 44)
 Btn.Position = UDim2.new(0, 20, 0.5, 0)
 Btn.BackgroundColor3 = Theme.Component
 Btn.TextColor3 = Theme.Title
-Btn.Text = "FJ"
+Btn.Text = ""
 Btn.Font = Enum.Font.GothamBold
 Btn.TextSize = 20
 Btn.BorderSizePixel = 0
@@ -997,7 +997,7 @@ function Library:CreateWindow(Settings: { Title: string, Size: UDim2, Transparen
 		elseif Setting == "Transparency" then
 			Window.GroupTransparency = Value
 			Setup.Transparency = Value
-			
+			Btn.BackgroundTransparency = Value 
 			for Index, Notification in next, Screen:GetDescendants() do
 				if Notification:IsA("CanvasGroup") and Notification.Name == "Notification" then
 					Notification.GroupTransparency = Value
