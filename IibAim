@@ -5,8 +5,7 @@ function RobloxUI.new(title, version)
     local self = setmetatable({}, RobloxUI)
 
     local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+    local UIS = game:GetService("UserInputService")
     local player = Players.LocalPlayer
     local pg = player:WaitForChild("PlayerGui", 10) or player.PlayerGui
 
@@ -17,18 +16,6 @@ local TweenService = game:GetService("TweenService")
 
     self._connections = {}
     self._UIS = UIS
-    
-    local function Tween(obj, time, props)
-    TweenService:Create(
-        obj,
-        TweenInfo.new(
-            time,
-            Enum.EasingStyle.Quad,
-            Enum.EasingDirection.Out
-        ),
-        props
-    ):Play()
-end
 
     self.gui = Instance.new("ScreenGui")
     self.gui.Name = "RobloxUI_Lib"
@@ -275,40 +262,9 @@ obsLabel.Parent = self.menuFrame
         table.insert(self._connections, btnDetector.MouseButton1Click:Connect(function()
             if moved then moved = false return end
             visible = not visible
-
-if visible then
-    self.menuFrame.Visible = true
-
-    self.menuFrame.Size = UDim2.new(0, 470, 0, 332)
-
-    Tween(self.menuFrame, 0.12, {
-        Size = UDim2.new(0, 480, 0, 340),
-        BackgroundTransparency = 0.35
-    })
-
-    btnIcon.Text = "="
-
-    Tween(btnStroke, 0.1, {
-        Transparency = 0.7
-    })
-else
-    Tween(self.menuFrame, 0.1, {
-        Size = UDim2.new(0, 470, 0, 332),
-        BackgroundTransparency = 0.5
-    })
-
-    Tween(btnStroke, 0.1, {
-        Transparency = 0.3
-    })
-
-    btnIcon.Text = ">"
-
-    task.delay(0.1, function()
-        if not visible then
-            self.menuFrame.Visible = false
-        end
-    end)
-end
+            self.menuFrame.Visible = visible
+            btnIcon.Text = visible and "=" or ">"
+            btnStroke.Transparency = visible and 0.7 or 0.3
         end))
     end
 
@@ -364,32 +320,16 @@ function RobloxUI:AddToggle(side, text, default, callback)
     label.Text = text
 
     local function refresh()
-    if state then
-        Tween(dot, 0.1, {
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        })
-
-        Tween(label, 0.1, {
-            TextColor3 = Color3.fromRGB(255, 255, 255)
-        })
-
-        Tween(stroke, 0.1, {
-            Transparency = 0.6
-        })
-    else
-        Tween(dot, 0.1, {
-            BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        })
-
-        Tween(label, 0.1, {
-            TextColor3 = Color3.fromRGB(140, 140, 140)
-        })
-
-        Tween(stroke, 0.1, {
-            Transparency = 0.88
-        })
+        if state then
+            dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            stroke.Transparency = 0.6
+        else
+            dot.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            label.TextColor3 = Color3.fromRGB(140, 140, 140)
+            stroke.Transparency = 0.88
+        end
     end
-end
     refresh()
 
     table.insert(self._connections, btn.MouseButton1Click:Connect(function()
@@ -425,34 +365,17 @@ function RobloxUI:AddButton(side, text, callback)
     stroke.Thickness = 1
 
     table.insert(self._connections, btn.MouseButton1Down:Connect(function()
-    Tween(btn, 0.08, {
-        BackgroundTransparency = 0.4
-    })
-
-    Tween(stroke, 0.08, {
-        Transparency = 0.55
-    })
-end))
-
-table.insert(self._connections, btn.MouseButton1Up:Connect(function()
-    Tween(btn, 0.1, {
-        BackgroundTransparency = 0.6
-    })
-
-    Tween(stroke, 0.1, {
-        Transparency = 0.85
-    })
-end))
-
-table.insert(self._connections, btn.MouseLeave:Connect(function()
-    Tween(btn, 0.1, {
-        BackgroundTransparency = 0.6
-    })
-
-    Tween(stroke, 0.1, {
-        Transparency = 0.85
-    })
-end))
+        btn.BackgroundTransparency = 0.4
+        stroke.Transparency = 0.55
+    end))
+    table.insert(self._connections, btn.MouseButton1Up:Connect(function()
+        btn.BackgroundTransparency = 0.6
+        stroke.Transparency = 0.85
+    end))
+    table.insert(self._connections, btn.MouseLeave:Connect(function()
+        btn.BackgroundTransparency = 0.6
+        stroke.Transparency = 0.85
+    end))
     table.insert(self._connections, btn.MouseButton1Click:Connect(function()
         if callback then task.spawn(callback) end
     end))
