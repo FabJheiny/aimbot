@@ -1,18 +1,16 @@
 -- ============================================================
---  NexLib · Modular Framework v1.1.0
+--  NexLib - Modular Framework v1.1.1
 --  Arquitetura: Registry + EventBus + State + Loader + UI
 -- ============================================================
 
 local NexLib = (function()
 
--- ── CONFIG ────────────────────────────────────────────────────
 local CONFIG = {
-    version     = "1.1.0",
+    version     = "1.1.1",
     name        = "NexLib",
     httpTimeout = 10,
 }
 
--- ── SERVICES ──────────────────────────────────────────────────
 local HttpService      = game:GetService("HttpService")
 local Players          = game:GetService("Players")
 local RunService       = game:GetService("RunService")
@@ -22,11 +20,9 @@ local TweenService     = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui   = LocalPlayer:WaitForChild("PlayerGui")
 
--- ── RE-EXECUTE GUARD ──────────────────────────────────────────
 local existing = PlayerGui:FindFirstChild("NexLib")
 if existing then existing:Destroy() end
 
--- ── UTILS ─────────────────────────────────────────────────────
 local function generateId(name)
     return name:lower():gsub("%s+", "_") .. "_" .. tostring(tick()):sub(-4)
 end
@@ -36,7 +32,7 @@ local function timestamp()
     return string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
 end
 
--- ── EVENT BUS ─────────────────────────────────────────────────
+-- EventBus
 local EventBus = {}
 EventBus._listeners = {}
 
@@ -64,7 +60,7 @@ function EventBus.emit(event, data)
     end
 end
 
--- ── LOGGER ────────────────────────────────────────────────────
+-- Logger
 local Logger = {}
 
 local function log(level, msg)
@@ -78,7 +74,7 @@ function Logger.success(msg) log("success", msg) end
 function Logger.warn(msg)    log("warn",    msg) end
 function Logger.error(msg)   log("error",   msg) end
 
--- ── STATE ─────────────────────────────────────────────────────
+-- State
 local State = {}
 State._data = {
     modules        = {},
@@ -98,15 +94,15 @@ function State.set(patch)
     EventBus.emit("state:change", State._data)
 end
 
--- ── REGISTRY ──────────────────────────────────────────────────
+-- Registry
 local Registry = {}
 
 function Registry.Register(descriptor)
-    assert(type(descriptor) == "table",                              "descriptor must be a table")
+    assert(type(descriptor) == "table",                                 "descriptor must be a table")
     assert(type(descriptor.Name) == "string" and #descriptor.Name > 0, "Name required")
-    assert(type(descriptor.Load) == "function",                      "Load function required")
+    assert(type(descriptor.Load) == "function",                         "Load function required")
 
-    descriptor.Icon        = descriptor.Icon        or "📦"
+    descriptor.Icon        = descriptor.Icon        or "[M]"
     descriptor.Description = descriptor.Description or ""
     descriptor.id          = generateId(descriptor.Name)
 
@@ -124,7 +120,7 @@ end
 function Registry.Unregister(id)
     local state = State.get()
     if not state.modules[id] then
-        Logger.warn("Unregister: module not found → " .. tostring(id))
+        Logger.warn("Unregister: module not found -> " .. tostring(id))
         return false
     end
     local name = state.modules[id].Name
@@ -142,23 +138,19 @@ end
 function Registry.getAll() return State.get().modules end
 function Registry.get(id)  return State.get().modules[id] end
 
--- ── LOADER ────────────────────────────────────────────────────
+-- Loader
 local Loader = {}
 
 function Loader.load(id)
     local state  = State.get()
     local module = state.modules[id]
     if not module then
-        Logger.error("Load failed: module not found → " .. tostring(id))
+        Logger.error("Load failed: module not found -> " .. tostring(id))
         return
     end
 
     if state.loadStatuses[id] == "loading" then
         Logger.warn(module.Name .. " is already loading")
-        return
-    end
-    if state.loadStatuses[id] == "loaded" then
-        Logger.info(module.Name .. " already loaded")
         return
     end
 
@@ -199,7 +191,7 @@ function Loader.loadAll()
     end
 end
 
--- ── UI ────────────────────────────────────────────────────────
+-- UI
 local UI = {}
 
 local function newInst(class, props, parent)
@@ -233,6 +225,83 @@ local STATUS_COLORS = {
     error   = color("ff4f4f"),
 }
 
+local MIN_W, MIN_H = 280, 360
+
+function UI._makeResizable(frame)
+    local handle = newInst("Frame", {
+        Name                   = "ResizeHandle",
+        Size                   = UDim2.new(0, 16, 0, 16),
+        Position               = UDim2.new(1, -16, 1, -16),
+        BackgroundColor3       = color("ffffff"),
+        BackgroundTransparency = 0.85,
+        BorderSizePixel        = 0,
+        ZIndex                 = 20,
+    }, frame)
+    newInst("UICorner", { CornerRadius = UDim.new(0, 4) }, handle)
+
+    newInst("TextLabel", {
+        Size                   = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text                   = "#",
+        TextColor3             = color("909090"),
+        Font                   = Enum.Font.GothamBold,
+        TextSize               = 11,
+        TextXAlignment         = Enum.TextXAlignment.Center,
+        TextYAlignment         = Enum.TextYAlignment.Center,
+        ZIndex                 = 21,
+    }, handle)
+
+    local resizing   = false
+    local startMouse = nil
+    local startSize  = nil
+
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            resizing   = true
+            startMouse = Vector2.new(input.Position.X, input.Position.Y)
+            startSize  = Vector2.new(frame.AbsoluteSize.X, frame.AbsoluteSize.Y)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if resizing and (
+            input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch) then
+
+            local delta = Vector2.new(input.Position.X, input.Position.Y) - startMouse
+            local newW  = math.max(MIN_W, startSize.X + delta.X)
+            local newH  = math.max(MIN_H, startSize.Y + delta.Y)
+
+            frame.Size = UDim2.new(0, newW, 0, newH)
+
+            local content = frame:FindFirstChild("Content")
+            if content then
+                local listScroll = content:FindFirstChild("ListScroll")
+                if listScroll then
+                    local detailH  = 96
+                    local reserved = 34 + 52 + 1 + 36 + 1 + detailH + 36
+                    local listH    = math.max(60, newH - reserved)
+                    listScroll.Size = UDim2.new(1, 0, 0, listH)
+
+                    local detail = content:FindFirstChild("Detail")
+                    if detail then
+                        local detailY = 34 + 52 + 1 + 36 + 1 + listH + 8
+                        detail.Position = UDim2.new(0, 12, 0, detailY - 34)
+                    end
+                end
+            end
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            resizing = false
+        end
+    end)
+end
+
 function UI.build()
     _gui = newInst("ScreenGui", {
         Name           = "NexLib",
@@ -247,13 +316,14 @@ function UI.build()
         BackgroundColor3       = color("0f0f10"),
         BackgroundTransparency = 0.15,
         BorderSizePixel        = 0,
+        ClipsDescendants       = false,
     }, _gui)
     newInst("UICorner", { CornerRadius = UDim.new(0, 12) }, _mainFrame)
     newInst("UIStroke", { Color = color("ffffff"), Thickness = 1, Transparency = 0.91 }, _mainFrame)
 
     UI._makeDraggable(_mainFrame)
+    UI._makeResizable(_mainFrame)
 
-    -- Title bar
     local titleBar = newInst("Frame", {
         Name                   = "TitleBar",
         Size                   = UDim2.new(1, 0, 0, 34),
@@ -268,14 +338,13 @@ function UI.build()
         Size                   = UDim2.new(1, -80, 1, 0),
         Position               = UDim2.new(0, 40, 0, 0),
         BackgroundTransparency = 1,
-        Text                   = "NEXLIB · MODULAR FRAMEWORK",
+        Text                   = "NEXLIB - MODULAR FRAMEWORK",
         TextColor3             = color("606060"),
         Font                   = Enum.Font.Code,
         TextSize               = 10,
         TextXAlignment         = Enum.TextXAlignment.Center,
     }, titleBar)
 
-    -- Close
     local closeBtn = newInst("TextButton", {
         Size             = UDim2.new(0, 11, 0, 11),
         Position         = UDim2.new(0, 12, 0.5, -5),
@@ -286,7 +355,6 @@ function UI.build()
     newInst("UICorner", { CornerRadius = UDim.new(1, 0) }, closeBtn)
     closeBtn.MouseButton1Click:Connect(function() _gui:Destroy() end)
 
-    -- Minimise
     local minBtn = newInst("TextButton", {
         Size             = UDim2.new(0, 11, 0, 11),
         Position         = UDim2.new(0, 29, 0.5, -5),
@@ -300,7 +368,6 @@ function UI.build()
         if c then c.Visible = not c.Visible end
     end)
 
-    -- Content
     local content = newInst("Frame", {
         Name                   = "Content",
         Size                   = UDim2.new(1, 0, 1, -34),
@@ -309,7 +376,6 @@ function UI.build()
         BorderSizePixel        = 0,
     }, _mainFrame)
 
-    -- Header
     local header = newInst("Frame", {
         Size                   = UDim2.new(1, 0, 0, 52),
         BackgroundTransparency = 1,
@@ -319,7 +385,7 @@ function UI.build()
         Size                   = UDim2.new(1, -20, 0, 26),
         Position               = UDim2.new(0, 14, 0, 10),
         BackgroundTransparency = 1,
-        Text                   = "⬡  NexLib",
+        Text                   = "NexLib",
         TextColor3             = color("e0e0e0"),
         Font                   = Enum.Font.GothamBold,
         TextSize               = 18,
@@ -337,16 +403,14 @@ function UI.build()
         TextXAlignment         = Enum.TextXAlignment.Left,
     }, header)
 
-    -- Separator
     newInst("Frame", {
-        Size             = UDim2.new(1, 0, 0, 1),
-        Position         = UDim2.new(0, 0, 0, 52),
-        BackgroundColor3 = color("ffffff"),
+        Size                   = UDim2.new(1, 0, 0, 1),
+        Position               = UDim2.new(0, 0, 0, 52),
+        BackgroundColor3       = color("ffffff"),
         BackgroundTransparency = 0.91,
-        BorderSizePixel  = 0,
+        BorderSizePixel        = 0,
     }, content)
 
-    -- Search bar
     local searchBg = newInst("Frame", {
         Size                   = UDim2.new(1, -24, 0, 28),
         Position               = UDim2.new(0, 12, 0, 60),
@@ -361,7 +425,7 @@ function UI.build()
         Size                   = UDim2.new(0, 16, 1, 0),
         Position               = UDim2.new(0, 8, 0, 0),
         BackgroundTransparency = 1,
-        Text                   = "🔍",
+        Text                   = "S:",
         TextSize               = 11,
         TextColor3             = color("606060"),
         Font                   = Enum.Font.Code,
@@ -385,27 +449,25 @@ function UI.build()
         State.set({ searchQuery = _searchBox.Text })
     end)
 
-    -- Separator under search
     newInst("Frame", {
-        Size             = UDim2.new(1, 0, 0, 1),
-        Position         = UDim2.new(0, 0, 0, 96),
-        BackgroundColor3 = color("ffffff"),
+        Size                   = UDim2.new(1, 0, 0, 1),
+        Position               = UDim2.new(0, 0, 0, 96),
+        BackgroundColor3       = color("ffffff"),
         BackgroundTransparency = 0.91,
-        BorderSizePixel  = 0,
+        BorderSizePixel        = 0,
     }, content)
 
-    -- Module list
     local listScroll = newInst("ScrollingFrame", {
-        Name                     = "ListScroll",
-        Size                     = UDim2.new(1, 0, 0, 200),
-        Position                 = UDim2.new(0, 0, 0, 100),
-        BackgroundTransparency   = 1,
-        BorderSizePixel          = 0,
-        ScrollBarThickness       = 3,
-        ScrollBarImageColor3     = color("ffffff"),
+        Name                       = "ListScroll",
+        Size                       = UDim2.new(1, 0, 0, 200),
+        Position                   = UDim2.new(0, 0, 0, 100),
+        BackgroundTransparency     = 1,
+        BorderSizePixel            = 0,
+        ScrollBarThickness         = 3,
+        ScrollBarImageColor3       = color("ffffff"),
         ScrollBarImageTransparency = 0.85,
-        CanvasSize               = UDim2.new(0, 0, 0, 0),
-        AutomaticCanvasSize      = Enum.AutomaticSize.Y,
+        CanvasSize                 = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize        = Enum.AutomaticSize.Y,
     }, content)
 
     _listFrame = newInst("Frame", {
@@ -426,7 +488,6 @@ function UI.build()
         PaddingBottom = UDim.new(0, 8),
     }, _listFrame)
 
-    -- Detail panel
     _detailFrame = newInst("Frame", {
         Name                   = "Detail",
         Size                   = UDim2.new(1, -24, 0, 96),
@@ -480,7 +541,7 @@ function UI.build()
         Position               = UDim2.new(0, 12, 0, 56),
         BackgroundColor3       = color("ffffff"),
         BackgroundTransparency = 0.87,
-        Text                   = "▶  RUN MODULE",
+        Text                   = "RUN MODULE",
         TextColor3             = color("e0e0e0"),
         Font                   = Enum.Font.GothamBold,
         TextSize               = 11,
@@ -527,8 +588,8 @@ function UI._makeDraggable(frame)
 end
 
 function UI._renderList()
-    local state    = State.get()
-    local query    = state.searchQuery:lower()
+    local state = State.get()
+    local query = state.searchQuery:lower()
 
     for _, c in pairs(_moduleCards) do c:Destroy() end
     _moduleCards = {}
@@ -558,7 +619,6 @@ function UI._renderList()
                 Transparency = isSelected and 0.72 or 0.91,
             }, card)
 
-            -- Icon
             local iconBox = newInst("Frame", {
                 Size                   = UDim2.new(0, 32, 0, 32),
                 Position               = UDim2.new(0, 10, 0.5, -16),
@@ -576,7 +636,6 @@ function UI._renderList()
                 Font                   = Enum.Font.GothamBold,
             }, iconBox)
 
-            -- Name
             newInst("TextLabel", {
                 Size                   = UDim2.new(1, -110, 0, 18),
                 Position               = UDim2.new(0, 52, 0, 8),
@@ -589,7 +648,6 @@ function UI._renderList()
                 TextTruncate           = Enum.TextTruncate.AtEnd,
             }, card)
 
-            -- Desc
             newInst("TextLabel", {
                 Size                   = UDim2.new(1, -110, 0, 13),
                 Position               = UDim2.new(0, 52, 0, 26),
@@ -602,7 +660,6 @@ function UI._renderList()
                 TextTruncate           = Enum.TextTruncate.AtEnd,
             }, card)
 
-            -- Status badge
             local statusBadge = newInst("TextLabel", {
                 Size                   = UDim2.new(0, 56, 0, 16),
                 Position               = UDim2.new(1, -66, 0.5, -8),
@@ -616,7 +673,6 @@ function UI._renderList()
             }, card)
             newInst("UICorner", { CornerRadius = UDim.new(0, 3) }, statusBadge)
 
-            -- Click: seleciona ou desmarca
             local btn = newInst("TextButton", {
                 Size                   = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
@@ -625,7 +681,7 @@ function UI._renderList()
             }, card)
             btn.MouseButton1Click:Connect(function()
                 if State.get().selectedModule == id then
-                    State.set({ selectedModule = nil })   -- desmarca
+                    State.set({ selectedModule = nil })
                 else
                     State.set({ selectedModule = id })
                 end
@@ -667,22 +723,22 @@ function UI._renderDetail()
     local m      = state.modules[id]
     local status = state.loadStatuses[id] or "idle"
 
-    _detailName.Text          = m.Icon .. "  " .. m.Name
-    _detailDesc.Text          = m.Description ~= "" and m.Description or "(no description)"
-    _detailStatus.Text        = status:upper()
-    _detailStatus.TextColor3  = STATUS_COLORS[status]
+    _detailName.Text         = m.Icon .. "  " .. m.Name
+    _detailDesc.Text         = m.Description ~= "" and m.Description or "(no description)"
+    _detailStatus.Text       = status:upper()
+    _detailStatus.TextColor3 = STATUS_COLORS[status]
 
     if status == "loading" then
-        _runBtn.Text       = "⟳  LOADING..."
+        _runBtn.Text       = "LOADING..."
         _runBtn.TextColor3 = color("ffd84f")
     elseif status == "loaded" then
-        _runBtn.Text       = "✓  LOADED"
+        _runBtn.Text       = "RUN AGAIN"
         _runBtn.TextColor3 = color("4fffb0")
     elseif status == "error" then
-        _runBtn.Text       = "✗  ERROR — RETRY"
+        _runBtn.Text       = "ERROR - RETRY"
         _runBtn.TextColor3 = color("ff4f4f")
     else
-        _runBtn.Text       = "▶  RUN MODULE"
+        _runBtn.Text       = "RUN MODULE"
         _runBtn.TextColor3 = color("e0e0e0")
     end
 end
@@ -702,17 +758,15 @@ function UI.init()
     Logger.success("UI ready")
 end
 
--- ── BOOT ──────────────────────────────────────────────────────
 local function _boot()
     Logger.info(string.format("%s v%s booting...", CONFIG.name, CONFIG.version))
     UI.init()
-    Logger.success("framework ready · awaiting module registration")
+    Logger.success("framework ready - awaiting module registration")
     EventBus.emit("nexlib:ready", { version = CONFIG.version })
 end
 
 _boot()
 
--- ── PUBLIC API ────────────────────────────────────────────────
 return {
     Register   = function(d)  return Registry.Register(d) end,
     Unregister = function(id) return Registry.Unregister(id) end,
