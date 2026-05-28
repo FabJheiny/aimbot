@@ -51,7 +51,7 @@ function RobloxUI.new(title, version)
     topBar.Size = UDim2.new(1, 0, 0, 28)
     topBar.Position = UDim2.new(0, 0, 0, 0)
     topBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    topBar.BackgroundTransparency = 0.5
+    topBar.BackgroundTransparency = 0.6
     topBar.BorderSizePixel = 0
     topBar.Parent = self.menuFrame
 
@@ -64,7 +64,7 @@ function RobloxUI.new(title, version)
     topPatch.Size = UDim2.new(1, 0, 0, 10)
     topPatch.Position = UDim2.new(0, 0, 1, -10)
     topPatch.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    topPatch.BackgroundTransparency = 0.5
+    topPatch.BackgroundTransparency = 0.4
     topPatch.BorderSizePixel = 0
     topPatch.Parent = topBar
 
@@ -80,7 +80,7 @@ function RobloxUI.new(title, version)
     titleLabel.Size = UDim2.new(0.6, 0, 1, 0)
     titleLabel.Position = UDim2.new(0, 10, 0, 0)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title or "Menu"
+    titleLabel.Text = title or "SPECTRA"
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.TextSize = 12
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -104,7 +104,7 @@ function RobloxUI.new(title, version)
     bottomBar.Size = UDim2.new(1, 0, 0, 22)
     bottomBar.Position = UDim2.new(0, 0, 1, -22)
     bottomBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    bottomBar.BackgroundTransparency = 0.5
+    bottomBar.BackgroundTransparency = 0.35
     bottomBar.BorderSizePixel = 0
     bottomBar.Parent = self.menuFrame
 
@@ -117,7 +117,7 @@ function RobloxUI.new(title, version)
     botPatch.Size = UDim2.new(1, 0, 0, 10)
     botPatch.Position = UDim2.new(0, 0, 0, 0)
     botPatch.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    botPatch.BackgroundTransparency = 0.5
+    botPatch.BackgroundTransparency = 0.35
     botPatch.BorderSizePixel = 0
     botPatch.Parent = bottomBar
 
