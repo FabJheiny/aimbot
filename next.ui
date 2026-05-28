@@ -1,5 +1,5 @@
 -- ============================================================
---  NexLib · Modular Framework v1.0.0
+--  NexLib · Modular Framework v1.1.0
 --  Arquitetura: Registry + EventBus + State + Loader + UI
 -- ============================================================
 
@@ -7,20 +7,24 @@ local NexLib = (function()
 
 -- ── CONFIG ────────────────────────────────────────────────────
 local CONFIG = {
-    version    = "1.0.0",
-    name       = "NexLib",
+    version     = "1.1.0",
+    name        = "NexLib",
     httpTimeout = 10,
 }
 
 -- ── SERVICES ──────────────────────────────────────────────────
-local HttpService   = game:GetService("HttpService")
-local Players       = game:GetService("Players")
-local RunService    = game:GetService("RunService")
+local HttpService      = game:GetService("HttpService")
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService  = game:GetService("TweenService")
+local TweenService     = game:GetService("TweenService")
 
-local LocalPlayer   = Players.LocalPlayer
-local PlayerGui     = LocalPlayer:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui   = LocalPlayer:WaitForChild("PlayerGui")
+
+-- ── RE-EXECUTE GUARD ──────────────────────────────────────────
+local existing = PlayerGui:FindFirstChild("NexLib")
+if existing then existing:Destroy() end
 
 -- ── UTILS ─────────────────────────────────────────────────────
 local function generateId(name)
@@ -77,10 +81,8 @@ function Logger.error(msg)   log("error",   msg) end
 -- ── STATE ─────────────────────────────────────────────────────
 local State = {}
 State._data = {
-    modules        = {},   -- id → descriptor
-    categories     = {},   -- ordered list
-    loadStatuses   = {},   -- id → "idle"|"loading"|"loaded"|"error"
-    activeCategory = "All",
+    modules        = {},
+    loadStatuses   = {},
     selectedModule = nil,
     searchQuery    = "",
 }
@@ -100,33 +102,21 @@ end
 local Registry = {}
 
 function Registry.Register(descriptor)
-    assert(type(descriptor) == "table",  "descriptor must be a table")
+    assert(type(descriptor) == "table",                              "descriptor must be a table")
     assert(type(descriptor.Name) == "string" and #descriptor.Name > 0, "Name required")
-    assert(type(descriptor.Load) == "function", "Load function required")
+    assert(type(descriptor.Load) == "function",                      "Load function required")
 
-    descriptor.Category    = descriptor.Category    or "Utilities"
     descriptor.Icon        = descriptor.Icon        or "📦"
     descriptor.Description = descriptor.Description or ""
     descriptor.id          = generateId(descriptor.Name)
 
     local state = State.get()
-
-    -- Register module
-    state.modules[descriptor.id] = descriptor
+    state.modules[descriptor.id]      = descriptor
     state.loadStatuses[descriptor.id] = "idle"
 
-    -- Register category if new
-    local catFound = false
-    for _, c in ipairs(state.categories) do
-        if c == descriptor.Category then catFound = true break end
-    end
-    if not catFound then
-        table.insert(state.categories, descriptor.Category)
-    end
-
-    Logger.info(string.format("Registered: [%s] %s", descriptor.Category, descriptor.Name))
+    Logger.info(string.format("Registered: %s", descriptor.Name))
     EventBus.emit("module:registered", descriptor)
-    State.set({})  -- trigger re-render
+    State.set({})
 
     return descriptor.id
 end
@@ -138,7 +128,7 @@ function Registry.Unregister(id)
         return false
     end
     local name = state.modules[id].Name
-    state.modules[id] = nil
+    state.modules[id]      = nil
     state.loadStatuses[id] = nil
     if state.selectedModule == id then
         State.set({ selectedModule = nil })
@@ -149,20 +139,15 @@ function Registry.Unregister(id)
     return true
 end
 
-function Registry.getAll()
-    return State.get().modules
-end
-
-function Registry.get(id)
-    return State.get().modules[id]
-end
+function Registry.getAll() return State.get().modules end
+function Registry.get(id)  return State.get().modules[id] end
 
 -- ── LOADER ────────────────────────────────────────────────────
 local Loader = {}
 
 function Loader.load(id)
-    local state   = State.get()
-    local module  = state.modules[id]
+    local state  = State.get()
+    local module = state.modules[id]
     if not module then
         Logger.error("Load failed: module not found → " .. tostring(id))
         return
@@ -209,8 +194,7 @@ function Loader.unload(id)
 end
 
 function Loader.loadAll()
-    local state = State.get()
-    for id in pairs(state.modules) do
+    for id in pairs(State.get().modules) do
         Loader.load(id)
     end
 end
@@ -220,9 +204,7 @@ local UI = {}
 
 local function newInst(class, props, parent)
     local inst = Instance.new(class)
-    for k, v in pairs(props or {}) do
-        inst[k] = v
-    end
+    for k, v in pairs(props or {}) do inst[k] = v end
     if parent then inst.Parent = parent end
     return inst
 end
@@ -230,9 +212,9 @@ end
 local function color(hex)
     hex = hex:gsub("#", "")
     return Color3.fromRGB(
-        tonumber("0x"..hex:sub(1,2)),
-        tonumber("0x"..hex:sub(3,4)),
-        tonumber("0x"..hex:sub(5,6))
+        tonumber("0x" .. hex:sub(1, 2)),
+        tonumber("0x" .. hex:sub(3, 4)),
+        tonumber("0x" .. hex:sub(5, 6))
     )
 end
 
@@ -240,10 +222,8 @@ local function tween(inst, goal, t)
     TweenService:Create(inst, TweenInfo.new(t or 0.18, Enum.EasingStyle.Quad), goal):Play()
 end
 
--- Refs
-local _gui, _mainFrame, _tabsFrame, _listFrame, _searchBox, _detailFrame
+local _gui, _mainFrame, _listFrame, _searchBox, _detailFrame
 local _footerLabel, _detailName, _detailDesc, _detailStatus, _runBtn
-local _tabButtons = {}
 local _moduleCards = {}
 
 local STATUS_COLORS = {
@@ -254,211 +234,190 @@ local STATUS_COLORS = {
 }
 
 function UI.build()
-    -- ScreenGui
     _gui = newInst("ScreenGui", {
-        Name            = "NexLib",
-        ResetOnSpawn    = false,
-        ZIndexBehavior  = Enum.ZIndexBehavior.Sibling,
+        Name           = "NexLib",
+        ResetOnSpawn   = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
     }, PlayerGui)
 
-    -- Main window
     _mainFrame = newInst("Frame", {
-        Name            = "Window",
-        Size            = UDim2.new(0, 340, 0, 480),
-        Position        = UDim2.new(0.5, -170, 0.5, -240),
-        BackgroundColor3 = color("0f0f10"),
+        Name                   = "Window",
+        Size                   = UDim2.new(0, 340, 0, 460),
+        Position               = UDim2.new(0.5, -170, 0.5, -230),
+        BackgroundColor3       = color("0f0f10"),
         BackgroundTransparency = 0.15,
-        BorderSizePixel = 0,
+        BorderSizePixel        = 0,
     }, _gui)
-    newInst("UICorner",  { CornerRadius = UDim.new(0, 12) }, _mainFrame)
-    newInst("UIStroke",  { Color = color("ffffff"), Thickness = 1, Transparency = 0.91 }, _mainFrame)
+    newInst("UICorner", { CornerRadius = UDim.new(0, 12) }, _mainFrame)
+    newInst("UIStroke", { Color = color("ffffff"), Thickness = 1, Transparency = 0.91 }, _mainFrame)
 
-    -- Drag
     UI._makeDraggable(_mainFrame)
 
     -- Title bar
     local titleBar = newInst("Frame", {
-        Name            = "TitleBar",
-        Size            = UDim2.new(1, 0, 0, 34),
-        BackgroundColor3 = color("0a0a0b"),
+        Name                   = "TitleBar",
+        Size                   = UDim2.new(1, 0, 0, 34),
+        BackgroundColor3       = color("0a0a0b"),
         BackgroundTransparency = 0.5,
-        BorderSizePixel = 0,
+        BorderSizePixel        = 0,
     }, _mainFrame)
     newInst("UICorner", { CornerRadius = UDim.new(0, 12) }, titleBar)
     newInst("UIStroke", { Color = color("ffffff"), Thickness = 1, Transparency = 0.91 }, titleBar)
 
-    local titleLabel = newInst("TextLabel", {
-        Size            = UDim2.new(1, -80, 1, 0),
-        Position        = UDim2.new(0, 40, 0, 0),
+    newInst("TextLabel", {
+        Size                   = UDim2.new(1, -80, 1, 0),
+        Position               = UDim2.new(0, 40, 0, 0),
         BackgroundTransparency = 1,
-        Text            = "NEXLIB · MODULAR FRAMEWORK",
-        TextColor3      = color("606060"),
-        Font            = Enum.Font.Code,
-        TextSize        = 10,
-        TextXAlignment  = Enum.TextXAlignment.Center,
+        Text                   = "NEXLIB · MODULAR FRAMEWORK",
+        TextColor3             = color("606060"),
+        Font                   = Enum.Font.Code,
+        TextSize               = 10,
+        TextXAlignment         = Enum.TextXAlignment.Center,
     }, titleBar)
 
-    -- Close btn
+    -- Close
     local closeBtn = newInst("TextButton", {
-        Size            = UDim2.new(0, 11, 0, 11),
-        Position        = UDim2.new(0, 12, 0.5, -5),
+        Size             = UDim2.new(0, 11, 0, 11),
+        Position         = UDim2.new(0, 12, 0.5, -5),
         BackgroundColor3 = color("ff4f4f"),
-        BorderSizePixel = 0,
-        Text            = "",
+        BorderSizePixel  = 0,
+        Text             = "",
     }, titleBar)
     newInst("UICorner", { CornerRadius = UDim.new(1, 0) }, closeBtn)
-    closeBtn.MouseButton1Click:Connect(function()
-        _gui:Destroy()
-    end)
+    closeBtn.MouseButton1Click:Connect(function() _gui:Destroy() end)
 
-    -- Minimise btn
+    -- Minimise
     local minBtn = newInst("TextButton", {
-        Size            = UDim2.new(0, 11, 0, 11),
-        Position        = UDim2.new(0, 29, 0.5, -5),
+        Size             = UDim2.new(0, 11, 0, 11),
+        Position         = UDim2.new(0, 29, 0.5, -5),
         BackgroundColor3 = color("ffd84f"),
-        BorderSizePixel = 0,
-        Text            = "",
+        BorderSizePixel  = 0,
+        Text             = "",
     }, titleBar)
     newInst("UICorner", { CornerRadius = UDim.new(1, 0) }, minBtn)
     minBtn.MouseButton1Click:Connect(function()
-        local content = _mainFrame:FindFirstChild("Content")
-        if content then content.Visible = not content.Visible end
+        local c = _mainFrame:FindFirstChild("Content")
+        if c then c.Visible = not c.Visible end
     end)
 
-    -- Content container
+    -- Content
     local content = newInst("Frame", {
-        Name            = "Content",
-        Size            = UDim2.new(1, 0, 1, -34),
-        Position        = UDim2.new(0, 0, 0, 34),
+        Name                   = "Content",
+        Size                   = UDim2.new(1, 0, 1, -34),
+        Position               = UDim2.new(0, 0, 0, 34),
         BackgroundTransparency = 1,
-        BorderSizePixel = 0,
+        BorderSizePixel        = 0,
     }, _mainFrame)
 
     -- Header
     local header = newInst("Frame", {
-        Size            = UDim2.new(1, 0, 0, 52),
+        Size                   = UDim2.new(1, 0, 0, 52),
         BackgroundTransparency = 1,
     }, content)
 
     newInst("TextLabel", {
-        Size            = UDim2.new(1, -20, 0, 26),
-        Position        = UDim2.new(0, 14, 0, 10),
+        Size                   = UDim2.new(1, -20, 0, 26),
+        Position               = UDim2.new(0, 14, 0, 10),
         BackgroundTransparency = 1,
-        Text            = "⬡  NexLib",
-        TextColor3      = color("e0e0e0"),
-        Font            = Enum.Font.GothamBold,
-        TextSize        = 18,
-        TextXAlignment  = Enum.TextXAlignment.Left,
+        Text                   = "⬡  NexLib",
+        TextColor3             = color("e0e0e0"),
+        Font                   = Enum.Font.GothamBold,
+        TextSize               = 18,
+        TextXAlignment         = Enum.TextXAlignment.Left,
     }, header)
 
     _footerLabel = newInst("TextLabel", {
-        Size            = UDim2.new(1, -20, 0, 14),
-        Position        = UDim2.new(0, 14, 0, 34),
+        Size                   = UDim2.new(1, -20, 0, 14),
+        Position               = UDim2.new(0, 14, 0, 34),
         BackgroundTransparency = 1,
-        Text            = "0 modules",
-        TextColor3      = color("606060"),
-        Font            = Enum.Font.Code,
-        TextSize        = 10,
-        TextXAlignment  = Enum.TextXAlignment.Left,
+        Text                   = "0 modules",
+        TextColor3             = color("606060"),
+        Font                   = Enum.Font.Code,
+        TextSize               = 10,
+        TextXAlignment         = Enum.TextXAlignment.Left,
     }, header)
 
     -- Separator
     newInst("Frame", {
-        Size            = UDim2.new(1, 0, 0, 1),
-        Position        = UDim2.new(0, 0, 0, 52),
+        Size             = UDim2.new(1, 0, 0, 1),
+        Position         = UDim2.new(0, 0, 0, 52),
         BackgroundColor3 = color("ffffff"),
         BackgroundTransparency = 0.91,
-        BorderSizePixel = 0,
+        BorderSizePixel  = 0,
     }, content)
 
     -- Search bar
     local searchBg = newInst("Frame", {
-        Size            = UDim2.new(1, -24, 0, 28),
-        Position        = UDim2.new(0, 12, 0, 60),
-        BackgroundColor3 = color("000000"),
+        Size                   = UDim2.new(1, -24, 0, 28),
+        Position               = UDim2.new(0, 12, 0, 60),
+        BackgroundColor3       = color("000000"),
         BackgroundTransparency = 0.6,
-        BorderSizePixel = 0,
+        BorderSizePixel        = 0,
     }, content)
     newInst("UICorner", { CornerRadius = UDim.new(0, 7) }, searchBg)
     newInst("UIStroke", { Color = color("ffffff"), Thickness = 1, Transparency = 0.91 }, searchBg)
 
     newInst("TextLabel", {
-        Size            = UDim2.new(0, 16, 1, 0),
-        Position        = UDim2.new(0, 8, 0, 0),
+        Size                   = UDim2.new(0, 16, 1, 0),
+        Position               = UDim2.new(0, 8, 0, 0),
         BackgroundTransparency = 1,
-        Text            = "🔍",
-        TextSize        = 11,
-        TextColor3      = color("606060"),
-        Font            = Enum.Font.Code,
+        Text                   = "🔍",
+        TextSize               = 11,
+        TextColor3             = color("606060"),
+        Font                   = Enum.Font.Code,
     }, searchBg)
 
     _searchBox = newInst("TextBox", {
-        Size            = UDim2.new(1, -30, 1, 0),
-        Position        = UDim2.new(0, 26, 0, 0),
+        Size                   = UDim2.new(1, -30, 1, 0),
+        Position               = UDim2.new(0, 26, 0, 0),
         BackgroundTransparency = 1,
-        PlaceholderText = "search modules...",
-        Text            = "",
-        TextColor3      = color("e0e0e0"),
-        PlaceholderColor3 = color("606060"),
-        Font            = Enum.Font.Code,
-        TextSize        = 11,
-        ClearTextOnFocus = false,
-        TextXAlignment  = Enum.TextXAlignment.Left,
+        PlaceholderText        = "search modules...",
+        Text                   = "",
+        TextColor3             = color("e0e0e0"),
+        PlaceholderColor3      = color("606060"),
+        Font                   = Enum.Font.Code,
+        TextSize               = 11,
+        ClearTextOnFocus       = false,
+        TextXAlignment         = Enum.TextXAlignment.Left,
     }, searchBg)
 
     _searchBox:GetPropertyChangedSignal("Text"):Connect(function()
         State.set({ searchQuery = _searchBox.Text })
     end)
 
-    -- Tabs
-    _tabsFrame = newInst("Frame", {
-        Name            = "Tabs",
-        Size            = UDim2.new(1, 0, 0, 32),
-        Position        = UDim2.new(0, 0, 0, 96),
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        ClipsDescendants = true,
-    }, content)
-
-    newInst("UIListLayout", {
-        FillDirection   = Enum.FillDirection.Horizontal,
-        Padding         = UDim.new(0, 4),
-        VerticalAlignment = Enum.VerticalAlignment.Center,
-    }, _tabsFrame)
-    newInst("UIPadding", { PaddingLeft = UDim.new(0, 12) }, _tabsFrame)
-
+    -- Separator under search
     newInst("Frame", {
-        Size            = UDim2.new(1, 0, 0, 1),
-        Position        = UDim2.new(0, 0, 1, -1),
+        Size             = UDim2.new(1, 0, 0, 1),
+        Position         = UDim2.new(0, 0, 0, 96),
         BackgroundColor3 = color("ffffff"),
         BackgroundTransparency = 0.91,
-        BorderSizePixel = 0,
-    }, _tabsFrame)
+        BorderSizePixel  = 0,
+    }, content)
 
     -- Module list
     local listScroll = newInst("ScrollingFrame", {
-        Name            = "ListScroll",
-        Size            = UDim2.new(1, 0, 0, 180),
-        Position        = UDim2.new(0, 0, 0, 132),
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        ScrollBarThickness = 3,
-        ScrollBarImageColor3 = color("ffffff"),
+        Name                     = "ListScroll",
+        Size                     = UDim2.new(1, 0, 0, 200),
+        Position                 = UDim2.new(0, 0, 0, 100),
+        BackgroundTransparency   = 1,
+        BorderSizePixel          = 0,
+        ScrollBarThickness       = 3,
+        ScrollBarImageColor3     = color("ffffff"),
         ScrollBarImageTransparency = 0.85,
-        CanvasSize      = UDim2.new(0, 0, 0, 0),
-        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        CanvasSize               = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize      = Enum.AutomaticSize.Y,
     }, content)
 
     _listFrame = newInst("Frame", {
-        Name            = "List",
-        Size            = UDim2.new(1, 0, 1, 0),
+        Name                   = "List",
+        Size                   = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
-        AutomaticSize   = Enum.AutomaticSize.Y,
+        AutomaticSize          = Enum.AutomaticSize.Y,
     }, listScroll)
 
     newInst("UIListLayout", {
-        Padding         = UDim.new(0, 6),
-        SortOrder       = Enum.SortOrder.Name,
+        Padding   = UDim.new(0, 6),
+        SortOrder = Enum.SortOrder.Name,
     }, _listFrame)
     newInst("UIPadding", {
         PaddingLeft   = UDim.new(0, 12),
@@ -469,66 +428,66 @@ function UI.build()
 
     -- Detail panel
     _detailFrame = newInst("Frame", {
-        Name            = "Detail",
-        Size            = UDim2.new(1, -24, 0, 96),
-        Position        = UDim2.new(0, 12, 0, 320),
-        BackgroundColor3 = color("0a0a0b"),
+        Name                   = "Detail",
+        Size                   = UDim2.new(1, -24, 0, 96),
+        Position               = UDim2.new(0, 12, 0, 312),
+        BackgroundColor3       = color("0a0a0b"),
         BackgroundTransparency = 0.3,
-        BorderSizePixel = 0,
-        Visible         = false,
+        BorderSizePixel        = 0,
+        Visible                = false,
     }, content)
     newInst("UICorner", { CornerRadius = UDim.new(0, 9) }, _detailFrame)
     newInst("UIStroke", { Color = color("ffffff"), Thickness = 1, Transparency = 0.87 }, _detailFrame)
 
     _detailName = newInst("TextLabel", {
-        Size            = UDim2.new(1, -80, 0, 20),
-        Position        = UDim2.new(0, 12, 0, 10),
+        Size                   = UDim2.new(1, -80, 0, 20),
+        Position               = UDim2.new(0, 12, 0, 10),
         BackgroundTransparency = 1,
-        Text            = "",
-        TextColor3      = color("e0e0e0"),
-        Font            = Enum.Font.GothamBold,
-        TextSize        = 13,
-        TextXAlignment  = Enum.TextXAlignment.Left,
+        Text                   = "",
+        TextColor3             = color("e0e0e0"),
+        Font                   = Enum.Font.GothamBold,
+        TextSize               = 13,
+        TextXAlignment         = Enum.TextXAlignment.Left,
     }, _detailFrame)
 
     _detailDesc = newInst("TextLabel", {
-        Size            = UDim2.new(1, -24, 0, 14),
-        Position        = UDim2.new(0, 12, 0, 30),
+        Size                   = UDim2.new(1, -24, 0, 14),
+        Position               = UDim2.new(0, 12, 0, 30),
         BackgroundTransparency = 1,
-        Text            = "",
-        TextColor3      = color("606060"),
-        Font            = Enum.Font.Code,
-        TextSize        = 10,
-        TextXAlignment  = Enum.TextXAlignment.Left,
-        TextWrapped     = true,
+        Text                   = "",
+        TextColor3             = color("606060"),
+        Font                   = Enum.Font.Code,
+        TextSize               = 10,
+        TextXAlignment         = Enum.TextXAlignment.Left,
+        TextWrapped            = true,
     }, _detailFrame)
 
     _detailStatus = newInst("TextLabel", {
-        Size            = UDim2.new(0, 60, 0, 16),
-        Position        = UDim2.new(1, -72, 0, 10),
-        BackgroundColor3 = color("ffffff"),
+        Size                   = UDim2.new(0, 60, 0, 16),
+        Position               = UDim2.new(1, -72, 0, 10),
+        BackgroundColor3       = color("ffffff"),
         BackgroundTransparency = 0.93,
-        Text            = "IDLE",
-        TextColor3      = color("606060"),
-        Font            = Enum.Font.Code,
-        TextSize        = 9,
-        TextXAlignment  = Enum.TextXAlignment.Center,
+        Text                   = "IDLE",
+        TextColor3             = color("606060"),
+        Font                   = Enum.Font.Code,
+        TextSize               = 9,
+        TextXAlignment         = Enum.TextXAlignment.Center,
     }, _detailFrame)
     newInst("UICorner", { CornerRadius = UDim.new(0, 3) }, _detailStatus)
 
     _runBtn = newInst("TextButton", {
-        Size            = UDim2.new(1, -24, 0, 28),
-        Position        = UDim2.new(0, 12, 0, 56),
-        BackgroundColor3 = color("ffffff"),
+        Size                   = UDim2.new(1, -24, 0, 28),
+        Position               = UDim2.new(0, 12, 0, 56),
+        BackgroundColor3       = color("ffffff"),
         BackgroundTransparency = 0.87,
-        Text            = "▶  RUN MODULE",
-        TextColor3      = color("e0e0e0"),
-        Font            = Enum.Font.GothamBold,
-        TextSize        = 11,
-        BorderSizePixel = 0,
+        Text                   = "▶  RUN MODULE",
+        TextColor3             = color("e0e0e0"),
+        Font                   = Enum.Font.GothamBold,
+        TextSize               = 11,
+        BorderSizePixel        = 0,
     }, _detailFrame)
-    newInst("UICorner",  { CornerRadius = UDim.new(0, 7) }, _runBtn)
-    newInst("UIStroke",  { Color = color("ffffff"), Thickness = 1, Transparency = 0.85 }, _runBtn)
+    newInst("UICorner", { CornerRadius = UDim.new(0, 7) }, _runBtn)
+    newInst("UIStroke", { Color = color("ffffff"), Thickness = 1, Transparency = 0.85 }, _runBtn)
 
     _runBtn.MouseButton1Click:Connect(function()
         local id = State.get().selectedModule
@@ -541,8 +500,8 @@ function UI._makeDraggable(frame)
     frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
-            dragging     = true
-            startPos     = input.Position
+            dragging      = true
+            startPos      = input.Position
             startFramePos = frame.Position
         end
     end)
@@ -567,170 +526,123 @@ function UI._makeDraggable(frame)
     end)
 end
 
-function UI._renderTabs()
-    local state = State.get()
-    -- Clear
-    for _, b in pairs(_tabButtons) do b:Destroy() end
-    _tabButtons = {}
-
-    local allCats = {"All"}
-    for _, c in ipairs(state.categories) do
-        table.insert(allCats, c)
-    end
-
-    for _, cat in ipairs(allCats) do
-        local isActive = state.activeCategory == cat
-        local count = 0
-        if cat == "All" then
-            count = 0
-            for _ in pairs(state.modules) do count = count + 1 end
-        else
-            for _, m in pairs(state.modules) do
-                if m.Category == cat then count = count + 1 end
-            end
-        end
-
-        local btn = newInst("TextButton", {
-            Size            = UDim2.new(0, 0, 1, -6),
-            AutomaticSize   = Enum.AutomaticSize.X,
-            BackgroundColor3 = isActive and color("0f0f10") or color("000000"),
-            BackgroundTransparency = isActive and 0 or 1,
-            Text            = cat .. " " .. count,
-            TextColor3      = isActive and color("e0e0e0") or color("606060"),
-            Font            = Enum.Font.Code,
-            TextSize        = 11,
-            BorderSizePixel = 0,
-        }, _tabsFrame)
-        newInst("UICorner", { CornerRadius = UDim.new(0, 5) }, btn)
-        newInst("UIPadding", {
-            PaddingLeft  = UDim.new(0, 10),
-            PaddingRight = UDim.new(0, 10),
-        }, btn)
-        if isActive then
-            newInst("UIStroke", { Color = color("ffffff"), Thickness = 1, Transparency = 0.89 }, btn)
-        end
-
-        btn.MouseButton1Click:Connect(function()
-            State.set({ activeCategory = cat })
-        end)
-        table.insert(_tabButtons, btn)
-    end
-end
-
 function UI._renderList()
     local state    = State.get()
     local query    = state.searchQuery:lower()
-    local activeCat = state.activeCategory
 
-    -- Clear cards
     for _, c in pairs(_moduleCards) do c:Destroy() end
     _moduleCards = {}
 
     local shown = 0
     for id, m in pairs(state.modules) do
-        local catOk  = (activeCat == "All" or m.Category == activeCat)
-        local qOk    = (query == "" or m.Name:lower():find(query, 1, true) or m.Description:lower():find(query, 1, true))
-        if catOk and qOk then
+        local qOk = (query == ""
+            or m.Name:lower():find(query, 1, true)
+            or m.Description:lower():find(query, 1, true))
+
+        if qOk then
             shown = shown + 1
-            local status  = state.loadStatuses[id] or "idle"
+            local status     = state.loadStatuses[id] or "idle"
             local isSelected = state.selectedModule == id
 
             local card = newInst("Frame", {
-                Name            = "Card_" .. id,
-                Size            = UDim2.new(1, 0, 0, 48),
-                BackgroundColor3 = color("ffffff"),
+                Name                   = "Card_" .. id,
+                Size                   = UDim2.new(1, 0, 0, 48),
+                BackgroundColor3       = color("ffffff"),
                 BackgroundTransparency = isSelected and 0.92 or 0.96,
-                BorderSizePixel = 0,
+                BorderSizePixel        = 0,
             }, _listFrame)
             newInst("UICorner", { CornerRadius = UDim.new(0, 8) }, card)
             newInst("UIStroke", {
-                Color       = isSelected and color("c8c8c8") or color("ffffff"),
-                Thickness   = 1,
+                Color        = isSelected and color("c8c8c8") or color("ffffff"),
+                Thickness    = 1,
                 Transparency = isSelected and 0.72 or 0.91,
             }, card)
 
-            -- Icon box
+            -- Icon
             local iconBox = newInst("Frame", {
-                Size            = UDim2.new(0, 32, 0, 32),
-                Position        = UDim2.new(0, 10, 0.5, -16),
-                BackgroundColor3 = color("ffffff"),
+                Size                   = UDim2.new(0, 32, 0, 32),
+                Position               = UDim2.new(0, 10, 0.5, -16),
+                BackgroundColor3       = color("ffffff"),
                 BackgroundTransparency = 0.94,
-                BorderSizePixel = 0,
+                BorderSizePixel        = 0,
             }, card)
             newInst("UICorner", { CornerRadius = UDim.new(0, 6) }, iconBox)
             newInst("UIStroke", { Color = color("ffffff"), Thickness = 1, Transparency = 0.91 }, iconBox)
             newInst("TextLabel", {
-                Size = UDim2.new(1, 0, 1, 0),
+                Size                   = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
-                Text     = m.Icon,
-                TextSize = 15,
-                Font     = Enum.Font.GothamBold,
+                Text                   = m.Icon,
+                TextSize               = 15,
+                Font                   = Enum.Font.GothamBold,
             }, iconBox)
 
             -- Name
             newInst("TextLabel", {
-                Size            = UDim2.new(1, -110, 0, 18),
-                Position        = UDim2.new(0, 52, 0, 8),
+                Size                   = UDim2.new(1, -110, 0, 18),
+                Position               = UDim2.new(0, 52, 0, 8),
                 BackgroundTransparency = 1,
-                Text            = m.Name,
-                TextColor3      = color("e0e0e0"),
-                Font            = Enum.Font.GothamBold,
-                TextSize        = 13,
-                TextXAlignment  = Enum.TextXAlignment.Left,
-                TextTruncate    = Enum.TextTruncate.AtEnd,
+                Text                   = m.Name,
+                TextColor3             = color("e0e0e0"),
+                Font                   = Enum.Font.GothamBold,
+                TextSize               = 13,
+                TextXAlignment         = Enum.TextXAlignment.Left,
+                TextTruncate           = Enum.TextTruncate.AtEnd,
             }, card)
 
             -- Desc
             newInst("TextLabel", {
-                Size            = UDim2.new(1, -110, 0, 13),
-                Position        = UDim2.new(0, 52, 0, 26),
+                Size                   = UDim2.new(1, -110, 0, 13),
+                Position               = UDim2.new(0, 52, 0, 26),
                 BackgroundTransparency = 1,
-                Text            = m.Description,
-                TextColor3      = color("606060"),
-                Font            = Enum.Font.Code,
-                TextSize        = 10,
-                TextXAlignment  = Enum.TextXAlignment.Left,
-                TextTruncate    = Enum.TextTruncate.AtEnd,
+                Text                   = m.Description,
+                TextColor3             = color("606060"),
+                Font                   = Enum.Font.Code,
+                TextSize               = 10,
+                TextXAlignment         = Enum.TextXAlignment.Left,
+                TextTruncate           = Enum.TextTruncate.AtEnd,
             }, card)
 
             -- Status badge
             local statusBadge = newInst("TextLabel", {
-                Size            = UDim2.new(0, 56, 0, 16),
-                Position        = UDim2.new(1, -66, 0.5, -8),
-                BackgroundColor3 = STATUS_COLORS[status],
+                Size                   = UDim2.new(0, 56, 0, 16),
+                Position               = UDim2.new(1, -66, 0.5, -8),
+                BackgroundColor3       = STATUS_COLORS[status],
                 BackgroundTransparency = 0.87,
-                Text            = status:upper(),
-                TextColor3      = STATUS_COLORS[status],
-                Font            = Enum.Font.Code,
-                TextSize        = 9,
-                TextXAlignment  = Enum.TextXAlignment.Center,
+                Text                   = status:upper(),
+                TextColor3             = STATUS_COLORS[status],
+                Font                   = Enum.Font.Code,
+                TextSize               = 9,
+                TextXAlignment         = Enum.TextXAlignment.Center,
             }, card)
             newInst("UICorner", { CornerRadius = UDim.new(0, 3) }, statusBadge)
 
-            -- Clickable overlay
+            -- Click: seleciona ou desmarca
             local btn = newInst("TextButton", {
-                Size = UDim2.new(1, 0, 1, 0),
+                Size                   = UDim2.new(1, 0, 1, 0),
                 BackgroundTransparency = 1,
-                Text = "",
-                ZIndex = 10,
+                Text                   = "",
+                ZIndex                 = 10,
             }, card)
             btn.MouseButton1Click:Connect(function()
-                State.set({ selectedModule = id })
+                if State.get().selectedModule == id then
+                    State.set({ selectedModule = nil })   -- desmarca
+                else
+                    State.set({ selectedModule = id })
+                end
             end)
 
             table.insert(_moduleCards, card)
         end
     end
 
-    -- Empty state
     if shown == 0 then
         local empty = newInst("TextLabel", {
-            Size            = UDim2.new(1, 0, 0, 36),
+            Size                   = UDim2.new(1, 0, 0, 36),
             BackgroundTransparency = 1,
-            Text            = "no modules found",
-            TextColor3      = color("606060"),
-            Font            = Enum.Font.Code,
-            TextSize        = 11,
+            Text                   = "no modules found",
+            TextColor3             = color("606060"),
+            Font                   = Enum.Font.Code,
+            TextSize               = 11,
         }, _listFrame)
         table.insert(_moduleCards, empty)
     end
@@ -755,28 +667,28 @@ function UI._renderDetail()
     local m      = state.modules[id]
     local status = state.loadStatuses[id] or "idle"
 
-    _detailName.Text = m.Icon .. "  " .. m.Name
-    _detailDesc.Text = m.Description ~= "" and m.Description or "(no description)"
-    _detailStatus.Text      = status:upper()
-    _detailStatus.TextColor3 = STATUS_COLORS[status]
+    _detailName.Text          = m.Icon .. "  " .. m.Name
+    _detailDesc.Text          = m.Description ~= "" and m.Description or "(no description)"
+    _detailStatus.Text        = status:upper()
+    _detailStatus.TextColor3  = STATUS_COLORS[status]
 
     if status == "loading" then
-        _runBtn.Text = "⟳  LOADING..."
+        _runBtn.Text       = "⟳  LOADING..."
+        _runBtn.TextColor3 = color("ffd84f")
     elseif status == "loaded" then
-        _runBtn.Text = "✓  LOADED"
+        _runBtn.Text       = "✓  LOADED"
         _runBtn.TextColor3 = color("4fffb0")
     elseif status == "error" then
-        _runBtn.Text = "✗  ERROR — RETRY"
+        _runBtn.Text       = "✗  ERROR — RETRY"
         _runBtn.TextColor3 = color("ff4f4f")
     else
-        _runBtn.Text = "▶  RUN MODULE"
+        _runBtn.Text       = "▶  RUN MODULE"
         _runBtn.TextColor3 = color("e0e0e0")
     end
 end
 
 function UI._render()
     if not _gui or not _gui.Parent then return end
-    UI._renderTabs()
     UI._renderList()
     UI._renderFooter()
     UI._renderDetail()
@@ -802,14 +714,12 @@ _boot()
 
 -- ── PUBLIC API ────────────────────────────────────────────────
 return {
-    -- Core
-    Register   = function(descriptor) return Registry.Register(descriptor) end,
-    Unregister = function(id)         return Registry.Unregister(id) end,
-    Load       = function(id)         return Loader.load(id) end,
-    LoadAll    = function()           return Loader.loadAll() end,
-    Unload     = function(id)         return Loader.unload(id) end,
+    Register   = function(d)  return Registry.Register(d) end,
+    Unregister = function(id) return Registry.Unregister(id) end,
+    Load       = function(id) return Loader.load(id) end,
+    LoadAll    = function()   return Loader.loadAll() end,
+    Unload     = function(id) return Loader.unload(id) end,
 
-    -- Sub-systems (acesso avançado)
     EventBus = EventBus,
     State    = State,
     Logger   = Logger,
@@ -822,31 +732,5 @@ return {
 
 end)()
 
--- ============================================================
---  EXEMPLO DE USO — cada módulo fica num arquivo separado
---  e é carregado via loadstring(game:HttpGet("..."))()
--- ============================================================
-
---[[
-Library:Register({
-    Name        = "Speed Bypass",
-    Category    = "Movement",
-    Icon        = "⚡",
-    Description = "WalkSpeed & JumpPower bypass",
-    Load        = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/you/repo/main/speed_bypass.lua"))()
-    end
-})
-
-Library:Register({
-    Name        = "ESP Full",
-    Category    = "Combat",
-    Icon        = "👁️",
-    Description = "Box ESP com health bars",
-    Load        = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/you/repo/main/esp_full.lua"))()
-    end
-})
---]]
 _G.NexLib  = NexLib
 _G.Library = NexLib
