@@ -1,3 +1,4 @@
+-- script 
 local LIB_URL = "https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/IibAim"
 
 if not _G.RobloxUI then
