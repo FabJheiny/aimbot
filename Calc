@@ -2,61 +2,87 @@ local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "PremiumCalc"
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 176, 0, 326)
-frame.Position = UDim2.new(0.5, -88, 0.5, -163)
-frame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+frame.Size = UDim2.new(0, 160, 0, 280)
+frame.Position = UDim2.new(0.5, -80, 0.5, -140)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BackgroundTransparency = 0.35
 frame.Active = true
 frame.Draggable = true
 frame.ClipsDescendants = true
 
 local frameCorner = Instance.new("UICorner", frame)
-frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.CornerRadius = UDim.new(0, 10)
 
 local frameStroke = Instance.new("UIStroke", frame)
 frameStroke.Thickness = 1
-frameStroke.Color = Color3.fromRGB(40,40,40)
+frameStroke.Color = Color3.fromRGB(255, 255, 255)
+frameStroke.Transparency = 0.85
 
 -- Topbar
 local topBar = Instance.new("Frame", frame)
 topBar.Size = UDim2.new(1, 0, 0, 24)
 topBar.Position = UDim2.new(0, 0, 0, 0)
-topBar.BackgroundTransparency = 1
+topBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+topBar.BackgroundTransparency = 0.6
+topBar.BorderSizePixel = 0
+
+local topCorner = Instance.new("UICorner", topBar)
+topCorner.CornerRadius = UDim.new(0, 10)
+
+local topSep = Instance.new("Frame", topBar)
+topSep.Size = UDim2.new(1, 0, 0, 1)
+topSep.Position = UDim2.new(0, 0, 1, -1)
+topSep.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+topSep.BackgroundTransparency = 0.82
+topSep.BorderSizePixel = 0
 
 local titulo = Instance.new("TextLabel", topBar)
-titulo.Size = UDim2.new(1, -110, 1, 0)
-titulo.Position = UDim2.new(0, 8, 0, 0)
+titulo.Size = UDim2.new(1, -100, 1, 0)
+titulo.Position = UDim2.new(0, 10, 0, 0)
 titulo.BackgroundTransparency = 1
-titulo.TextColor3 = Color3.fromRGB(90,90,90)
-titulo.TextSize = 9
+titulo.TextColor3 = Color3.fromRGB(180, 180, 180)
+titulo.TextSize = 10
 titulo.TextXAlignment = Enum.TextXAlignment.Left
 titulo.Text = "calc"
-titulo.Font = Enum.Font.Gotham
+titulo.Font = Enum.Font.GothamBold
 
 -- Botão RECOLHER
 local recolherBtn = Instance.new("TextButton", topBar)
-recolherBtn.Size = UDim2.new(0, 52, 0, 15)
-recolherBtn.Position = UDim2.new(1, -100, 0.5, -7)
+recolherBtn.Size = UDim2.new(0, 48, 0, 14)
+recolherBtn.Position = UDim2.new(1, -92, 0.5, -7)
 recolherBtn.Text = "recolher"
 recolherBtn.TextSize = 8
 recolherBtn.Font = Enum.Font.Gotham
-recolherBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-recolherBtn.TextColor3 = Color3.fromRGB(140,140,140)
+recolherBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+recolherBtn.BackgroundTransparency = 0.6
+recolherBtn.TextColor3 = Color3.fromRGB(140, 140, 140)
+recolherBtn.BorderSizePixel = 0
+recolherBtn.AutoButtonColor = false
 
-local recolherCorner = Instance.new("UICorner", recolherBtn)
-recolherCorner.CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", recolherBtn).CornerRadius = UDim.new(0, 4)
+local recolherStroke = Instance.new("UIStroke", recolherBtn)
+recolherStroke.Color = Color3.fromRGB(255, 255, 255)
+recolherStroke.Transparency = 0.85
+recolherStroke.Thickness = 1
 
 -- Botão FECHAR
 local closeBtn = Instance.new("TextButton", topBar)
-closeBtn.Size = UDim2.new(0, 38, 0, 15)
-closeBtn.Position = UDim2.new(1, -44, 0.5, -7)
+closeBtn.Size = UDim2.new(0, 36, 0, 14)
+closeBtn.Position = UDim2.new(1, -40, 0.5, -7)
 closeBtn.Text = "fechar"
 closeBtn.TextSize = 8
 closeBtn.Font = Enum.Font.Gotham
-closeBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-closeBtn.TextColor3 = Color3.fromRGB(140,140,140)
+closeBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+closeBtn.BackgroundTransparency = 0.6
+closeBtn.TextColor3 = Color3.fromRGB(140, 140, 140)
+closeBtn.BorderSizePixel = 0
+closeBtn.AutoButtonColor = false
 
-local closeCorner = Instance.new("UICorner", closeBtn)
-closeCorner.CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 4)
+local closeStroke = Instance.new("UIStroke", closeBtn)
+closeStroke.Color = Color3.fromRGB(255, 255, 255)
+closeStroke.Transparency = 0.85
+closeStroke.Thickness = 1
 
 closeBtn.MouseButton1Click:Connect(function()
     gui:Destroy()
@@ -64,41 +90,46 @@ end)
 
 -- Display
 local display = Instance.new("TextLabel", frame)
-display.Size = UDim2.new(1, -12, 0, 40)
-display.Position = UDim2.new(0, 6, 0, 26)
-display.BackgroundColor3 = Color3.fromRGB(22,22,22)
-display.TextColor3 = Color3.fromRGB(240,240,240)
-display.TextSize = 20
+display.Size = UDim2.new(1, -12, 0, 34)
+display.Position = UDim2.new(0, 6, 0, 28)
+display.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+display.BackgroundTransparency = 0.6
+display.TextColor3 = Color3.fromRGB(255, 255, 255)
+display.TextSize = 18
 display.TextXAlignment = Enum.TextXAlignment.Right
 display.Text = "0"
-display.Font = Enum.Font.Gotham
+display.Font = Enum.Font.GothamBold
+display.BorderSizePixel = 0
 
-local cornerDisplay = Instance.new("UICorner", display)
-cornerDisplay.CornerRadius = UDim.new(0, 7)
+Instance.new("UICorner", display).CornerRadius = UDim.new(0, 6)
+local displayStroke = Instance.new("UIStroke", display)
+displayStroke.Color = Color3.fromRGB(255, 255, 255)
+displayStroke.Transparency = 0.88
+displayStroke.Thickness = 1
 
 local displayPadding = Instance.new("UIPadding", display)
 displayPadding.PaddingRight = UDim.new(0, 8)
 
--- Container dos botões (facilita recolher/expandir)
+-- Container dos botões
 local btnContainer = Instance.new("Frame", frame)
-btnContainer.Size = UDim2.new(1, 0, 1, -70)
-btnContainer.Position = UDim2.new(0, 0, 0, 70)
+btnContainer.Size = UDim2.new(1, 0, 1, -68)
+btnContainer.Position = UDim2.new(0, 0, 0, 68)
 btnContainer.BackgroundTransparency = 1
 btnContainer.ClipsDescendants = true
 
 -- Recolher logic
 local recolhido = false
-local fullHeight = 326
-local miniHeight = 70 -- topbar + display apenas
+local fullHeight = 280
+local miniHeight = 68
 
 recolherBtn.MouseButton1Click:Connect(function()
     recolhido = not recolhido
     if recolhido then
-        frame.Size = UDim2.new(0, 176, 0, miniHeight)
+        frame.Size = UDim2.new(0, 160, 0, miniHeight)
         btnContainer.Visible = false
         recolherBtn.Text = "expandir"
     else
-        frame.Size = UDim2.new(0, 176, 0, fullHeight)
+        frame.Size = UDim2.new(0, 160, 0, fullHeight)
         btnContainer.Visible = true
         recolherBtn.Text = "recolher"
     end
@@ -121,19 +152,11 @@ local function adicionar(valor)
 end
 
 local function calcular()
-    local expr = current
-    expr = expr:gsub("×", "*"):gsub("÷", "/")
-
+    local expr = current:gsub("×", "*"):gsub("÷", "/")
     local success, result = pcall(function()
         return loadstring("return " .. expr)()
     end)
-
-    if success then
-        current = tostring(result)
-    else
-        current = "Erro"
-    end
-
+    current = success and tostring(result) or "Erro"
     atualizar(current)
 end
 
@@ -146,23 +169,68 @@ local function deletarUltimo()
     atualizar(current)
 end
 
-local BTN   = 40
-local STEP  = 42
-local STARTX = 5
-local STARTY = 2
+local BTN    = 34
+local STEP   = 38
+local STARTX = 6
+local STARTY  = 4
 
-local function criarBotao(texto, x, y, cor, textoCor, fontSize)
+local function criarBotao(texto, x, y, isOperator, isEqual, isDanger, wide)
     local btn = Instance.new("TextButton", btnContainer)
-    btn.Size = UDim2.new(0, BTN, 0, BTN)
+    -- Se wide=true, ocupa largura de 2 botões + 1 gap
+    local w = wide and (BTN * 2 + (STEP - BTN)) or BTN
+    btn.Size = UDim2.new(0, w, 0, BTN)
     btn.Position = UDim2.new(0, STARTX + (x * STEP), 0, STARTY + (y * STEP))
     btn.Text = texto
-    btn.TextSize = fontSize or 12
-    btn.Font = Enum.Font.Gotham
-    btn.BackgroundColor3 = cor or Color3.fromRGB(30,30,30)
-    btn.TextColor3 = textoCor or Color3.fromRGB(220,220,220)
+    btn.Font = Enum.Font.GothamSemibold
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
 
-    local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0, 7)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Thickness = 1
+
+    if isEqual then
+        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        btn.BackgroundTransparency = 0.1
+        btn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        btn.TextSize = 15
+        stroke.Color = Color3.fromRGB(255, 255, 255)
+        stroke.Transparency = 0.7
+    elseif isDanger then
+        btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        btn.BackgroundTransparency = 0.6
+        btn.TextColor3 = Color3.fromRGB(255, 80, 80)
+        btn.TextSize = 10
+        stroke.Color = Color3.fromRGB(255, 80, 80)
+        stroke.Transparency = 0.75
+    elseif isOperator then
+        btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        btn.BackgroundTransparency = 0.6
+        btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        btn.TextSize = 15
+        stroke.Color = Color3.fromRGB(255, 255, 255)
+        stroke.Transparency = 0.8
+    else
+        btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        btn.BackgroundTransparency = 0.6
+        btn.TextColor3 = Color3.fromRGB(220, 220, 220)
+        btn.TextSize = 11
+        stroke.Color = Color3.fromRGB(255, 255, 255)
+        stroke.Transparency = 0.88
+    end
+
+    btn.MouseEnter:Connect(function()
+        stroke.Transparency = isEqual and 0.4 or 0.6
+    end)
+    btn.MouseLeave:Connect(function()
+        stroke.Transparency = isEqual and 0.7 or (isDanger and 0.75 or (isOperator and 0.8 or 0.88))
+    end)
+    btn.MouseButton1Down:Connect(function()
+        btn.BackgroundTransparency = isEqual and 0.3 or 0.45
+    end)
+    btn.MouseButton1Up:Connect(function()
+        btn.BackgroundTransparency = isEqual and 0.1 or 0.6
+    end)
 
     btn.MouseButton1Click:Connect(function()
         if texto == "AC" then
@@ -194,41 +262,23 @@ local function criarBotao(texto, x, y, cor, textoCor, fontSize)
     end)
 end
 
+-- Layout: última linha tem "0" na col 0, "." na col 1, "=" wide nas cols 2-3
 local layout = {
-    {"AC",  "(",  ")",  "÷"},
-    {"7",   "8",  "9",  "×"},
-    {"4",   "5",  "6",  "-"},
-    {"1",   "2",  "3",  "+"},
-    {"0",   ".",  "%",  "="},
-    {"DEL", "",   "",   ""}
+    {"AC",  "%",  "DEL", "÷"},
+    {"7",   "8",  "9",   "×"},
+    {"4",   "5",  "6",   "-"},
+    {"1",   "2",  "3",   "+"},
 }
 
 for y, linha in ipairs(layout) do
     for x, texto in ipairs(linha) do
-        if texto == "" then continue end
-
-        local cor      = Color3.fromRGB(30,30,30)
-        local textoCor = Color3.fromRGB(220,220,220)
-        local fontSize = 12
-
-        if texto == "AC" then
-            cor = Color3.fromRGB(45,45,45)
-            textoCor = Color3.fromRGB(255,100,100)
-        elseif texto == "DEL" then
-            cor = Color3.fromRGB(45,45,45)
-            textoCor = Color3.fromRGB(255,100,100)
-        elseif texto == "=" then
-            cor = Color3.fromRGB(240,200,80)
-            textoCor = Color3.fromRGB(20,20,20)
-            fontSize = 16
-        elseif texto == "+" or texto == "-" or texto == "×" or texto == "÷" then
-            cor = Color3.fromRGB(36,36,36)
-            textoCor = Color3.fromRGB(210,210,210)
-            fontSize = 17
-        elseif texto == "(" or texto == ")" or texto == "%" then
-            textoCor = Color3.fromRGB(130,130,130)
-        end
-
-        criarBotao(texto, x-1, y-1, cor, textoCor, fontSize)
+        local isOperator = (texto == "+" or texto == "-" or texto == "×" or texto == "÷" or texto == "%")
+        local isDanger   = (texto == "AC" or texto == "DEL")
+        criarBotao(texto, x-1, y-1, isOperator, false, isDanger, false)
     end
 end
+
+-- Última linha manualmente
+criarBotao("0",  0, 4, false, false, false, false)
+criarBotao(".",  1, 4, false, false, false, false)
+criarBotao("=",  2, 4, false, true,  false, true)  -- wide: ocupa colunas 2 e 3
