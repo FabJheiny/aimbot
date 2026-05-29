@@ -25,9 +25,11 @@ local Config = {
         Size = UDim2.new(0, 160, 0, 77),
         DefaultPosition = UDim2.new(0.05, 0, 0.4, 0),
         TextSize = 10,
-        Font = Enum.Font.SourceSansBold,
+        Font = Enum.Font.GothamSemibold,
         BackgroundColor = Color3.fromRGB(15, 15, 15),
         TextColor = Color3.fromRGB(255, 255, 255),
+        TextColorActive = Color3.fromRGB(0, 0, 0),
+        ActiveColor = Color3.fromRGB(0, 255, 100),
         DividerColor = Color3.fromRGB(50, 50, 50),
         BorderColor = Color3.fromRGB(255, 255, 255)
     },
@@ -401,7 +403,13 @@ function UI:build(movementController, screenGui)
     flyBtn.MouseButton1Click:Connect(function()
         self.State.Flying = not self.State.Flying
         flyBtn.Text = self.State.Flying and "Fly: ON" or "Fly: OFF"
-        if not self.State.Flying then
+        
+        if self.State.Flying then
+            flyBtn.BackgroundColor3 = self.Config.UI.ActiveColor
+            flyBtn.TextColor3 = self.Config.UI.TextColorActive
+        else
+            flyBtn.BackgroundColor3 = self.Config.UI.BackgroundColor
+            flyBtn.TextColor3 = self.Config.UI.TextColor
             movementController:resetPhysics(self.Services.Players.LocalPlayer.Character)
         end
     end)
@@ -409,7 +417,13 @@ function UI:build(movementController, screenGui)
     noclipBtn.MouseButton1Click:Connect(function()
         self.State.Noclip = not self.State.Noclip
         noclipBtn.Text = self.State.Noclip and "Noclip: ON" or "Noclip: OFF"
-        if not self.State.Noclip then
+        
+        if self.State.Noclip then
+            noclipBtn.BackgroundColor3 = self.Config.UI.ActiveColor
+            noclipBtn.TextColor3 = self.Config.UI.TextColorActive
+        else
+            noclipBtn.BackgroundColor3 = self.Config.UI.BackgroundColor
+            noclipBtn.TextColor3 = self.Config.UI.TextColor
             movementController:restoreNaturalCollision(self.Services.Players.LocalPlayer.Character)
         end
     end)
