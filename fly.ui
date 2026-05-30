@@ -26,7 +26,7 @@ local Config = {
         DefaultPosition = UDim2.new(0.05, 0, 0.4, 0),
         TextSize = 10,
         Font = Enum.Font.GothamSemibold,
-        BackgroundColor = Color3.fromRGB(0, 0, 0),
+        BackgroundColor = Color3.fromRGB(0, 0, 0), -- alterado para preto puro
         TextColor = Color3.fromRGB(255, 255, 255),
         TextColorActive = Color3.fromRGB(0, 0, 0),
         ActiveColor = Color3.fromRGB(255, 255, 255),
@@ -252,7 +252,7 @@ function UI:createMainFrame(parent)
     main.Size = self.Config.UI.Size
     main.Position = self.Config.UI.DefaultPosition
     main.BackgroundTransparency = 0
-    main.BackgroundColor3 = self.Config.UI.BackgroundColor
+    main.BackgroundColor3 = self.Config.UI.BackgroundColor -- agora preto (0,0,0)
     main.BorderSizePixel = 1
     main.BorderColor3 = self.Config.UI.BorderColor
     main.Active = true
@@ -297,7 +297,7 @@ function UI:createButton(text, position, size, parent)
     button.Position = position
     button.Size = size
     button.BorderSizePixel = 0
-    button.BackgroundColor3 = self.Config.UI.BackgroundColor
+    button.BackgroundColor3 = self.Config.UI.BackgroundColor -- preto também
     button.TextColor3 = self.Config.UI.TextColor
     button.Font = self.Config.UI.Font
     button.TextSize = self.Config.UI.TextSize
@@ -372,7 +372,7 @@ function UI:build(movementController, screenGui)
             flyBtn.BackgroundColor3 = self.Config.UI.ActiveColor
             flyBtn.TextColor3 = self.Config.UI.TextColorActive
         else
-            flyBtn.BackgroundColor3 = self.Config.UI.BackgroundColor
+            flyBtn.BackgroundColor3 = self.Config.UI.BackgroundColor -- preto novamente
             flyBtn.TextColor3 = self.Config.UI.TextColor
             movementController:resetPhysics(self.Services.Players.LocalPlayer.Character)
         end
@@ -385,7 +385,7 @@ function UI:build(movementController, screenGui)
             noclipBtn.BackgroundColor3 = self.Config.UI.ActiveColor
             noclipBtn.TextColor3 = self.Config.UI.TextColorActive
         else
-            noclipBtn.BackgroundColor3 = self.Config.UI.BackgroundColor
+            noclipBtn.BackgroundColor3 = self.Config.UI.BackgroundColor -- preto
             noclipBtn.TextColor3 = self.Config.UI.TextColor
             movementController:restoreNaturalCollision(self.Services.Players.LocalPlayer.Character)
         end
