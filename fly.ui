@@ -29,7 +29,7 @@ local Config = {
         BackgroundColor = Color3.fromRGB(15, 15, 15),
         TextColor = Color3.fromRGB(255, 255, 255),
         TextColorActive = Color3.fromRGB(0, 0, 0),
-        ActiveColor = Color3.fromRGB(0, 255, 100),
+        ActiveColor = Color3.fromRGB(255, 255, 255),
         DividerColor = Color3.fromRGB(50, 50, 50),
         BorderColor = Color3.fromRGB(255, 255, 255)
     },
@@ -66,11 +66,9 @@ end
 function CameraController:forceRelease()
     local player = self.LocalPlayer
     local config = self.Config.Camera
-    
     if player.CameraMode ~= config.Mode then
         player.CameraMode = config.Mode
     end
-    
     if player.CameraMaxZoomDistance ~= config.TargetMaxZoom then
         player.CameraMaxZoomDistance = config.TargetMaxZoom
     end
@@ -78,21 +76,17 @@ end
 
 function CameraController:connectEvents()
     local player = self.LocalPlayer
-    
     self.Connections = {
         CameraModeChanged = player:GetPropertyChangedSignal("CameraMode"):Connect(function()
             self:forceRelease()
         end),
-        
         CameraMaxZoomChanged = player:GetPropertyChangedSignal("CameraMaxZoomDistance"):Connect(function()
             self:forceRelease()
         end),
-        
         RenderStepped = self.Services.RunService.RenderStepped:Connect(function()
             self:forceRelease()
         end)
     }
-    
     self:forceRelease()
 end
 
@@ -118,24 +112,19 @@ end
 
 function MovementController:restoreNaturalCollision(char)
     if not char then return end
-    
     local collisionParts = self.Config.Physics.CollisionParts
     local accessoryTypes = self.Config.Physics.AccessoryTypes
-    
     for _, v in pairs(char:GetDescendants()) do
         if v:IsA("BasePart") then
             local name = v.Name:lower()
             local shouldCollide = false
-            
             for _, part in ipairs(collisionParts) do
                 if name:find(part) then
                     shouldCollide = true
                     break
                 end
             end
-            
             v.CanCollide = shouldCollide
-            
             local parent = v.Parent
             if parent then
                 for _, accType in ipairs(accessoryTypes) do
@@ -152,31 +141,24 @@ end
 
 function MovementController:resetPhysics(char)
     if not char then return end
-    
     local hum = char:FindFirstChild("Humanoid")
     local root = char:FindFirstChild("HumanoidRootPart")
-    
     if hum then
         hum.PlatformStand = false
         hum:ChangeState(Enum.HumanoidStateType.Running)
     end
-    
     if root then
         local codeVel = root:FindFirstChild("CodeVel")
         local codeGyro = root:FindFirstChild("CodeGyro")
-        
         if codeVel then codeVel:Destroy() end
         if codeGyro then codeGyro:Destroy() end
-        
         root.Velocity = Vector3.new(0, 0, 0)
     end
-    
     self:restoreNaturalCollision(char)
 end
 
 function MovementController:updateNoclip()
     local char = self.Services.Players.LocalPlayer.Character
-    
     if self.State.Noclip and char then
         for _, v in pairs(char:GetDescendants()) do
             if v:IsA("BasePart") then
@@ -188,34 +170,28 @@ end
 
 function MovementController:updateFlight()
     local char = self.Services.Players.LocalPlayer.Character
-    
     if self.State.Flying and char and char:FindFirstChild("HumanoidRootPart") then
         local root = char.HumanoidRootPart
         local hum = char.Humanoid
         local cam = workspace.CurrentCamera
         local config = self.Config.Fly
-        
         local bv = root:FindFirstChild("CodeVel") or Instance.new("BodyVelocity", root)
         local bg = root:FindFirstChild("CodeGyro") or Instance.new("BodyGyro", root)
         bv.Name, bg.Name = "CodeVel", "CodeGyro"
-        
         bv.MaxForce = config.BodyVelocityMaxForce
         bg.MaxTorque = config.BodyGyroMaxTorque
         bg.P = config.GyroP
         bg.D = config.GyroD
-        
         hum.PlatformStand = true
-        
         local moveDir = hum.MoveDirection
         local rel = cam.CFrame:VectorToObjectSpace(moveDir)
         local rawVel = (
-            (cam.CFrame.LookVector * -rel.Z) + 
-            (cam.CFrame.RightVector * rel.X) + 
+            (cam.CFrame.LookVector * -rel.Z) +
+            (cam.CFrame.RightVector * rel.X) +
             (Vector3.new(0, 1, 0) * self.State.VerticalVector)
         )
-        
-        bv.Velocity = (rawVel.Magnitude > 0) and 
-            (rawVel.Unit * (self.State.FlySpeed * config.SpeedMultiplier)) or 
+        bv.Velocity = (rawVel.Magnitude > 0) and
+            (rawVel.Unit * (self.State.FlySpeed * config.SpeedMultiplier)) or
             Vector3.new(0, 0, 0)
         bg.CFrame = cam.CFrame
     end
@@ -226,7 +202,6 @@ function MovementController:connectEvents()
         Stepped = self.Services.RunService.Stepped:Connect(function()
             self:updateNoclip()
         end),
-        
         RenderStepped = self.Services.RunService.RenderStepped:Connect(function()
             self:updateFlight()
         end)
@@ -238,7 +213,6 @@ function MovementController:cleanup()
     if char then
         self:resetPhysics(char)
     end
-    
     if self.Connections then
         for _, connection in pairs(self.Connections) do
             connection:Disconnect()
@@ -264,15 +238,12 @@ function UI:createScreenGui()
     sg.Name = self.Config.UI.Name
     sg.DisplayOrder = self.Config.UI.DisplayOrder
     sg.IgnoreGuiInset = true
-    
     local success = pcall(function()
         sg.Parent = self.Services.CoreGui
     end)
-    
     if not success then
         sg.Parent = self.Services.Players.LocalPlayer.PlayerGui
     end
-    
     return sg
 end
 
@@ -285,7 +256,6 @@ function UI:createMainFrame(parent)
     main.BorderSizePixel = 1
     main.BorderColor3 = self.Config.UI.BorderColor
     main.Active = true
-    
     return main
 end
 
@@ -301,12 +271,11 @@ end
 
 function UI:enableDrag(obj, mainFrame)
     obj.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or 
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or
            input.UserInputType == Enum.UserInputType.Touch then
             self.State.Dragging = true
             self.State.DragStart = input.Position
             self.State.StartPos = mainFrame.Position
-            
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     self.State.Dragging = false
@@ -314,9 +283,8 @@ function UI:enableDrag(obj, mainFrame)
             end)
         end
     end)
-    
     obj.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or 
+        if input.UserInputType == Enum.UserInputType.MouseMovement or
            input.UserInputType == Enum.UserInputType.Touch then
             self.State.DragInput = input
         end
@@ -334,16 +302,13 @@ function UI:createButton(text, position, size, parent)
     button.Font = self.Config.UI.Font
     button.TextSize = self.Config.UI.TextSize
     button.AutoButtonColor = false
-    
     table.insert(self.Buttons, button)
     return button
 end
 
 function UI:build(movementController, screenGui)
     local main = self:createMainFrame(screenGui)
-    
     self:enableDrag(main, main)
-    
     self.Services.UserInputService.InputChanged:Connect(function(input)
         if input == self.State.DragInput and self.State.Dragging then
             local delta = input.Position - self.State.DragStart
@@ -355,7 +320,7 @@ function UI:build(movementController, screenGui)
             )
         end
     end)
-    
+
     local closeBtn = self:createButton("X", UDim2.new(0, 0, 0, 0), UDim2.new(0, 32, 0, 25), main)
     self:enableDrag(closeBtn, main)
     closeBtn.MouseButton1Click:Connect(function()
@@ -364,46 +329,45 @@ function UI:build(movementController, screenGui)
         self.State.Noclip = false
         movementController:resetPhysics(self.Services.Players.LocalPlayer.Character)
     end)
-    
+
     self:createDivider(main, UDim2.new(0, 32, 0, 0), UDim2.new(0, 1, 0, 25))
-    
+
     local noclipBtn = self:createButton("Noclip: OFF", UDim2.new(0, 33, 0, 0), UDim2.new(0, 127, 0, 25), main)
     self:enableDrag(noclipBtn, main)
-    
+
     self:createDivider(main, UDim2.new(0, 0, 0, 25), UDim2.new(0, 160, 0, 1))
-    
-    local upBtn = self:createButton("UP", UDim2.new(0, 0, 0, 26), UDim2.new(0, 32, 0, 25), main)
+
+    local upBtn = self:createButton("↑", UDim2.new(0, 0, 0, 26), UDim2.new(0, 32, 0, 25), main)
     self:enableDrag(upBtn, main)
-    
+
     self:createDivider(main, UDim2.new(0, 32, 0, 26), UDim2.new(0, 1, 0, 25))
-    
+
     local plusBtn = self:createButton("+", UDim2.new(0, 33, 0, 26), UDim2.new(0, 48, 0, 25), main)
     self:enableDrag(plusBtn, main)
-    
+
     self:createDivider(main, UDim2.new(0, 81, 0, 26), UDim2.new(0, 1, 0, 25))
-    
+
     local flyBtn = self:createButton("Fly: OFF", UDim2.new(0, 82, 0, 26), UDim2.new(0, 78, 0, 25), main)
     self:enableDrag(flyBtn, main)
-    
+
     self:createDivider(main, UDim2.new(0, 0, 0, 51), UDim2.new(0, 160, 0, 1))
-    
-    local downBtn = self:createButton("DN", UDim2.new(0, 0, 0, 52), UDim2.new(0, 32, 0, 25), main)
+
+    local downBtn = self:createButton("↓", UDim2.new(0, 0, 0, 52), UDim2.new(0, 32, 0, 25), main)
     self:enableDrag(downBtn, main)
-    
+
     self:createDivider(main, UDim2.new(0, 32, 0, 52), UDim2.new(0, 1, 0, 25))
-    
+
     local minusBtn = self:createButton("-", UDim2.new(0, 33, 0, 52), UDim2.new(0, 48, 0, 25), main)
     self:enableDrag(minusBtn, main)
-    
+
     self:createDivider(main, UDim2.new(0, 81, 0, 52), UDim2.new(0, 1, 0, 25))
-    
+
     local speedDisplay = self:createButton("2", UDim2.new(0, 82, 0, 52), UDim2.new(0, 78, 0, 25), main)
     self:enableDrag(speedDisplay, main)
-    
+
     flyBtn.MouseButton1Click:Connect(function()
         self.State.Flying = not self.State.Flying
         flyBtn.Text = self.State.Flying and "Fly: ON" or "Fly: OFF"
-        
         if self.State.Flying then
             flyBtn.BackgroundColor3 = self.Config.UI.ActiveColor
             flyBtn.TextColor3 = self.Config.UI.TextColorActive
@@ -413,11 +377,10 @@ function UI:build(movementController, screenGui)
             movementController:resetPhysics(self.Services.Players.LocalPlayer.Character)
         end
     end)
-    
+
     noclipBtn.MouseButton1Click:Connect(function()
         self.State.Noclip = not self.State.Noclip
         noclipBtn.Text = self.State.Noclip and "Noclip: ON" or "Noclip: OFF"
-        
         if self.State.Noclip then
             noclipBtn.BackgroundColor3 = self.Config.UI.ActiveColor
             noclipBtn.TextColor3 = self.Config.UI.TextColorActive
@@ -427,36 +390,36 @@ function UI:build(movementController, screenGui)
             movementController:restoreNaturalCollision(self.Services.Players.LocalPlayer.Character)
         end
     end)
-    
+
     plusBtn.MouseButton1Click:Connect(function()
         self.State.FlySpeed = self.State.FlySpeed + 1
         speedDisplay.Text = tostring(self.State.FlySpeed)
     end)
-    
+
     minusBtn.MouseButton1Click:Connect(function()
         self.State.FlySpeed = math.max(1, self.State.FlySpeed - 1)
         speedDisplay.Text = tostring(self.State.FlySpeed)
     end)
-    
+
     upBtn.MouseButton1Down:Connect(function()
         self.State.VerticalVector = 1
     end)
-    
+
     upBtn.MouseButton1Up:Connect(function()
         self.State.VerticalVector = 0
     end)
-    
+
     downBtn.MouseButton1Down:Connect(function()
         self.State.VerticalVector = -1
     end)
-    
+
     downBtn.MouseButton1Up:Connect(function()
         self.State.VerticalVector = 0
     end)
-    
+
     self.MainFrame = main
     self.ScreenGui = screenGui
-    
+
     return self
 end
 
@@ -473,41 +436,27 @@ MainController.__index = MainController
 
 function MainController.new()
     local self = setmetatable({}, MainController)
-    
     self.CameraController = CameraController.new(Services, Config, State)
     self.MovementController = MovementController.new(Services, Config, State)
-    
     self.UI = UI.new(Services, Config, State)
     local screenGui = self.UI:createScreenGui()
     self.UI:build(self.MovementController, screenGui)
-    
     self.Connections = {}
     self:connectAll()
-    
     return self
 end
 
 function MainController:connectAll()
     self.CameraController:connectEvents()
     self.MovementController:connectEvents()
-    
     table.insert(self.Connections, self.CameraController.Connections)
     table.insert(self.Connections, self.MovementController.Connections)
 end
 
 function MainController:cleanup()
-    if self.CameraController then
-        self.CameraController:cleanup()
-    end
-    
-    if self.MovementController then
-        self.MovementController:cleanup()
-    end
-    
-    if self.UI then
-        self.UI:cleanup()
-    end
-    
+    if self.CameraController then self.CameraController:cleanup() end
+    if self.MovementController then self.MovementController:cleanup() end
+    if self.UI then self.UI:cleanup() end
     for _, connectionGroup in pairs(self.Connections) do
         if connectionGroup then
             for _, connection in pairs(connectionGroup) do
