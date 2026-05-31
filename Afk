@@ -1,0 +1,135 @@
+-- =============================================
+--  AFK Black Screen | Economiza CPU/GPU/Bateria
+--  Arraste o botão | Clique para ativar/desativar
+-- =============================================
+
+local Players          = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player    = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("AFKBlackScreen") then
+    playerGui:FindFirstChild("AFKBlackScreen"):Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name           = "AFKBlackScreen"
+screenGui.ResetOnSpawn   = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.DisplayOrder   = 9999
+screenGui.IgnoreGuiInset = true
+screenGui.Parent         = playerGui
+
+-- ==============================
+--  TELA PRETA
+-- ==============================
+local blackOverlay = Instance.new("Frame")
+blackOverlay.Size                   = UDim2.new(1, 0, 1, 0)
+blackOverlay.Position               = UDim2.new(0, 0, 0, 0)
+blackOverlay.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
+blackOverlay.BackgroundTransparency = 0
+blackOverlay.BorderSizePixel        = 0
+blackOverlay.ZIndex                 = 1
+blackOverlay.Visible                = false
+blackOverlay.Parent                 = screenGui
+
+-- ==============================
+--  BOTÃO FLUTUANTE
+--  Mesmo padrão da referência:
+--  30×30, UICorner 15, branco sólido
+-- ==============================
+local BTN_SIZE = 30
+
+local btn = Instance.new("TextButton")
+btn.Size                   = UDim2.new(0, BTN_SIZE, 0, BTN_SIZE)
+btn.Position               = UDim2.new(0, 15, 0.5, -BTN_SIZE / 2)
+btn.BackgroundColor3       = Color3.fromRGB(25, 25, 25)
+btn.BackgroundTransparency = 0
+btn.BorderSizePixel        = 0
+btn.Text                   = "🌙"
+btn.TextSize               = 16
+btn.Font                   = Enum.Font.GothamBold
+btn.TextColor3             = Color3.fromRGB(30, 30, 30)
+btn.ZIndex                 = 100
+btn.AutoButtonColor        = false
+btn.Active                 = false
+btn.Selectable             = false
+btn.Parent                 = screenGui
+
+-- Redondo igual à referência (CornerRadius = 15 = metade de 30 → círculo perfeito)
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 15)
+corner.Parent       = btn
+
+-- Hover: leve escurecimento
+btn.MouseEnter:Connect(function()
+    btn.BackgroundTransparency = 0.15
+end)
+btn.MouseLeave:Connect(function()
+    btn.BackgroundTransparency = 0
+end)
+
+-- ==============================
+--  ESTADO
+-- ==============================
+local isBlack = false
+
+local function setBlackScreen(active)
+    isBlack              = active
+    blackOverlay.Visible = active
+    btn.Text             = active and "☀️" or "🌙"
+end
+
+-- ==============================
+--  DRAG — padrão delta da referência
+-- ==============================
+do
+    local dragging    = false
+    local moved       = false
+    local startPos    = nil
+    local startBtnPos = nil
+
+    btn.InputBegan:Connect(function(inp)
+        if inp.UserInputType ~= Enum.UserInputType.MouseButton1
+        and inp.UserInputType ~= Enum.UserInputType.Touch then return end
+
+        dragging    = true
+        moved       = false
+        startPos    = inp.Position
+        startBtnPos = btn.Position
+    end)
+
+    UserInputService.InputChanged:Connect(function(inp)
+        if not dragging then return end
+        if inp.UserInputType ~= Enum.UserInputType.MouseMovement
+        and inp.UserInputType ~= Enum.UserInputType.Touch then return end
+
+        local delta = inp.Position - startPos
+
+        if math.abs(delta.X) > 4 or math.abs(delta.Y) > 4 then
+            moved = true
+        end
+
+        btn.Position = UDim2.new(
+            startBtnPos.X.Scale,
+            startBtnPos.X.Offset + delta.X,
+            startBtnPos.Y.Scale,
+            startBtnPos.Y.Offset + delta.Y
+        )
+    end)
+
+    UserInputService.InputEnded:Connect(function(inp)
+        if inp.UserInputType ~= Enum.UserInputType.MouseButton1
+        and inp.UserInputType ~= Enum.UserInputType.Touch then return end
+
+        if dragging and not moved then
+            setBlackScreen(not isBlack)
+        end
+
+        dragging = false
+        moved    = false
+    end)
+end
+
+print("[AFK BlackScreen] Carregado! 🌙 ativar  ☀️ desativar")
