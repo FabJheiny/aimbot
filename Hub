@@ -36,10 +36,6 @@ Section:NewButton("FE sonic EXE (r15)", "Works all R15 games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FE-R15-Sonic-exe-63788"))()
 end)
 
-Section:NewButton("c00lclan", "Works all games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-c00lclan-v2-52915"))()
-end)
-
 Section:NewButton("FE sonic (r15)", "Works all R15 games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FE-R15-Sonic-The-Hedgehog-63923"))()
 end)
