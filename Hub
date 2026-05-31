@@ -37,6 +37,10 @@ Section:NewButton("Infinite Zoom", "", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/iz"))()
 end)
 
+Section:NewButton("ShiftLock", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/shiftlock"))()
+end)
+
 local Tab = Window:NewTab("Outros Scripts")
 local Section = Tab:NewSection("Outros")
 
