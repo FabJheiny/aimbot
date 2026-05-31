@@ -5,6 +5,10 @@ local Window = Library.CreateLib("Hub", "Ocean")
 local Tab = Window:NewTab("Cronos Scripts")
 local Section = Tab:NewSection("Universal")
 
+Section:NewButton("Aimbot", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Aimbot"))()
+end)
+
 Section:NewButton("Calculator", "", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Calculator"))()
 end)
