@@ -145,6 +145,7 @@ function UIController.new(services, config, state, platformController)
 end
 
 function UIController:createScreenGui()
+    -- Menu in PlayerGui
     local sg = Instance.new("ScreenGui")
     sg.Name = self.Config.UI.Name
     sg.DisplayOrder = self.Config.UI.DisplayOrder
@@ -155,6 +156,14 @@ function UIController:createScreenGui()
 end
 
 function UIController:createPill(parent)
+    -- Pill ScreenGui in CoreGui
+    local pillSg = Instance.new("ScreenGui")
+    pillSg.Name = self.Config.UI.Name .. "Pill"
+    pillSg.DisplayOrder = 9999
+    pillSg.ResetOnSpawn = false
+    local ok = pcall(function() pillSg.Parent = self.Services.CoreGui end)
+    if not ok then pillSg.Parent = self.Services.Players.LocalPlayer.PlayerGui end
+
     local pill = Instance.new("Frame")
     pill.Name = "FloatPill"
     pill.Size = UDim2.new(0, 50, 0, 18)
@@ -162,7 +171,7 @@ function UIController:createPill(parent)
     pill.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     pill.BorderSizePixel = 0
     pill.Visible = false
-    pill.Parent = parent
+    pill.Parent = pillSg
 
     local stroke = Instance.new("UIStroke")
     stroke.Color = Color3.fromRGB(255, 255, 255)
@@ -269,14 +278,12 @@ end
 function UIController:build()
     self.ScreenGui = self:createScreenGui()
 
-    -- Pill (criada antes do frame para ficar disponível no close)
     local pill, pillBtn = self:createPill(self.ScreenGui)
     self.Pill = pill
 
     local main = self:createMainFrame(self.ScreenGui)
     self.MainFrame = main
 
-    -- Pill abre o menu
     pillBtn.MouseButton1Click:Connect(function()
         main.Visible = true
         pill.Visible = false
@@ -296,7 +303,6 @@ function UIController:build()
         end
     end)
 
-    -- X esconde o frame e mostra a pill
     local closeBtn = self:createButton("X", UDim2.new(0, 0, 0, 0), UDim2.new(0, 32, 0, 25), main)
     self:enableDrag(closeBtn, main)
     closeBtn.MouseButton1Click:Connect(function()
@@ -385,7 +391,6 @@ function UIController:build()
     end)
 
     self:updateButtonStates()
-
     return self
 end
 
