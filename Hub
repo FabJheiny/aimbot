@@ -34,7 +34,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/ref
 end)
 
 Section:NewButton("Infinite Zoom", "", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Afk"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/iz"))()
 end)
 
 local Tab = Window:NewTab("Outros Scripts")
