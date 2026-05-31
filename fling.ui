@@ -3,14 +3,14 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 
--- GUI Setup (inspirado no PremiumCalc)
+-- GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MultiFlingGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = game:GetService("CoreGui")
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 200, 0, 320)         -- aumentado para dar espaço
+MainFrame.Size = UDim2.new(0, 200, 0, 320)
 MainFrame.Position = UDim2.new(0.5, -100, 0.5, -160)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 MainFrame.BorderSizePixel = 0
@@ -19,27 +19,23 @@ MainFrame.Draggable = true
 MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 
--- Borda branca fina (UIStroke)
 local MainStroke = Instance.new("UIStroke", MainFrame)
 MainStroke.Color = Color3.fromRGB(255, 255, 255)
 MainStroke.Thickness = 1
 MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
--- Barra superior (idêntica à da calculadora)
 local TopBar = Instance.new("Frame", MainFrame)
 TopBar.Size = UDim2.new(1, 0, 0, 24)
 TopBar.Position = UDim2.new(0, 0, 0, 0)
 TopBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 TopBar.BorderSizePixel = 0
 
--- Separador sutil
 local TopSep = Instance.new("Frame", TopBar)
 TopSep.Size = UDim2.new(1, 0, 0, 1)
 TopSep.Position = UDim2.new(0, 0, 1, -1)
 TopSep.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 TopSep.BorderSizePixel = 0
 
--- Título
 local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(1, -100, 1, 0)
 Title.Position = UDim2.new(0, 10, 0, 0)
@@ -50,7 +46,6 @@ Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Text = "Multi Fling"
 Title.Font = Enum.Font.SourceSansBold
 
--- Botão Minimizar (recolherBtn da calculadora)
 local MinimizeButton = Instance.new("TextButton", TopBar)
 MinimizeButton.Size = UDim2.new(0, 18, 0, 14)
 MinimizeButton.Position = UDim2.new(1, -42, 0.5, -7)
@@ -62,7 +57,6 @@ MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeButton.BorderSizePixel = 0
 MinimizeButton.AutoButtonColor = false
 
--- Botão Fechar (x)
 local CloseButton = Instance.new("TextButton", TopBar)
 CloseButton.Size = UDim2.new(0, 18, 0, 14)
 CloseButton.Position = UDim2.new(1, -20, 0.5, -7)
@@ -74,13 +68,6 @@ CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.BorderSizePixel = 0
 CloseButton.AutoButtonColor = false
 
-CloseButton.MouseButton1Click:Connect(function()
-    -- Parar fling antes de fechar
-    if FlingActive then StopFling() end
-    ScreenGui:Destroy()
-end)
-
--- Status (rótulo informativo)
 local StatusLabel = Instance.new("TextLabel", MainFrame)
 StatusLabel.Position = UDim2.new(0, 10, 0, 30)
 StatusLabel.Size = UDim2.new(1, -20, 0, 18)
@@ -91,18 +78,15 @@ StatusLabel.Font = Enum.Font.SourceSans
 StatusLabel.TextSize = 12
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Container da lista de jogadores (com fundo escuro e borda sutil)
 local PlayerListFrame = Instance.new("Frame", MainFrame)
 PlayerListFrame.Position = UDim2.new(0, 10, 0, 52)
-PlayerListFrame.Size = UDim2.new(1, -20, 0, 190)   -- levemente maior
-PlayerListFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)   -- mesmo tom do display da calculadora
+PlayerListFrame.Size = UDim2.new(1, -20, 0, 190)
+PlayerListFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 PlayerListFrame.BorderSizePixel = 0
 
--- UICorner arredondado (6px) como o display
 local ListCorner = Instance.new("UICorner", PlayerListFrame)
 ListCorner.CornerRadius = UDim.new(0, 6)
 
--- ScrollingFrame para os jogadores
 local PlayerScrollFrame = Instance.new("ScrollingFrame", PlayerListFrame)
 PlayerScrollFrame.Position = UDim2.new(0, 4, 0, 4)
 PlayerScrollFrame.Size = UDim2.new(1, -8, 1, -8)
@@ -113,7 +97,6 @@ PlayerScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 PlayerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 PlayerScrollFrame.ClipsDescendants = true
 
--- Botões de ação (estilo minimalista)
 local function createStyledButton(text, position, size, textColor)
     local btn = Instance.new("TextButton", MainFrame)
     btn.Position = position
@@ -153,19 +136,42 @@ local DeselectAllButton = createStyledButton(
     Color3.fromRGB(255, 255, 255)
 )
 
+-- Pill de reabrir
+local ReopenPill = Instance.new("Frame", ScreenGui)
+ReopenPill.Name = "PillFling"
+ReopenPill.Size = UDim2.new(0, 50, 0, 18)
+ReopenPill.Position = UDim2.new(1, -56, 1, -102)
+ReopenPill.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ReopenPill.BorderSizePixel = 0
+ReopenPill.Visible = false
+
+local PillStroke = Instance.new("UIStroke", ReopenPill)
+PillStroke.Color = Color3.fromRGB(255, 255, 255)
+PillStroke.Thickness = 1
+PillStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+local PillButton = Instance.new("TextButton", ReopenPill)
+PillButton.Size = UDim2.new(1, 0, 1, 0)
+PillButton.Position = UDim2.new(0, 0, 0, 0)
+PillButton.BackgroundTransparency = 1
+PillButton.Text = "> fling"
+PillButton.TextSize = 9
+PillButton.Font = Enum.Font.SourceSansBold
+PillButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+PillButton.BorderSizePixel = 0
+PillButton.AutoButtonColor = false
+
 -- Variáveis de controle
 local SelectedTargets = {}
-local PlayerEntries = {}   -- mapeia player.Name -> TextButton (linha clicável)
+local PlayerEntries = {}
 local FlingActive = false
 getgenv().OldPos = nil
 getgenv().FPDH = workspace.FallenPartsDestroyHeight
 
--- Controle de minimização
 local minimized = false
 local fullHeight = 320
-local miniHeight = 24   -- apenas a barra superior visível
+local miniHeight = 24
 
--- Conjunto de elementos que serão escondidos quando minimizado
 local contentElements = {
     StatusLabel,
     PlayerListFrame,
@@ -174,6 +180,20 @@ local contentElements = {
     SelectAllButton,
     DeselectAllButton
 }
+
+-- Conexões da topbar
+CloseButton.MouseButton1Click:Connect(function()
+    if FlingActive then
+        FlingActive = false
+    end
+    MainFrame.Visible = false
+    ReopenPill.Visible = true
+end)
+
+PillButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    ReopenPill.Visible = false
+end)
 
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
@@ -192,7 +212,6 @@ MinimizeButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Atualiza o texto do status
 local function UpdateStatus()
     local count = 0
     for _ in pairs(SelectedTargets) do count = count + 1 end
@@ -205,9 +224,7 @@ local function UpdateStatus()
     end
 end
 
--- Atualiza a lista visual de jogadores
 local function RefreshPlayerList()
-    -- Limpa entradas anteriores
     for _, child in pairs(PlayerScrollFrame:GetChildren()) do
         if child:IsA("TextButton") then child:Destroy() end
     end
@@ -221,7 +238,6 @@ local function RefreshPlayerList()
         if otherPlayer ~= Player then
             local isSelected = SelectedTargets[otherPlayer.Name] ~= nil
 
-            -- Linha clicável que representa o jogador
             local row = Instance.new("TextButton", PlayerScrollFrame)
             row.Size = UDim2.new(1, -4, 0, 26)
             row.Position = UDim2.new(0, 2, 0, yPos)
@@ -252,7 +268,6 @@ local function RefreshPlayerList()
     PlayerScrollFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 4)
 end
 
--- Seleciona/deseleciona todos
 local function ToggleAll(select)
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= Player then
@@ -267,7 +282,6 @@ local function ToggleAll(select)
     UpdateStatus()
 end
 
--- Notificação simples (opcional)
 local function Message(title, text, duration)
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = title,
@@ -276,7 +290,6 @@ local function Message(title, text, duration)
     })
 end
 
--- Lógica de fling (mantida igual, apenas renomeada)
 local function SkidFling(TargetPlayer)
     local Character = Player.Character
     local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
@@ -411,7 +424,6 @@ local function SkidFling(TargetPlayer)
     end
 end
 
--- Iniciar o loop de fling
 local function StartFling()
     if FlingActive then return end
     local count = 0
@@ -430,7 +442,6 @@ local function StartFling()
     task.spawn(function()
         while FlingActive do
             local validTargets = {}
-            -- Copia alvos válidos
             for name, player in pairs(SelectedTargets) do
                 if player and player.Parent then
                     validTargets[name] = player
@@ -452,7 +463,6 @@ local function StartFling()
     end)
 end
 
--- Parar o fling
 local function StopFling()
     if not FlingActive then return end
     FlingActive = false
@@ -460,13 +470,11 @@ local function StopFling()
     Message("Stopped", "Fling has been stopped")
 end
 
--- Conexões dos botões
 StartButton.MouseButton1Click:Connect(StartFling)
 StopButton.MouseButton1Click:Connect(StopFling)
 SelectAllButton.MouseButton1Click:Connect(function() ToggleAll(true) end)
 DeselectAllButton.MouseButton1Click:Connect(function() ToggleAll(false) end)
 
--- Atualiza lista quando jogadores entram/saem
 Players.PlayerAdded:Connect(RefreshPlayerList)
 Players.PlayerRemoving:Connect(function(player)
     if SelectedTargets[player.Name] then
@@ -476,7 +484,6 @@ Players.PlayerRemoving:Connect(function(player)
     UpdateStatus()
 end)
 
--- Inicialização
 RefreshPlayerList()
 UpdateStatus()
-Message("Loaded", "Multi Fling GUI ready!")
+Message("Loaded", "Multi Fling by Cronos!")
