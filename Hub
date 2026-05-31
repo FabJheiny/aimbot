@@ -68,10 +68,6 @@ Section:NewButton("Rtx", "", function()
 loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostPlayer352/Test4/main/RTX%20Gui%20Hub%20Obfuscator'))()
 end)
 
-Section:NewButton("Spunch Hub", "", function()
-loadstring(game:HttpGet("https://pastebin.com/raw/frHMuqB0"))()
-end)
-
 local Section = Tab:NewSection("Games")
 
 Section:NewButton("Slime Rng", "", function()
@@ -84,6 +80,11 @@ end)
 
 local Tab = Window:NewTab("Scripts")
 local Section = Tab:NewSection("Scripts")
+
+
+Section:NewButton("Hand", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/hand"))()
+end)
 
 Section:NewButton("Fridge Hack (r6)", "Works all R6 games", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Fridge"))()
