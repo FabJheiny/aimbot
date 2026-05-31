@@ -1,3 +1,4 @@
+--Flygui
 local Services = {
     Players = game:GetService("Players"),
     RunService = game:GetService("RunService"),
@@ -26,7 +27,7 @@ local Config = {
         DefaultPosition = UDim2.new(0.05, 0, 0.4, 0),
         TextSize = 10,
         Font = Enum.Font.GothamSemibold,
-        BackgroundColor = Color3.fromRGB(0, 0, 0), -- alterado para preto puro
+        BackgroundColor = Color3.fromRGB(0, 0, 0),
         TextColor = Color3.fromRGB(255, 255, 255),
         TextColorActive = Color3.fromRGB(0, 0, 0),
         ActiveColor = Color3.fromRGB(255, 255, 255),
@@ -238,12 +239,8 @@ function UI:createScreenGui()
     sg.Name = self.Config.UI.Name
     sg.DisplayOrder = self.Config.UI.DisplayOrder
     sg.IgnoreGuiInset = true
-    local success = pcall(function()
-        sg.Parent = self.Services.CoreGui
-    end)
-    if not success then
-        sg.Parent = self.Services.Players.LocalPlayer.PlayerGui
-    end
+    sg.ResetOnSpawn = false
+    sg.Parent = self.Services.Players.LocalPlayer:WaitForChild("PlayerGui")
     return sg
 end
 
@@ -252,7 +249,7 @@ function UI:createMainFrame(parent)
     main.Size = self.Config.UI.Size
     main.Position = self.Config.UI.DefaultPosition
     main.BackgroundTransparency = 0
-    main.BackgroundColor3 = self.Config.UI.BackgroundColor -- agora preto (0,0,0)
+    main.BackgroundColor3 = self.Config.UI.BackgroundColor
     main.BorderSizePixel = 1
     main.BorderColor3 = self.Config.UI.BorderColor
     main.Active = true
@@ -297,13 +294,45 @@ function UI:createButton(text, position, size, parent)
     button.Position = position
     button.Size = size
     button.BorderSizePixel = 0
-    button.BackgroundColor3 = self.Config.UI.BackgroundColor -- preto também
+    button.BackgroundColor3 = self.Config.UI.BackgroundColor
     button.TextColor3 = self.Config.UI.TextColor
     button.Font = self.Config.UI.Font
     button.TextSize = self.Config.UI.TextSize
     button.AutoButtonColor = false
     table.insert(self.Buttons, button)
     return button
+end
+
+function UI:createReopenPill(parent, mainFrame)
+    local pill = Instance.new("Frame", parent)
+    pill.Name = "ReopenPill"
+    pill.Position = UDim2.new(1, -56, 1, -58)
+    pill.Size = UDim2.new(0, 50, 0, 18)
+    pill.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    pill.BorderSizePixel = 0
+    pill.Visible = false
+
+    local stroke = Instance.new("UIStroke", pill)
+    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.Thickness = 1
+
+    local btn = Instance.new("TextButton", pill)
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.Position = UDim2.new(0, 0, 0, 0)
+    btn.Text = "> flygui"
+    btn.TextSize = 9
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundTransparency = 1
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+
+    btn.MouseButton1Click:Connect(function()
+        mainFrame.Visible = true
+        pill.Visible = false
+    end)
+
+    return pill
 end
 
 function UI:build(movementController, screenGui)
@@ -321,13 +350,13 @@ function UI:build(movementController, screenGui)
         end
     end)
 
+    local pill = self:createReopenPill(screenGui, main)
+
     local closeBtn = self:createButton("X", UDim2.new(0, 0, 0, 0), UDim2.new(0, 32, 0, 25), main)
     self:enableDrag(closeBtn, main)
     closeBtn.MouseButton1Click:Connect(function()
-        self:cleanup()
-        self.State.Flying = false
-        self.State.Noclip = false
-        movementController:resetPhysics(self.Services.Players.LocalPlayer.Character)
+        main.Visible = false
+        pill.Visible = true
     end)
 
     self:createDivider(main, UDim2.new(0, 32, 0, 0), UDim2.new(0, 1, 0, 25))
@@ -372,7 +401,7 @@ function UI:build(movementController, screenGui)
             flyBtn.BackgroundColor3 = self.Config.UI.ActiveColor
             flyBtn.TextColor3 = self.Config.UI.TextColorActive
         else
-            flyBtn.BackgroundColor3 = self.Config.UI.BackgroundColor -- preto novamente
+            flyBtn.BackgroundColor3 = self.Config.UI.BackgroundColor
             flyBtn.TextColor3 = self.Config.UI.TextColor
             movementController:resetPhysics(self.Services.Players.LocalPlayer.Character)
         end
@@ -385,7 +414,7 @@ function UI:build(movementController, screenGui)
             noclipBtn.BackgroundColor3 = self.Config.UI.ActiveColor
             noclipBtn.TextColor3 = self.Config.UI.TextColorActive
         else
-            noclipBtn.BackgroundColor3 = self.Config.UI.BackgroundColor -- preto
+            noclipBtn.BackgroundColor3 = self.Config.UI.BackgroundColor
             noclipBtn.TextColor3 = self.Config.UI.TextColor
             movementController:restoreNaturalCollision(self.Services.Players.LocalPlayer.Character)
         end
@@ -401,24 +430,14 @@ function UI:build(movementController, screenGui)
         speedDisplay.Text = tostring(self.State.FlySpeed)
     end)
 
-    upBtn.MouseButton1Down:Connect(function()
-        self.State.VerticalVector = 1
-    end)
-
-    upBtn.MouseButton1Up:Connect(function()
-        self.State.VerticalVector = 0
-    end)
-
-    downBtn.MouseButton1Down:Connect(function()
-        self.State.VerticalVector = -1
-    end)
-
-    downBtn.MouseButton1Up:Connect(function()
-        self.State.VerticalVector = 0
-    end)
+    upBtn.MouseButton1Down:Connect(function() self.State.VerticalVector = 1 end)
+    upBtn.MouseButton1Up:Connect(function() self.State.VerticalVector = 0 end)
+    downBtn.MouseButton1Down:Connect(function() self.State.VerticalVector = -1 end)
+    downBtn.MouseButton1Up:Connect(function() self.State.VerticalVector = 0 end)
 
     self.MainFrame = main
     self.ScreenGui = screenGui
+    self.Pill = pill
 
     return self
 end
