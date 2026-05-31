@@ -1,6 +1,6 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/TwiRwal/TwiWare/main/uilib.lua"))()
 
-local Window = Library.CreateLib("MysteryGui", "Ocean")
+local Window = Library.CreateLib("JheinyHub", "Ocean")
 
 local Tab = Window:NewTab("Scripts")
 local Section = Tab:NewSection("Scripts")
