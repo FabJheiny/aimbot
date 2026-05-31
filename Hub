@@ -56,6 +56,10 @@ Section:NewButton("Emotes", "", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-7yd7-I-Emote-Script-48024"))()
 end)
 
+Section:NewButton("Emotes Gui2", "", function()
+loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FE-Emotes-SAGAZx-229487"))()
+end)
+
 Section:NewButton("DropKick", "", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fe-DropKick-Script-165813"))()
 end)
