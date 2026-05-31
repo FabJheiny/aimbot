@@ -9,6 +9,10 @@ Section:NewButton("Calculator", "", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Calculator"))()
 end)
 
+Section:NewButton("Radio", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/rd"))()
+end)
+
 Section:NewButton("FlingUi", "", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/fling.ui"))()
 end)
