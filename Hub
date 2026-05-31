@@ -3,19 +3,10 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/TwiRw
 local Window = Library.CreateLib("MysteryGui", "Ocean")
 
 local Tab = Window:NewTab("Scripts")
+local Section = Tab:NewSection("Scripts")
 
-local Section = Tab:NewSection("Scripts 1")
-
-Section:NewButton("c00lkidd Backdoor", "Works all games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-the-ultimate-c00lkidd-backdoor-serverside-multiuse-gui-32923"))()
-end)
-
-Section:NewButton("DORITOS!! (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Chips"))()
-end)
-
-Section:NewButton("Omni God (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Omni%20God"))()
+Section:NewButton("Fridge Hack (r6)", "Works all R6 games", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Fridge"))()
 end)
 
 Section:NewButton("Oculus (r6)", "Works all R6 games", function()
@@ -26,116 +17,16 @@ Section:NewButton("FE sonic EXE (r15)", "Works all R15 games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FE-R15-Sonic-exe-63788"))()
 end)
 
-Section:NewButton("Jhon Doe Forsaken (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://pastebin.com/raw/JwUdxg8y"))()
-end)
-
 Section:NewButton("c00lclan", "Works all games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-c00lclan-v2-52915"))()
-end)
-
-Section:NewButton("FE c00lkidd Forsaken (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FE-C00lKidd-Forsaken-UNIVERSAL-FOR-R6-44107"))()
-end)
-
-Section:NewButton("Grab Knife V3 (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-grab-knife-v3-9232"))()
 end)
 
 Section:NewButton("FE sonic (r15)", "Works all R15 games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FE-R15-Sonic-The-Hedgehog-63923"))()
 end)
 
-Section:NewButton("Fridge Hack (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Fridge"))()
-end)
-
-Section:NewButton("Shedletsky (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Shedletsky%20Rage"))()
-end)
-
 Section:NewButton("Fe Animations r6", "Works only R6 games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fe-R6-Animations-37331"))()
-end)
-
-Section:NewButton("SPLIT HEAD (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Split"))()
-end)
-
-Section:NewButton("Universal Touch Fling", "Works only COLLISIONS games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Universal-Touch-Fling-64506"))()
-end)
-
-Section:NewButton("FE r15 to r6", "Works only R15 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-R15-to-R6-61575"))()
-end)
-
-Section:NewButton("FE German Funny Salute (r15 or r6)", "Works only R15/R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-salute-script-REUPLOADED-69945"))()
-end)
-
-Section:NewButton("Tools Giver", "Works all games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Tools-giver-l-37339"))()
-end)
-
-Section:NewButton("Fe Hammer (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FE-hammer-28636"))()
-end)
-
-Section:NewButton("Fe Caducus (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://pastebin.com/raw/LDL9AyQ4"))()
-end)
-
-Section:NewButton("SANS (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Sans"))()
-end)
-
-Section:NewButton("Grab Gun (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/grab"))()
-end)
-
-Section:NewButton("Patrick :O", "You can get BANNED", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Patrick"))()
-end)
-
-Section:NewButton("Gaze Anti Fling", "Works only COLLISIONS games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Anti-fling-48475"))()
-end)
-
-Section:NewButton("Star Glitcher (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Spectrum%20Glitcher"))()
-end)
-
-Section:NewButton("THE BOYS (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Boys"))()
-end)
-
-Section:NewButton("Omega GigaChad (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/GigaChad"))()
-end)
-
-Section:NewButton("AMONGUS (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/AMOGUS"))()
-end)
-
-Section:NewButton("Assassin (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/The%20Assasian"))()
-end)
-
-Section:NewButton("Server Admin (r6)", "Works All R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Server-Admin-R6-47020"))()
-end)
-
-Section:NewButton("Fe Crystal Dance (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://pastebin.com/raw/vT1URaRJ"))()
-end)
-
-Section:NewButton("Caducus [BROKEN] (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/CADUCUS%20(FIXED)"))()
-end)
-
-Section:NewButton("Hacklord (r6)", "Works only R6 games", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ian49972/SCRIPTS/refs/heads/main/Hacker%20X"))()
 end)
 
 local Section = Tab:NewSection("Hubs")
@@ -144,60 +35,13 @@ Section:NewButton("Tiger X", "Works all games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Tiger-hub-x-v4-42180"))()
 end)
 
-Section:NewButton("Scripts Hub [OP]", "Works only the games of the Script", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-OP-Script-Hub-V3-23461"))()
-end)
-
-Section:NewButton("Ghost Hub (No Key)", "Works all games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Ghost-Hub-27383"))()
-end)
-
-Section:NewButton("Delta Keyboard", "Works all games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-keyboard-delta-67527"))()
-end)
-
-Section:NewButton("VR7", "Works all games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-VR7-45290"))()
-end)
-
-Section:NewButton("Trolling Gui V5", "Works all R15/R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-ULTIMATE-TROLLING-GUI-V5-39695"))()
-end)
-
-local Section = Tab:NewSection("Scripts 2")
-
-Section:NewButton("c00lkidd Skybox", "Works all R15/R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-skybox-c00lkidd-69647"))()
-end)
-
-Section:NewButton("Kidnapping", "Works all games", function()
-loadstring(game:HttpGet('https://pastebin.com/raw/vP2D2vnC'))()
-end)
-
-Section:NewButton("FE gojo Moveset (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fe-universal-GOJO-moveset-27356"))()
-end)
-
-Section:NewButton("FE Epic Dance (r6)", "Works all R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Epik-dance-r6-remake-64511"))()
-end)
-
--- Bosses Tab
 local Tab = Window:NewTab("Bosses")
 local Section = Tab:NewSection("Bosses")
 
-Section:NewButton("Revenge Hands", "Works all games", function()
-loadstring(game:HttpGet(("https://raw.githubusercontent.com/KRNL2/asdasdasd/main/Revenge%20Hands"), true))()
-end)
-
-Section:NewButton("The Glitch", "Works all games", function()
-loadstring(game:HttpGet(("https://raw.githubusercontent.com/KRNL2/haker/main/The%20Glitch"), true))()
-end)
-
-Section:NewButton("CHAOS DEUS SWORD", "Works all games", function()
-loadstring(game:HttpGet(("https://raw.githubusercontent.com/KRNL2/sword/main/Chaos%20Deus%20Sword"), true))()
-end)
-
 Section:NewButton("VEREUS", "Works all games, e and t for abilities", function()
 loadstring(game:HttpGet(("https://raw.githubusercontent.com/KRNL2/3dx/main/VEREUS"), true))()
+end)
+
+Section:NewButton("Revenge Hands", "Works all games", function()
+loadstring(game:HttpGet(("https://raw.githubusercontent.com/KRNL2/asdasdasd/main/Revenge%20Hands"), true))()
 end)
