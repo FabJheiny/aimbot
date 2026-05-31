@@ -15,7 +15,7 @@ local Config = {
         PlatformTransparency = 0.4
     },
     UI = {
-        Name = "FloatV6_Original",
+        Name = "FloatGui",
         DisplayOrder = 2147483647,
         Size = UDim2.new(0, 160, 0, 77),
         DefaultPosition = UDim2.new(0.05, 0, 0.4, 0),
@@ -150,13 +150,36 @@ function UIController:createScreenGui()
     sg.DisplayOrder = self.Config.UI.DisplayOrder
     sg.IgnoreGuiInset = true
     sg.ResetOnSpawn = false
-    local success = pcall(function()
-        sg.Parent = self.Services.CoreGui
-    end)
-    if not success then
-        sg.Parent = self.Services.Players.LocalPlayer.PlayerGui
-    end
+    sg.Parent = self.Services.Players.LocalPlayer.PlayerGui
     return sg
+end
+
+function UIController:createPill(parent)
+    local pill = Instance.new("Frame")
+    pill.Name = "FloatPill"
+    pill.Size = UDim2.new(0, 50, 0, 18)
+    pill.Position = UDim2.new(1, -56, 1, -80)
+    pill.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    pill.BorderSizePixel = 0
+    pill.Visible = false
+    pill.Parent = parent
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.Thickness = 1
+    stroke.Parent = pill
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.Position = UDim2.new(0, 0, 0, 0)
+    btn.BackgroundTransparency = 1
+    btn.Text = "> float"
+    btn.TextSize = 9
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Parent = pill
+
+    return pill, btn
 end
 
 function UIController:createMainFrame(parent)
@@ -245,7 +268,19 @@ end
 
 function UIController:build()
     self.ScreenGui = self:createScreenGui()
+
+    -- Pill (criada antes do frame para ficar disponível no close)
+    local pill, pillBtn = self:createPill(self.ScreenGui)
+    self.Pill = pill
+
     local main = self:createMainFrame(self.ScreenGui)
+    self.MainFrame = main
+
+    -- Pill abre o menu
+    pillBtn.MouseButton1Click:Connect(function()
+        main.Visible = true
+        pill.Visible = false
+    end)
 
     self:enableDrag(main, main)
 
@@ -261,10 +296,12 @@ function UIController:build()
         end
     end)
 
+    -- X esconde o frame e mostra a pill
     local closeBtn = self:createButton("X", UDim2.new(0, 0, 0, 0), UDim2.new(0, 32, 0, 25), main)
     self:enableDrag(closeBtn, main)
     closeBtn.MouseButton1Click:Connect(function()
-        self:cleanup()
+        main.Visible = false
+        pill.Visible = true
     end)
 
     self:createDivider(main, UDim2.new(0, 32, 0, 0), UDim2.new(0, 1, 0, 25))
@@ -347,7 +384,6 @@ function UIController:build()
         self:updateButtonStates()
     end)
 
-    self.MainFrame = main
     self:updateButtonStates()
 
     return self
