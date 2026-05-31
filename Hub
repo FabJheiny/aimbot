@@ -29,12 +29,6 @@ Section:NewButton("Fe Animations r6", "Works only R6 games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fe-R6-Animations-37331"))()
 end)
 
-local Section = Tab:NewSection("Hubs")
-
-Section:NewButton("Tiger X", "Works all games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Tiger-hub-x-v4-42180"))()
-end)
-
 local Tab = Window:NewTab("Bosses")
 local Section = Tab:NewSection("Bosses")
 
