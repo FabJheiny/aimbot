@@ -1,6 +1,13 @@
-local gui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ── Menu (PlayerGui) ──────────────────────────────────────────────────
+local gui = Instance.new("ScreenGui")
 gui.Name = "PremiumCalc"
 gui.ResetOnSpawn = false
+gui.Parent = playerGui
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 160, 0, 272)
@@ -272,8 +279,15 @@ createButton(".",  1, 4, false, false, false, false)
 createButton(",",  2, 4, false, false, false, false)
 createButton("=",  3, 4, false, true,  false, false)
 
--- ── Pill ──────────────────────────────────────────────────────────────
-local pill = Instance.new("Frame", gui)
+-- ── Pill (CoreGui) ────────────────────────────────────────────────────
+local pillGui = Instance.new("ScreenGui")
+pillGui.Name = "PremiumCalcPill"
+pillGui.ResetOnSpawn = false
+pillGui.DisplayOrder = 9999
+local ok = pcall(function() pillGui.Parent = CoreGui end)
+if not ok then pillGui.Parent = playerGui end
+
+local pill = Instance.new("Frame", pillGui)
 pill.Name = "PremiumCalcPill"
 pill.Size = UDim2.new(0, 50, 0, 18)
 pill.Position = UDim2.new(1, -56, 1, -124)
@@ -296,7 +310,7 @@ pillBtn.BackgroundTransparency = 1
 pillBtn.BorderSizePixel = 0
 pillBtn.AutoButtonColor = false
 
--- ── Conexões close / reabrir ───────────────────────────────────────────
+-- ── Conexões ──────────────────────────────────────────────────────────
 closeBtn.MouseButton1Click:Connect(function()
     frame.Visible = false
     pill.Visible = true
