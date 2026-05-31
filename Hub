@@ -1,6 +1,6 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/TwiRwal/TwiWare/main/uilib.lua"))()
 
-local Window = Library.CreateLib("JheinyHub", "Ocean")
+local Window = Library.CreateLib("Hub", "Ocean")
 
 local Tab = Window:NewTab("Cronos Scripts")
 local Section = Tab:NewSection("Universal")
@@ -23,6 +23,51 @@ end)
 
 Section:NewButton("FlyUi", "", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/fly.ui"))()
+end)
+
+Section:NewButton("Afk", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Afk"))()
+end)
+
+Section:NewButton("Inifinite Commands", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/If"))()
+end)
+
+Section:NewButton("Infinite Zoom", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Afk"))()
+end)
+
+local Tab = Window:NewTab("Outros Scripts")
+local Section = Tab:NewSection("Outros")
+
+Section:NewButton("Emotes", "", function()
+loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-7yd7-I-Emote-Script-48024"))()
+end)
+
+Section:NewButton("DropKick", "", function()
+loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fe-DropKick-Script-165813"))()
+end)
+
+Section:NewButton("FpsBooster", "", function()
+loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Best-universal-aimlock-and-fps-booster-script-228330"))()
+end)
+
+Section:NewButton("Rtx", "", function()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/GhostPlayer352/Test4/main/RTX%20Gui%20Hub%20Obfuscator'))()
+end)
+
+Section:NewButton("Spunch Hub", "", function()
+loadstring(game:HttpGet("https://pastefy.app/20WaEl9u/raw", true))()
+end)
+
+local Section = Tab:NewSection("Games")
+
+Section:NewButton("Slime Rng", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/SlimeRNG"))()
+end)
+
+Section:NewButton("Zombie Arena", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/SurviveZombieArena"))()
 end)
 
 local Tab = Window:NewTab("Scripts")
