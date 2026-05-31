@@ -21,7 +21,7 @@ local Config = {
         Mode = Enum.CameraMode.Classic
     },
     UI = {
-        Name = "Codefly_V30_5",
+        Name = "flygui",
         DisplayOrder = 2147483647,
         Size = UDim2.new(0, 160, 0, 77),
         DefaultPosition = UDim2.new(0.05, 0, 0.4, 0),
@@ -319,7 +319,7 @@ function UI:createReopenPill(parent, mainFrame)
     local btn = Instance.new("TextButton", pill)
     btn.Size = UDim2.new(1, 0, 1, 0)
     btn.Position = UDim2.new(0, 0, 0, 0)
-    btn.Text = "> flygui"
+    btn.Text = "> fly"
     btn.TextSize = 9
     btn.Font = Enum.Font.SourceSansBold
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
