@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -6,6 +7,7 @@ if playerGui:FindFirstChild("AFKBlackScreen") then
     playerGui:FindFirstChild("AFKBlackScreen"):Destroy()
 end
 
+-- ── Overlay (PlayerGui) ───────────────────────────────────────────────
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AFKBlackScreen"
 screenGui.ResetOnSpawn = false
@@ -24,13 +26,20 @@ blackOverlay.ZIndex = 1
 blackOverlay.Visible = false
 blackOverlay.Parent = screenGui
 
-local pill = Instance.new("Frame")
+-- ── Pill (CoreGui) ────────────────────────────────────────────────────
+local pillGui = Instance.new("ScreenGui")
+pillGui.Name = "AFKBlackScreenPill"
+pillGui.ResetOnSpawn = false
+pillGui.DisplayOrder = 9999
+local ok = pcall(function() pillGui.Parent = CoreGui end)
+if not ok then pillGui.Parent = playerGui end
+
+local pill = Instance.new("Frame", pillGui)
 pill.Name = "AFKBlackScreenPill"
 pill.Size = UDim2.new(0, 50, 0, 18)
 pill.Position = UDim2.new(1, -56, 1, -146)
 pill.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 pill.BorderSizePixel = 0
-pill.Parent = screenGui
 
 local pillStroke = Instance.new("UIStroke")
 pillStroke.Color = Color3.fromRGB(255, 255, 255)
