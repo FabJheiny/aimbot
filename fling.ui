@@ -1,13 +1,14 @@
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
 local Player = Players.LocalPlayer
 
--- GUI Setup
+-- ── Menu (PlayerGui) ──────────────────────────────────────────────────
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MultiFlingGUI"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Parent = Player:WaitForChild("PlayerGui")
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 200, 0, 320)
@@ -136,8 +137,15 @@ local DeselectAllButton = createStyledButton(
     Color3.fromRGB(255, 255, 255)
 )
 
--- Pill de reabrir
-local ReopenPill = Instance.new("Frame", ScreenGui)
+-- ── Pill (CoreGui) ────────────────────────────────────────────────────
+local PillGui = Instance.new("ScreenGui")
+PillGui.Name = "MultiFlingPillGui"
+PillGui.ResetOnSpawn = false
+PillGui.DisplayOrder = 9999
+local ok = pcall(function() PillGui.Parent = CoreGui end)
+if not ok then PillGui.Parent = Player:WaitForChild("PlayerGui") end
+
+local ReopenPill = Instance.new("Frame", PillGui)
 ReopenPill.Name = "PillFling"
 ReopenPill.Size = UDim2.new(0, 50, 0, 18)
 ReopenPill.Position = UDim2.new(1, -56, 1, -102)
@@ -183,9 +191,7 @@ local contentElements = {
 
 -- Conexões da topbar
 CloseButton.MouseButton1Click:Connect(function()
-    if FlingActive then
-        FlingActive = false
-    end
+    if FlingActive then FlingActive = false end
     MainFrame.Visible = false
     ReopenPill.Visible = true
 end)
@@ -199,15 +205,11 @@ MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
     if minimized then
         MainFrame.Size = UDim2.new(0, 200, 0, miniHeight)
-        for _, el in ipairs(contentElements) do
-            el.Visible = false
-        end
+        for _, el in ipairs(contentElements) do el.Visible = false end
         MinimizeButton.Text = "+"
     else
         MainFrame.Size = UDim2.new(0, 200, 0, fullHeight)
-        for _, el in ipairs(contentElements) do
-            el.Visible = true
-        end
+        for _, el in ipairs(contentElements) do el.Visible = true end
         MinimizeButton.Text = "-"
     end
 end)
@@ -331,9 +333,7 @@ local function SkidFling(TargetPlayer)
             workspace.CurrentCamera.CameraSubject = THumanoid
         end
 
-        if not TCharacter:FindFirstChildWhichIsA("BasePart") then
-            return
-        end
+        if not TCharacter:FindFirstChildWhichIsA("BasePart") then return end
 
         local FPos = function(BasePart, Pos, Ang)
             RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
@@ -350,15 +350,15 @@ local function SkidFling(TargetPlayer)
                 if RootPart and THumanoid then
                     if BasePart.Velocity.Magnitude < 50 then
                         Angle = Angle + 100
-                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
+                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0,0))
                         task.wait()
                         FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
                         task.wait()
-                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
+                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0,0))
                         task.wait()
                         FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
                         task.wait()
-                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle),0 ,0))
+                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle),0,0))
                         task.wait()
                         FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle), 0, 0))
                         task.wait()
