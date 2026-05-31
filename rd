@@ -1,13 +1,13 @@
 -- Jheiny Radio
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 local Player = Players.LocalPlayer
 
 local gui = Player.PlayerGui:FindFirstChild("SoundGui")
-if gui then gui:Destroy() return end
+if gui then gui:Destroy() end
 
 local SoundGui = Instance.new("ScreenGui")
 local Frame    = Instance.new("Frame")
-local Frame2   = Instance.new("Frame")
 local drag     = Instance.new("UIDragDetector")
 local c00lflag = Instance.new("Sound")
 
@@ -16,11 +16,11 @@ local TopSep  = Instance.new("Frame")
 local Title   = Instance.new("TextLabel")
 local MinBtn  = Instance.new("TextButton")
 local ExitBtn = Instance.new("TextButton")
-local Open    = Instance.new("TextButton")
 
 c00lflag.Name   = "c00lsound23sas"
 c00lflag.Parent = Frame
 
+-- ── Menu (PlayerGui) ──────────────────────────────────────────────────
 SoundGui.Name           = "SoundGui"
 SoundGui.Parent         = Player:WaitForChild("PlayerGui")
 SoundGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -68,15 +68,15 @@ Title.Font                   = Enum.Font.SourceSansBold
 Title.ZIndex                 = 4
 
 local StatusLbl = Instance.new("TextLabel", TopBar)
-StatusLbl.Size                 = UDim2.new(0, 80, 1, 0)
-StatusLbl.Position             = UDim2.new(0, 85, 0, 0)
+StatusLbl.Size                   = UDim2.new(0, 80, 1, 0)
+StatusLbl.Position               = UDim2.new(0, 85, 0, 0)
 StatusLbl.BackgroundTransparency = 1
-StatusLbl.TextColor3           = Color3.fromRGB(80, 80, 80)
-StatusLbl.TextSize             = 9
-StatusLbl.TextXAlignment       = Enum.TextXAlignment.Left
-StatusLbl.Text                 = ""
-StatusLbl.Font                 = Enum.Font.SourceSansBold
-StatusLbl.ZIndex               = 4
+StatusLbl.TextColor3             = Color3.fromRGB(80, 80, 80)
+StatusLbl.TextSize               = 9
+StatusLbl.TextXAlignment         = Enum.TextXAlignment.Left
+StatusLbl.Text                   = ""
+StatusLbl.Font                   = Enum.Font.SourceSansBold
+StatusLbl.ZIndex                 = 4
 
 MinBtn.Parent           = TopBar
 MinBtn.Size             = UDim2.new(0, 18, 0, 14)
@@ -105,30 +105,30 @@ ExitBtn.ZIndex           = 4
 -- Input helper
 local function makeInput(label, defaultText, xPos, w, yPos)
     local lbl = Instance.new("TextLabel", Frame)
-    lbl.Size                 = UDim2.new(0, w, 0, 11)
-    lbl.Position             = UDim2.new(0, xPos, 0, yPos)
+    lbl.Size                   = UDim2.new(0, w, 0, 11)
+    lbl.Position               = UDim2.new(0, xPos, 0, yPos)
     lbl.BackgroundTransparency = 1
-    lbl.TextColor3           = Color3.fromRGB(110, 110, 110)
-    lbl.TextSize             = 9
-    lbl.TextXAlignment       = Enum.TextXAlignment.Left
-    lbl.Text                 = label
-    lbl.Font                 = Enum.Font.SourceSansBold
-    lbl.ZIndex               = 2
+    lbl.TextColor3             = Color3.fromRGB(110, 110, 110)
+    lbl.TextSize               = 9
+    lbl.TextXAlignment         = Enum.TextXAlignment.Left
+    lbl.Text                   = label
+    lbl.Font                   = Enum.Font.SourceSansBold
+    lbl.ZIndex                 = 2
 
     local box = Instance.new("TextBox", Frame)
-    box.Size                 = UDim2.new(0, w, 0, 24)
-    box.Position             = UDim2.new(0, xPos, 0, yPos + 12)
-    box.BackgroundColor3     = Color3.fromRGB(15, 15, 15)
-    box.BorderSizePixel      = 0
-    box.Text                 = defaultText
-    box.PlaceholderText      = label
-    box.TextColor3           = Color3.fromRGB(255, 255, 255)
-    box.PlaceholderColor3    = Color3.fromRGB(70, 70, 70)
-    box.TextSize             = 11
-    box.Font                 = Enum.Font.SourceSansBold
-    box.TextXAlignment       = Enum.TextXAlignment.Right
-    box.ClearTextOnFocus     = false
-    box.ZIndex               = 2
+    box.Size               = UDim2.new(0, w, 0, 24)
+    box.Position           = UDim2.new(0, xPos, 0, yPos + 12)
+    box.BackgroundColor3   = Color3.fromRGB(15, 15, 15)
+    box.BorderSizePixel    = 0
+    box.Text               = defaultText
+    box.PlaceholderText    = label
+    box.TextColor3         = Color3.fromRGB(255, 255, 255)
+    box.PlaceholderColor3  = Color3.fromRGB(70, 70, 70)
+    box.TextSize           = 11
+    box.Font               = Enum.Font.SourceSansBold
+    box.TextXAlignment     = Enum.TextXAlignment.Right
+    box.ClearTextOnFocus   = false
+    box.ZIndex             = 2
 
     local c = Instance.new("UICorner", box) c.CornerRadius = UDim.new(0, 5)
     local p = Instance.new("UIPadding", box)
@@ -136,35 +136,28 @@ local function makeInput(label, defaultText, xPos, w, yPos)
     return box
 end
 
--- Linha 1: Sound ID (largura toda)
 local IdBox = makeInput("Sound ID", "", 6, W - 12, 22)
 
--- Linha 2: Speed | Vol
--- Linha 3 esquerda: PLAY
--- Linha 3 direita: Loop + PP (cabem no espaço acima do STOP)
+local halfW  = (W - 18) / 2
+local inputW = (halfW - 6) / 2
 
--- Speed e Vol dividem a metade esquerda (mesma largura do PLAY)
-local halfW  = (W - 18) / 2   -- largura do PLAY e do bloco direito
-local inputW = (halfW - 6) / 2 -- cada campo ocupa metade da área esquerda
+local SpeedBox = makeInput("Playback Speed", "1",   6,              inputW, 60)
+local VolBox   = makeInput("Volume",         "0.5", 6 + inputW + 6, inputW, 60)
 
-local SpeedBox = makeInput("Playback Speed", "1",   6,                 inputW, 60)
-local VolBox   = makeInput("Volume",         "0.5", 6 + inputW + 6,   inputW, 60)
+local rightX = 6 + halfW + 6
+local btnW   = (halfW - 6) / 2
 
--- Bloco direito: Loop + PP lado a lado, alinhados acima do STOP
-local rightX  = 6 + halfW + 6   -- início do bloco direito
-local btnW    = (halfW - 6) / 2  -- largura de cada botãozinho
-
--- Loop
+-- Loop button
 local loopLbl = Instance.new("TextLabel", Frame)
-loopLbl.Size                 = UDim2.new(0, btnW, 0, 11)
-loopLbl.Position             = UDim2.new(0, rightX, 0, 60)
+loopLbl.Size                   = UDim2.new(0, btnW, 0, 11)
+loopLbl.Position               = UDim2.new(0, rightX, 0, 60)
 loopLbl.BackgroundTransparency = 1
-loopLbl.TextColor3           = Color3.fromRGB(110, 110, 110)
-loopLbl.TextSize             = 9
-loopLbl.TextXAlignment       = Enum.TextXAlignment.Left
-loopLbl.Text                 = "Loop"
-loopLbl.Font                 = Enum.Font.SourceSansBold
-loopLbl.ZIndex               = 2
+loopLbl.TextColor3             = Color3.fromRGB(110, 110, 110)
+loopLbl.TextSize               = 9
+loopLbl.TextXAlignment         = Enum.TextXAlignment.Left
+loopLbl.Text                   = "Loop"
+loopLbl.Font                   = Enum.Font.SourceSansBold
+loopLbl.ZIndex                 = 2
 
 local loopBtn = Instance.new("TextButton", Frame)
 loopBtn.Size             = UDim2.new(0, btnW, 0, 24)
@@ -194,24 +187,24 @@ local function setLoop(val)
 end
 loopBtn.MouseButton1Click:Connect(function() setLoop(not isLooped) end)
 
--- Pause/Continue
+-- Pause/Continue button
 local ppX = rightX + btnW + 6
 
 local ppLbl = Instance.new("TextLabel", Frame)
-ppLbl.Size                 = UDim2.new(0, btnW, 0, 11)
-ppLbl.Position             = UDim2.new(0, ppX, 0, 60)
+ppLbl.Size                   = UDim2.new(0, btnW, 0, 11)
+ppLbl.Position               = UDim2.new(0, ppX, 0, 60)
 ppLbl.BackgroundTransparency = 1
-ppLbl.TextColor3           = Color3.fromRGB(110, 110, 110)
-ppLbl.TextSize             = 9
-ppLbl.TextXAlignment       = Enum.TextXAlignment.Left
-ppLbl.Text                 = "Pause"
-ppLbl.Font                 = Enum.Font.SourceSansBold
-ppLbl.ZIndex               = 2
+ppLbl.TextColor3             = Color3.fromRGB(110, 110, 110)
+ppLbl.TextSize               = 9
+ppLbl.TextXAlignment         = Enum.TextXAlignment.Left
+ppLbl.Text                   = "Pause"
+ppLbl.Font                   = Enum.Font.SourceSansBold
+ppLbl.ZIndex                 = 2
 
 local ppBtn = Instance.new("TextButton", Frame)
 ppBtn.Size             = UDim2.new(0, btnW, 0, 24)
 ppBtn.Position         = UDim2.new(0, ppX, 0, 72)
-ppBtn.Text             = "="    -- = enquanto tocando (clica pra pausar)
+ppBtn.Text             = "="
 ppBtn.Font             = Enum.Font.SourceSansBold
 ppBtn.TextSize         = 14
 ppBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -226,14 +219,12 @@ local isPaused = false
 local function applyPauseState(paused)
     isPaused = paused
     if paused then
-        -- pausado: mostra > pra continuar, cinza escuro
         ppBtn.Text             = ">"
         ppBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         ppBtn.TextColor3       = Color3.fromRGB(180, 180, 180)
         ppLbl.Text             = "Continue"
         StatusLbl.Text         = "= paused"
     else
-        -- tocando: mostra = pra pausar, cinza neutro
         ppBtn.Text             = "="
         ppBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         ppBtn.TextColor3       = Color3.fromRGB(100, 100, 100)
@@ -256,7 +247,7 @@ ppBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Linha 3: PLAY | STOP
+-- Play / Stop buttons
 local btnY = 100
 
 local PlayBtn = Instance.new("TextButton", Frame)
@@ -290,8 +281,15 @@ StopStroke.Color           = Color3.fromRGB(255, 80, 80)
 StopStroke.Thickness       = 1
 StopStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
--- Minimized pill
-Frame2.Parent           = SoundGui
+-- ── Pill (CoreGui) ────────────────────────────────────────────────────
+local PillSg = Instance.new("ScreenGui")
+PillSg.Name           = "SoundGuiPill"
+PillSg.DisplayOrder   = 9999
+PillSg.ResetOnSpawn   = false
+local ok = pcall(function() PillSg.Parent = CoreGui end)
+if not ok then PillSg.Parent = Player:WaitForChild("PlayerGui") end
+
+local Frame2 = Instance.new("Frame", PillSg)
 Frame2.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 Frame2.BorderSizePixel  = 0
 Frame2.Position         = UDim2.new(1, -56, 1, -36)
@@ -303,7 +301,7 @@ F2S.Color           = Color3.fromRGB(255, 255, 255)
 F2S.Thickness       = 1
 F2S.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-Open.Parent                 = Frame2
+local Open = Instance.new("TextButton", Frame2)
 Open.Size                   = UDim2.new(1, 0, 1, 0)
 Open.BackgroundTransparency = 1
 Open.Text                   = "> radio"
@@ -358,9 +356,11 @@ MinBtn.MouseButton1Click:Connect(function()
 end)
 
 ExitBtn.MouseButton1Click:Connect(function()
-    Frame.Visible = false Frame2.Visible = true
+    Frame.Visible  = false
+    Frame2.Visible = true
 end)
 
 Open.MouseButton1Click:Connect(function()
-    Frame.Visible = true Frame2.Visible = false
+    Frame.Visible  = true
+    Frame2.Visible = false
 end)
