@@ -1,4 +1,3 @@
---Flygui
 local Services = {
     Players = game:GetService("Players"),
     RunService = game:GetService("RunService"),
@@ -211,9 +210,7 @@ end
 
 function MovementController:cleanup()
     local char = self.Services.Players.LocalPlayer.Character
-    if char then
-        self:resetPhysics(char)
-    end
+    if char then self:resetPhysics(char) end
     if self.Connections then
         for _, connection in pairs(self.Connections) do
             connection:Disconnect()
@@ -235,6 +232,7 @@ function UI.new(services, config, state)
 end
 
 function UI:createScreenGui()
+    -- Menu in PlayerGui
     local sg = Instance.new("ScreenGui")
     sg.Name = self.Config.UI.Name
     sg.DisplayOrder = self.Config.UI.DisplayOrder
@@ -303,8 +301,16 @@ function UI:createButton(text, position, size, parent)
     return button
 end
 
-function UI:createReopenPill(parent, mainFrame)
-    local pill = Instance.new("Frame", parent)
+function UI:createReopenPill(mainFrame)
+    -- Pill in CoreGui
+    local pillSg = Instance.new("ScreenGui")
+    pillSg.Name = self.Config.UI.Name .. "Pill"
+    pillSg.DisplayOrder = 9999
+    pillSg.ResetOnSpawn = false
+    local ok = pcall(function() pillSg.Parent = self.Services.CoreGui end)
+    if not ok then pillSg.Parent = self.Services.Players.LocalPlayer:WaitForChild("PlayerGui") end
+
+    local pill = Instance.new("Frame", pillSg)
     pill.Name = "ReopenPill"
     pill.Position = UDim2.new(1, -56, 1, -58)
     pill.Size = UDim2.new(0, 50, 0, 18)
@@ -350,7 +356,7 @@ function UI:build(movementController, screenGui)
         end
     end)
 
-    local pill = self:createReopenPill(screenGui, main)
+    local pill = self:createReopenPill(main)
 
     local closeBtn = self:createButton("X", UDim2.new(0, 0, 0, 0), UDim2.new(0, 32, 0, 25), main)
     self:enableDrag(closeBtn, main)
