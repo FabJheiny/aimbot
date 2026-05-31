@@ -63,7 +63,7 @@ Title.BackgroundTransparency = 1
 Title.TextColor3             = Color3.fromRGB(255, 255, 255)
 Title.TextSize               = 10
 Title.TextXAlignment         = Enum.TextXAlignment.Left
-Title.Text                   = "Jheiny Radio"
+Title.Text                   = "Jheiny Radio 🦇🖤"
 Title.Font                   = Enum.Font.SourceSansBold
 Title.ZIndex                 = 4
 
