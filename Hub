@@ -29,6 +29,10 @@ Section:NewButton("FlyUi", "", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/fly.ui"))()
 end)
 
+Section:NewButton("FpsUi", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/fps.ui"))()
+end)
+
 Section:NewButton("Afk", "", function()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Afk"))()
 end)
