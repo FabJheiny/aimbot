@@ -2,6 +2,25 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/TwiRw
 
 local Window = Library.CreateLib("JheinyHub", "Ocean")
 
+local Tab = Window:NewTab("Cronos Scripts")
+local Section = Tab:NewSection("Universal")
+
+Section:NewButton("Calculator", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/Calculator"))()
+end)
+
+Section:NewButton("FlingUi", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/fling.ui"))()
+end)
+
+Section:NewButton("FloatUi", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/float.ui"))()
+end)
+
+Section:NewButton("FlyUi", "", function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/FabJheiny/Scripts/refs/heads/main/fly.ui"))()
+end)
+
 local Tab = Window:NewTab("Scripts")
 local Section = Tab:NewSection("Scripts")
 
@@ -24,13 +43,6 @@ end)
 Section:NewButton("FE sonic (r15)", "Works all R15 games", function()
 loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FE-R15-Sonic-The-Hedgehog-63923"))()
 end)
-
-Section:NewButton("Fe Animations r6", "Works only R6 games", function()
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fe-R6-Animations-37331"))()
-end)
-
-local Tab = Window:NewTab("Bosses")
-local Section = Tab:NewSection("Bosses")
 
 Section:NewButton("VEREUS", "Works all games, e and t for abilities", function()
 loadstring(game:HttpGet(("https://raw.githubusercontent.com/KRNL2/3dx/main/VEREUS"), true))()
